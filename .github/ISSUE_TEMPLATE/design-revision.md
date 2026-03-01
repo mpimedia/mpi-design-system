@@ -1,8 +1,8 @@
 ---
 name: Design Revision
 about: Request a change to an existing component or pattern
-title: "[Revision] "
-labels: revision
+title: ''
+labels: 'revision, needs-discussion'
 assignees: ''
 ---
 
@@ -18,15 +18,13 @@ assignees: ''
 
 <!-- What problem does the current design have? What prompted this change? -->
 
-## Which App(s) Are Affected?
+## Target App(s)
 
-- [ ] All apps
-- [ ] Markaz
-- [ ] SFA
-- [ ] Garden
-- [ ] Harvest
-- [ ] Markaz CRM
+<!-- Which app(s) are affected: Markaz, SFA, Garden, Harvest, Markaz CRM, or All -->
 
-## Visual Reference
+## Open Questions
 
-<!-- Attach screenshots showing the current state and the desired change, if applicable. -->
+<!-- Things that need dev team input. -->
+
+-
+-
