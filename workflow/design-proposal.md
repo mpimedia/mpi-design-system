@@ -17,7 +17,7 @@ Use the **Design Proposal** issue template in this repo. It covers:
 
 - **Component name** — What to call it (plain language)
 - **Description** — What it does, in one or two sentences
-- **Which app(s) need it** — Optimus, Avails, SFA, Garden, Harvest, or all
+- **Which app(s) need it** — Markaz, SFA, Garden, Harvest, Markaz CRM, or all
 - **User context** — What is the user trying to accomplish when they encounter this component?
 
 ### Helpful to Include

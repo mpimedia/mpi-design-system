@@ -4,13 +4,13 @@ This file provides context for Claude when working on design tasks for MPI Media
 
 ## What You Are Designing For
 
-MPI Media operates five Ruby on Rails applications:
+MPI Media operates these Ruby on Rails applications:
 
-- **Optimus** — Application template and pattern source
-- **Avails** — Central data repository
+- **Markaz** — Content management and distribution platform
 - **SFA** — Video clip hosting and search
 - **Garden** — Static site generator
 - **Harvest** — Ecommerce platform
+- **Markaz CRM** — Customer relationship management
 
 All apps share a common visual language defined by this design system.
 

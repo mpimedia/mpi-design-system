@@ -21,11 +21,11 @@ assignees: ''
 ## Which App(s) Are Affected?
 
 - [ ] All apps
-- [ ] Optimus
-- [ ] Avails
+- [ ] Markaz
 - [ ] SFA
 - [ ] Garden
 - [ ] Harvest
+- [ ] Markaz CRM
 
 ## Visual Reference
 

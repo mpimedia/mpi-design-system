@@ -17,11 +17,11 @@ assignees: ''
 ## Which App(s) Need This?
 
 - [ ] All apps
-- [ ] Optimus
-- [ ] Avails
+- [ ] Markaz
 - [ ] SFA
 - [ ] Garden
 - [ ] Harvest
+- [ ] Markaz CRM
 
 ## User Context
 

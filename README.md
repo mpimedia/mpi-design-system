@@ -20,11 +20,11 @@ The design system serves these MPI Media applications:
 
 | App | Purpose |
 |---|---|
-| **Optimus** | Rails application template and pattern source |
-| **Avails** | Central data repository |
+| **Markaz** | Content management and distribution platform |
 | **SFA** | Video clip hosting and search |
 | **Garden** | Static site generator |
 | **Harvest** | Ecommerce platform |
+| **Markaz CRM** | Customer relationship management (replacing Dynamics BCC) |
 
 ## Repo Structure
 
