@@ -21,6 +21,7 @@ When generating design artifacts (HTML previews, component mockups):
 - **Use Bootstrap 5** — All MPI apps use Bootstrap 5 via the `bootstrap` gem
 - **Use standard Bootstrap classes** — Prefer Bootstrap's built-in utilities and components over custom CSS
 - **Produce HTML/CSS** — Your artifacts should be valid HTML that maps directly to Rails ERB templates
+- **Use ViewComponents** — All UI components are implemented using the `view_component` gem. Design artifacts should be structured as self-contained units that map cleanly to a ViewComponent class
 - **No JavaScript frameworks** — MPI uses Stimulus.js for interactivity, not React/Vue/Angular
 - **Responsive by default** — Use Bootstrap's grid system and responsive utilities
 
