@@ -67,78 +67,76 @@ Once implemented, merged, and live, the issue moves to **Done**.
 
 Every component spec in the catalog follows this template:
 
-```markdown
-# Component Name
+    # Component Name
 
-**Category:** Elements | Components | Patterns | Layouts
-**Status:** Draft | In Review | Approved | Deprecated
-**Bootstrap mapping:** [relevant Bootstrap component]
-**Atomic equivalent:** Atom | Molecule | Organism | Template
+    **Category:** Elements | Components | Patterns | Layouts
+    **Status:** Draft | In Review | Approved | Deprecated
+    **Bootstrap mapping:** [relevant Bootstrap component]
+    **Atomic equivalent:** Atom | Molecule | Organism | Template
 
-## Description
+    ## Description
 
-What this component is and when to use it.
+    What this component is and when to use it.
 
-## When to Use
+    ## When to Use
 
-- Scenario 1
-- Scenario 2
+    - Scenario 1
+    - Scenario 2
 
-## When NOT to Use
+    ## When NOT to Use
 
-- Use [alternative] instead when...
+    - Use [alternative] instead when...
 
-## Variants
+    ## Variants
 
-### Default
-Description and visual reference.
+    ### Default
+    Description and visual reference.
 
-### Variant Name
-Description and visual reference.
+    ### Variant Name
+    Description and visual reference.
 
-## States
+    ## States
 
-- Default
-- Hover
-- Active
-- Disabled
-- Loading (if applicable)
+    - Default
+    - Hover
+    - Active
+    - Disabled
+    - Loading (if applicable)
 
-## Design Tokens
+    ## Design Tokens
 
-| Token | Value | Usage |
-|---|---|---|
-| Color | `$mpi-primary` | Background |
-| Spacing | `$spacer-3` | Padding |
+    | Token | Value | Usage |
+    |---|---|---|
+    | Color | `$mpi-primary` | Background |
+    | Spacing | `$spacer-3` | Padding |
 
-## Bootstrap 5 Classes
+    ## Bootstrap 5 Classes
 
-```html
-<button class="btn btn-primary btn-lg">Label</button>
-```
+    ```html
+    <button class="btn btn-primary btn-lg">Label</button>
+    ```
 
-## ERB / ViewComponent Example
+    ## ERB / ViewComponent Example
 
-```erb
-<%= render ButtonComponent.new(variant: :primary, size: :lg) do %>
-  Label
-<% end %>
-```
+    ```erb
+    <%= render ButtonComponent.new(variant: :primary, size: :lg) do %>
+      Label
+    <% end %>
+    ```
 
-## Stimulus Behaviors
+    ## Stimulus Behaviors
 
-If applicable, document JavaScript behaviors.
+    If applicable, document JavaScript behaviors.
 
-## Accessibility
+    ## Accessibility
 
-- ARIA roles and attributes
-- Keyboard navigation
-- Screen reader behavior
+    - ARIA roles and attributes
+    - Keyboard navigation
+    - Screen reader behavior
 
-## Visual Reference
+    ## Visual Reference
 
-![Component Name](../references/component-name.png)
-```
+    ![Component Name](../references/component-name.png)
 
 ## Branch Naming
 
