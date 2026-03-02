@@ -97,7 +97,7 @@ See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full process.
 
 ## Project Board
 
-Track design system progress on the [MPI Design System project board](https://github.com/orgs/mpimedia/projects/14).
+Track design system progress on the [MPI Design System project board](https://github.com/orgs/mpimedia/projects/15).
 
 ## Related Repositories
 
