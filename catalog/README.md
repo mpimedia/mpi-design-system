@@ -32,4 +32,4 @@ Each spec includes a status badge:
 
 ## Finding Components
 
-Browse the directories above, or check the [project board](https://github.com/orgs/mpimedia/projects/14) for components currently in progress.
+Browse the directories above, or check the [project board](https://github.com/orgs/mpimedia/projects/15) for components currently in progress.

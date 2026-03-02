@@ -40,7 +40,7 @@ Badie + Claude → Issue → Discussion → Decision → Plan → PR → Done
 
 ## Project Board
 
-All design work is tracked on the [MPI Design System project board](https://github.com/orgs/mpimedia/projects/14).
+All design work is tracked on the [MPI Design System project board](https://github.com/orgs/mpimedia/projects/15).
 
 | Board Column | What's here |
 |---|---|

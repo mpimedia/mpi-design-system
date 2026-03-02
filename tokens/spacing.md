@@ -2,11 +2,11 @@
 
 Design tokens for consistent spacing across MPI applications.
 
-> **Status:** Draft — using Bootstrap 5 defaults as baseline.
+> **Status:** Baseline — using Bootstrap 5 defaults. Custom overrides will be derived from approved designs if needed.
 
 ## Spacing Scale
 
-MPI uses Bootstrap 5's spacing scale as the foundation. Custom overrides are documented here.
+MPI uses Bootstrap 5's spacing scale as the foundation. Custom overrides are documented here only if the designs require them.
 
 | Token | Bootstrap Class | Default Value | Usage |
 |---|---|---|---|
@@ -27,10 +27,14 @@ MPI uses Bootstrap 5's spacing scale as the foundation. Custom overrides are doc
 | Inline element gaps | `$spacer-1` to `$spacer-2` |
 | Button padding | Bootstrap defaults (`btn` class) |
 
+## Design-Driven Overrides
+
+_To be populated after Q&A review of approved designs. Only add overrides here if Bootstrap defaults are insufficient._
+
 ## Bootstrap 5 Mapping
 
 ```scss
-// Override Bootstrap's spacer if needed
+// Override Bootstrap's spacer only if designs require it
 $spacer: 1rem;
 $spacers: (
   0: 0,
