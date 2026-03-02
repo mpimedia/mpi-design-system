@@ -1,56 +1,42 @@
 ---
 name: Design Proposal
 about: Propose a new component, pattern, or layout for the design system
-title: "[Proposal] "
-labels: proposal
+title: ''
+labels: 'proposal, needs-discussion'
 assignees: ''
 ---
 
-## Component Name
+## Business Context
 
-<!-- What should this be called? Use plain language. -->
+<!-- Why is this needed? What problem does it solve? -->
 
-## Description
+## Users
 
-<!-- What does this component do? One or two sentences. -->
-
-## Which App(s) Need This?
-
-- [ ] All apps
-- [ ] Markaz
-- [ ] SFA
-- [ ] Garden
-- [ ] Harvest
-- [ ] Markaz CRM
-
-## User Context
-
-<!-- What is the user trying to accomplish when they use this component? -->
+<!-- Who interacts with this? What's their role and what are they trying to accomplish? -->
 
 ## Requirements
 
-### States Needed
-- [ ] Default
-- [ ] Hover
-- [ ] Active/Selected
-- [ ] Disabled
-- [ ] Loading
-- [ ] Error
-- [ ] Empty
+<!-- What must be true for this design to be successful? -->
 
-### Variants
-<!-- Sizes, colors, orientations, etc. -->
+-
+-
+-
 
-### Responsive Behavior
-<!-- How should this behave on mobile vs desktop? -->
+## Target App(s)
 
-## Existing Examples
+<!-- Which app(s): Markaz, SFA, Garden, Harvest, Markaz CRM, or All -->
 
-<!-- Screenshots, URLs, or references to similar components. Attach images if available. -->
+## Data
+
+<!-- What data is involved? What fields, relationships, or sources matter? -->
+
+## Open Questions
+
+<!-- Things that need dev team input or aren't resolved yet. -->
+
+-
+-
 
 ## Priority
 
-- [ ] Blocking — needed for current sprint work
-- [ ] High — needed soon
-- [ ] Normal — important but not urgent
-- [ ] Low — nice to have
+<!-- Blocking / High / Normal / Low — and why -->

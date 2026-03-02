@@ -2,66 +2,30 @@
 
 ## Design Workflow
 
-Every component follows a structured path from idea to implementation:
+Every design follows a structured path from idea to implementation:
 
 ```
-Propose → Design → Review → Approve → Implement → Done
+Badie + Claude → Issue → Discussion → Decision → Plan → PR → Done
 ```
 
-### 1. Propose
+For the full lifecycle details, labels, and conventions, see [`workflow/issue-lifecycle.md`](workflow/issue-lifecycle.md).
 
-Open an issue in this repo using the **Design Proposal** template. Include:
+### Quick Overview
 
-- What the component or pattern is
-- Which app(s) need it
-- Any existing examples or inspiration
-- Rough requirements (states, variants, responsiveness)
+1. **Propose** — Badie describes a need to Claude. Claude creates an issue with business context, requirements, and open questions.
+2. **Discuss** — Dev team and Badie discuss in the issue: alternatives, feasibility, concerns.
+3. **Decide** — A direction is chosen and recorded in the issue.
+4. **Plan** — An implementation plan is written to the issue with enough detail for a developer to build it.
+5. **Implement** — Dev team picks up the plan, creates a PR.
+6. **Done** — PR is merged, issue closes.
 
-The issue moves to **Proposal** on the project board.
+### For Badie
 
-### 2. Design
+See [`workflow/claude-project-instructions.md`](workflow/claude-project-instructions.md) for how to set up your Claude Design Agent and the full workflow.
 
-Badie (or another designer) works with Claude to create the design:
+### For Developers
 
-1. Start a Claude session and load the [`CLAUDE.md`](CLAUDE.md) context file
-2. Claude generates HTML/CSS artifacts using Bootstrap 5 within the design language
-3. Iterate on the design within the conversation
-4. Export final artifacts as PDF/PNG
-5. Post the artifacts and a draft component spec to the issue
-
-The issue moves to **In Design** while active work is happening.
-
-### 3. Review
-
-Once the design is posted:
-
-1. The issue moves to **In Review**
-2. Stakeholders review against the [review checklist](workflow/review-checklist.md)
-3. Feedback is posted as issue comments
-4. Designer iterates if changes are requested (issue moves back to **In Design**)
-
-### 4. Approve
-
-When stakeholders sign off:
-
-1. The component spec is submitted as a PR to this repo
-2. The spec goes in the appropriate catalog directory (`elements/`, `components/`, `patterns/`, or `layouts/`)
-3. Visual references go in `references/`
-4. PR is reviewed and merged
-5. Issue moves to **Approved**
-
-### 5. Implement
-
-A developer builds the approved design:
-
-1. Create a ViewComponent in the target Rails app
-2. Follow the Bootstrap 5 classes and markup from the spec
-3. Reference design tokens for customizations
-4. Issue moves to **Implementing**
-
-### 6. Done
-
-Once implemented, merged, and live, the issue moves to **Done**.
+Pick up issues labeled `plan-ready` on the [project board](https://github.com/orgs/mpimedia/projects/14). The implementation plan in the issue has everything you need. Create a feature branch, implement, and open a PR referencing the issue.
 
 ## Component Spec Format
 
