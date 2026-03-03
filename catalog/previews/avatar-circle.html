@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AvatarCircle — MPI Design System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding: 32px; background: #fff; }
+    .preview-section { margin-bottom: 32px; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
+    .preview-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .avatar {
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 50%; color: #fff; font-weight: 600;
+    }
+    .avatar-sm { width: 28px; height: 28px; font-size: 11px; }
+    .avatar-md { width: 40px; height: 40px; font-size: 14px; }
+    .avatar-lg { width: 56px; height: 56px; font-size: 20px; }
+    .avatar-xl { width: 80px; height: 80px; font-size: 28px; }
+    .avatar-stack { display: flex; }
+    .avatar-stack .avatar { margin-left: -8px; border: 2px solid #fff; }
+    .avatar-stack .avatar:first-child { margin-left: 0; }
+  </style>
+</head>
+<body>
+  <h4 class="mb-1">AvatarCircle</h4>
+  <p class="text-muted small mb-4">Circular avatar with initials. Color is deterministic — derived from the contact's name.</p>
+
+  <div class="preview-section">
+    <div class="preview-label">Deterministic Colors (name-based)</div>
+    <div class="preview-row">
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md" style="background-color: #2E75B6;">JS</div>
+        <span class="small">John Smith</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md" style="background-color: #8B5CF6;">AD</div>
+        <span class="small">Alice Dupont</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md" style="background-color: #E8733A;">MK</div>
+        <span class="small">Mika Koskinen</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md" style="background-color: #2DA67E;">RL</div>
+        <span class="small">Rachel Lee</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md" style="background-color: #D97706;">BW</div>
+        <span class="small">Brian Wang</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md" style="background-color: #6366F1;">SC</div>
+        <span class="small">Sara Cho</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">Sizes</div>
+    <div class="preview-row">
+      <div class="text-center">
+        <div class="avatar avatar-sm" style="background-color: #2E75B6;">JS</div>
+        <div class="small text-muted mt-1">Small</div>
+      </div>
+      <div class="text-center">
+        <div class="avatar avatar-md" style="background-color: #2E75B6;">JS</div>
+        <div class="small text-muted mt-1">Default</div>
+      </div>
+      <div class="text-center">
+        <div class="avatar avatar-lg" style="background-color: #2E75B6;">JS</div>
+        <div class="small text-muted mt-1">Large</div>
+      </div>
+      <div class="text-center">
+        <div class="avatar avatar-xl" style="background-color: #2E75B6;">JS</div>
+        <div class="small text-muted mt-1">XL</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">Avatar Stack</div>
+    <div class="avatar-stack">
+      <div class="avatar avatar-md" style="background-color: #2E75B6;">JS</div>
+      <div class="avatar avatar-md" style="background-color: #8B5CF6;">AD</div>
+      <div class="avatar avatar-md" style="background-color: #E8733A;">MK</div>
+      <div class="avatar avatar-md" style="background-color: #2DA67E;">RL</div>
+      <div class="avatar avatar-md" style="background-color: #64748B; font-size: 11px;">+3</div>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">In Context — Contact List Row</div>
+    <table class="table table-sm" style="max-width: 500px;">
+      <tbody>
+        <tr>
+          <td style="width: 48px;"><div class="avatar avatar-md" style="background-color: #2E75B6;">JS</div></td>
+          <td><strong>John Smith</strong><br><span class="text-muted small">Acme Studios</span></td>
+          <td class="text-end"><span class="badge" style="color: #E8733A; background: #FEF3EC; border-radius: 999px;">Buyer</span></td>
+        </tr>
+        <tr>
+          <td style="width: 48px;"><div class="avatar avatar-md" style="background-color: #8B5CF6;">AD</div></td>
+          <td><strong>Alice Dupont</strong><br><span class="text-muted small">Canal+ Distribution</span></td>
+          <td class="text-end"><span class="badge" style="color: #2DA67E; background: #ECF8F4; border-radius: 999px;">Press</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

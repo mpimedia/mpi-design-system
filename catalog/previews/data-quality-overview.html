@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataQualityOverview — MPI Design System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { padding: 32px; background: #F5F7FA; }
+    .preview-section { margin-bottom: 40px; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
+    .panel { background: #fff; border: 1px solid #DEE2E6; border-radius: 8px; padding: 20px; }
+
+    /* Score ring */
+    .score-ring { position: relative; width: 120px; height: 120px; }
+    .score-ring svg { transform: rotate(-90deg); }
+    .score-ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .score-ring-value { font-size: 28px; font-weight: 700; color: #1B2A4A; line-height: 1; }
+    .score-ring-unit { font-size: 14px; color: #6C757D; }
+    .score-ring-label { font-size: 12px; color: #6C757D; margin-top: 2px; }
+
+    /* Grade distribution */
+    .grade-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; }
+    .grade-label { width: 60px; font-weight: 500; }
+    .grade-bar { height: 8px; border-radius: 4px; }
+    .grade-count { width: 36px; font-weight: 600; color: #1B2A4A; text-align: right; }
+    .grade-pct { width: 32px; color: #6C757D; font-size: 12px; }
+
+    /* Gap stat cards */
+    .gap-stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-bottom: 4px; }
+    .gap-stat-value { font-size: 28px; font-weight: 700; color: #1B2A4A; line-height: 1.1; }
+    .gap-stat-pct { font-size: 12px; color: #6C757D; }
+
+    /* Priority badge */
+    .priority-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .priority-high { background: #FEE2E2; color: #DC3545; }
+    .priority-med { background: #FEF3EC; color: #D4772C; }
+    .priority-low { background: #F1F5F9; color: #64748B; }
+
+    /* Field checklist */
+    .field-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #F0F0F0; font-size: 13px; }
+    .field-row:last-child { border-bottom: none; }
+    .field-row.missing { background: #FFFBEB; margin: 0 -12px; padding: 8px 12px; }
+    .field-icon { width: 20px; flex-shrink: 0; }
+    .field-name { flex-grow: 1; color: #1B2A4A; }
+    .field-name.missing-text { color: #DC3545; }
+    .field-value { font-size: 12px; color: #6C757D; margin-left: 8px; }
+
+    /* Small ring for priority fixes */
+    .mini-ring { position: relative; width: 32px; height: 32px; }
+    .mini-ring svg { transform: rotate(-90deg); }
+    .mini-ring-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 9px; font-weight: 700; color: #1B2A4A; }
+
+    .avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; font-weight: 600; flex-shrink: 0; }
+    .avatar-sm { width: 32px; height: 32px; font-size: 11px; }
+    .missing-fields { font-size: 12px; color: #DC3545; }
+    .grade-badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <h4 class="mb-1" style="color:#1B2A4A;">DataQualityOverview</h4>
+  <p class="text-muted small mb-4">Two contexts: CRM-wide data quality dashboard (Screen 12) and per-contact data completeness panel (Screen 14). Features score rings, grade badges, field checklists with priority weights.</p>
+
+  <!-- CRM-Wide Dashboard — from Figma Screen 12 -->
+  <div class="preview-section">
+    <div class="preview-label">CRM-Wide Dashboard — From Figma Screen 12</div>
+    <div style="max-width:900px;">
+      <h5 style="color:#1B2A4A; margin-bottom:4px;">Data Quality Overview</h5>
+      <p class="text-muted small mb-3">CRM health across 2,307 contacts and 412 accounts</p>
+
+      <div class="row g-3 mb-3">
+        <!-- Overall ring -->
+        <div class="col-3">
+          <div class="panel text-center">
+            <div class="gap-stat-label">Overall Data Quality</div>
+            <div class="score-ring mx-auto my-3">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#DEE2E6" stroke-width="10"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#2E75B6" stroke-width="10" stroke-dasharray="226" stroke-dashoffset="63" stroke-linecap="round"/>
+              </svg>
+              <div class="score-ring-text">
+                <div class="score-ring-value">72<span class="score-ring-unit">%</span></div>
+                <div class="score-ring-label">Good</div>
+              </div>
+            </div>
+            <div class="text-start px-2">
+              <div class="grade-row"><span class="grade-label" style="color:#22A06B;">Excellent</span><div class="grade-bar flex-grow-1" style="background:#22A06B; width:28%;"></div><span class="grade-count">645</span><span class="grade-pct">28%</span></div>
+              <div class="grade-row"><span class="grade-label" style="color:#2E75B6;">Good</span><div class="grade-bar flex-grow-1" style="background:#2E75B6; width:34%;"></div><span class="grade-count">784</span><span class="grade-pct">34%</span></div>
+              <div class="grade-row"><span class="grade-label" style="color:#D4772C;">Fair</span><div class="grade-bar flex-grow-1" style="background:#D4772C; width:24%;"></div><span class="grade-count">554</span><span class="grade-pct">24%</span></div>
+              <div class="grade-row"><span class="grade-label" style="color:#DC3545;">Poor</span><div class="grade-bar flex-grow-1" style="background:#DC3545; width:14%;"></div><span class="grade-count">324</span><span class="grade-pct">14%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gap stat cards -->
+        <div class="col-9">
+          <div class="row g-3 mb-3">
+            <div class="col-4">
+              <div class="panel">
+                <div class="gap-stat-label">No Email Address</div>
+                <div class="gap-stat-value">186</div>
+                <div class="gap-stat-pct">8% of all contacts</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="panel">
+                <div class="gap-stat-label">No Tags Assigned</div>
+                <div class="gap-stat-value">247</div>
+                <div class="gap-stat-pct">10.7% of all contacts</div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="panel">
+                <div class="gap-stat-label">No Linked Account</div>
+                <div class="gap-stat-value">312</div>
+                <div class="gap-stat-pct">13.5% of all contacts</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Priority fixes list -->
+          <div class="panel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div style="font-size:14px; font-weight:600; color:#1B2A4A;">Priority Fixes — Recently Active</div>
+              <a href="#" style="font-size:12px; color:#2E75B6; text-decoration:none;">View all →</a>
+            </div>
+            <div class="d-flex align-items-center gap-3 py-2 border-bottom" style="font-size:13px;">
+              <div class="avatar avatar-sm" style="background:#DC3545;">NR</div>
+              <div class="flex-grow-1">
+                <div style="color:#1B2A4A; font-weight:500;">Nora Ramirez</div>
+                <div class="text-muted" style="font-size:11px;">Unknown Organization</div>
+              </div>
+              <div class="missing-fields">No email, No account</div>
+              <div class="mini-ring">
+                <svg width="32" height="32" viewBox="0 0 32 32">
+                  <circle cx="16" cy="16" r="12" fill="none" stroke="#DEE2E6" stroke-width="3"/>
+                  <circle cx="16" cy="16" r="12" fill="none" stroke="#DC3545" stroke-width="3" stroke-dasharray="75" stroke-dashoffset="58" stroke-linecap="round"/>
+                </svg>
+                <div class="mini-ring-text">22%</div>
+              </div>
+              <div class="text-muted" style="font-size:11px; width:60px;">2 days ago</div>
+            </div>
+            <div class="d-flex align-items-center gap-3 py-2 border-bottom" style="font-size:13px;">
+              <div class="avatar avatar-sm" style="background:#D97706;">TK</div>
+              <div class="flex-grow-1">
+                <div style="color:#1B2A4A; font-weight:500;">Thomas Kim</div>
+                <div class="text-muted" style="font-size:11px;">Strand Releasing</div>
+              </div>
+              <div class="missing-fields">No tags, No phone</div>
+              <div class="mini-ring">
+                <svg width="32" height="32" viewBox="0 0 32 32">
+                  <circle cx="16" cy="16" r="12" fill="none" stroke="#DEE2E6" stroke-width="3"/>
+                  <circle cx="16" cy="16" r="12" fill="none" stroke="#D4772C" stroke-width="3" stroke-dasharray="75" stroke-dashoffset="44" stroke-linecap="round"/>
+                </svg>
+                <div class="mini-ring-text">41%</div>
+              </div>
+              <div class="text-muted" style="font-size:11px; width:60px;">3 days ago</div>
+            </div>
+            <div class="d-flex align-items-center gap-3 py-2" style="font-size:13px;">
+              <div class="avatar avatar-sm" style="background:#22A06B;">LM</div>
+              <div class="flex-grow-1">
+                <div style="color:#1B2A4A; font-weight:500;">Lisa Moreira</div>
+                <div class="text-muted" style="font-size:11px;">Oscilloscope Labs</div>
+              </div>
+              <div class="missing-fields">No tags, No title</div>
+              <div class="mini-ring">
+                <svg width="32" height="32" viewBox="0 0 32 32">
+                  <circle cx="16" cy="16" r="12" fill="none" stroke="#DEE2E6" stroke-width="3"/>
+                  <circle cx="16" cy="16" r="12" fill="none" stroke="#D4772C" stroke-width="3" stroke-dasharray="75" stroke-dashoffset="46" stroke-linecap="round"/>
+                </svg>
+                <div class="mini-ring-text">38%</div>
+              </div>
+              <div class="text-muted" style="font-size:11px; width:60px;">5 days ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-Contact Panel — from Figma Screen 14 -->
+  <div class="preview-section">
+    <div class="preview-label">Per-Contact Data Completeness — From Figma Screen 14</div>
+    <div class="panel" style="max-width:600px;">
+      <div class="d-flex align-items-start gap-3 mb-3">
+        <div class="score-ring" style="width:48px;height:48px;">
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <circle cx="24" cy="24" r="18" fill="none" stroke="#DEE2E6" stroke-width="5"/>
+            <circle cx="24" cy="24" r="18" fill="none" stroke="#2E75B6" stroke-width="5" stroke-dasharray="113" stroke-dashoffset="27" stroke-linecap="round"/>
+          </svg>
+          <div class="score-ring-text" style="font-size:12px; font-weight:700; color:#1B2A4A;">76%</div>
+        </div>
+        <div class="flex-grow-1">
+          <div style="font-size:16px; font-weight:600; color:#1B2A4A;">Data Completeness</div>
+          <div class="text-muted" style="font-size:12px;">8 of 11 fields complete · 3 missing</div>
+        </div>
+        <span class="grade-badge" style="background:#EBF3FB; color:#2E75B6;">GOOD</span>
+      </div>
+
+      <!-- Field checklist -->
+      <div>
+        <div class="field-row">
+          <div class="field-icon"><i class="bi bi-check-circle-fill" style="color:#22A06B;"></i></div>
+          <div class="field-name">Full Name</div>
+          <span class="priority-badge priority-high">HIGH</span>
+          <div class="field-value">James Park</div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon"><i class="bi bi-check-circle-fill" style="color:#22A06B;"></i></div>
+          <div class="field-name">Email Address</div>
+          <span class="priority-badge priority-high">HIGH</span>
+          <div class="field-value">jpark@mubi.com</div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon"><i class="bi bi-check-circle-fill" style="color:#22A06B;"></i></div>
+          <div class="field-name">Job Title</div>
+          <span class="priority-badge priority-med">MED</span>
+          <div class="field-value">Head of Content</div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon"><i class="bi bi-check-circle-fill" style="color:#22A06B;"></i></div>
+          <div class="field-name">Linked Account</div>
+          <span class="priority-badge priority-high">HIGH</span>
+          <div class="field-value">MUBI</div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon"><i class="bi bi-check-circle-fill" style="color:#22A06B;"></i></div>
+          <div class="field-name">At Least One Tag</div>
+          <span class="priority-badge priority-high">HIGH</span>
+          <div class="field-value">Buyer — Digital</div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon"><i class="bi bi-check-circle-fill" style="color:#22A06B;"></i></div>
+          <div class="field-name">Location</div>
+          <span class="priority-badge priority-med">MED</span>
+          <div class="field-value">London, UK</div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon"><i class="bi bi-check-circle-fill" style="color:#22A06B;"></i></div>
+          <div class="field-name">Recent Engagement</div>
+          <span class="priority-badge priority-med">MED</span>
+          <div class="field-value">1 week ago</div>
+        </div>
+        <div class="field-row">
+          <div class="field-icon"><i class="bi bi-check-circle-fill" style="color:#22A06B;"></i></div>
+          <div class="field-name">Linked Title(s)</div>
+          <span class="priority-badge priority-low">LOW</span>
+          <div class="field-value">3 titles</div>
+        </div>
+        <div class="field-row missing">
+          <div class="field-icon"><i class="bi bi-x-circle-fill" style="color:#DC3545;"></i></div>
+          <div class="field-name missing-text">Phone Number</div>
+          <span class="priority-badge priority-med">MED</span>
+          <div class="field-value"></div>
+        </div>
+        <div class="field-row missing">
+          <div class="field-icon"><i class="bi bi-x-circle-fill" style="color:#DC3545;"></i></div>
+          <div class="field-name missing-text">LinkedIn Profile</div>
+          <span class="priority-badge priority-low">LOW</span>
+          <div class="field-value"></div>
+        </div>
+        <div class="field-row missing">
+          <div class="field-icon"><i class="bi bi-x-circle-fill" style="color:#DC3545;"></i></div>
+          <div class="field-name missing-text">Physical Address</div>
+          <span class="priority-badge priority-low">LOW</span>
+          <div class="field-value"></div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="d-flex align-items-center gap-2 mt-3">
+        <div class="progress flex-grow-1" style="height:6px;">
+          <div class="progress-bar" style="width:73%; background:#2E75B6;"></div>
+        </div>
+        <span style="font-size:12px; color:#6C757D;">8 / 11 fields</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grade badges -->
+  <div class="preview-section">
+    <div class="preview-label">Grade Badges</div>
+    <div class="d-flex gap-3">
+      <span class="grade-badge" style="background:#ECF8F4; color:#22A06B;">EXCELLENT</span>
+      <span class="grade-badge" style="background:#EBF3FB; color:#2E75B6;">GOOD</span>
+      <span class="grade-badge" style="background:#FEF3EC; color:#D4772C;">FAIR</span>
+      <span class="grade-badge" style="background:#FEE2E2; color:#DC3545;">POOR</span>
+    </div>
+  </div>
+</body>
+</html>

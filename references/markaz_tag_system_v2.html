@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markaz CRM — Tag System v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1B2A4A; --blue: #2E75B6; --blue-light: #EBF3FB; --bg: #F3F4F7;
+  --text: #1C2537; --text-secondary: #6B7588; --border: #E4E7ED;
+  --g1: #6366F1; --g1-bg: #EEF2FF; --g1-border: #C7D2FE;
+  --g2: #E8733A; --g2-bg: #FEF3EC; --g2-border: #FDD0B1;
+  --g3: #0D9488; --g3-bg: #ECFDF5; --g3-border: #A7F3D0;
+  --g4: #EC4899; --g4-bg: #FDF2F8; --g4-border: #FBCFE8;
+  --g5: #2E75B6; --g5-bg: #EBF3FB; --g5-border: #BFDBFE;
+  --g6: #1B2A4A; --g6-bg: #F0F1F5; --g6-border: #C9CDD6;
+  --g7: #8B5CF6; --g7-bg: #F3EFFE; --g7-border: #DDD6FE;
+  --g8: #16A34A; --g8-bg: #F0FDF4; --g8-border: #BBF7D0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:#E8EAF0; color:var(--text); -webkit-font-smoothing:antialiased; }
+.page-header { background:var(--navy); padding:48px 48px 36px; color:white; }
+.page-header h1 { font-size:28px; font-weight:600; margin-bottom:6px; }
+.page-header p { font-size:14px; color:rgba(255,255,255,0.55); max-width:660px; line-height:1.6; }
+.stats { display:flex; gap:32px; margin-top:20px; }
+.stat-item { display:flex; flex-direction:column; }
+.stat-val { font-size:28px; font-weight:700; color:white; }
+.stat-label { font-size:11px; font-weight:500; color:rgba(255,255,255,0.45); letter-spacing:1px; text-transform:uppercase; }
+.content { max-width:1320px; margin:0 auto; padding:40px 32px; }
+.section-label { font-size:11px; font-weight:600; letter-spacing:3px; text-transform:uppercase; color:var(--blue); margin-bottom:8px; }
+.section-title { font-size:22px; font-weight:600; color:var(--navy); margin-bottom:6px; }
+.section-desc { font-size:14px; color:var(--text-secondary); margin-bottom:24px; max-width:700px; line-height:1.6; }
+.group-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:40px; }
+.group-card { background:white; border-radius:12px; border:1px solid var(--border); padding:20px; }
+.group-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.group-dot { width:10px; height:10px; border-radius:50%; }
+.group-name { font-size:15px; font-weight:700; }
+.group-count { font-size:11px; font-weight:500; color:var(--text-secondary); margin-left:auto; font-family:'DM Mono',monospace; }
+.group-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.tag { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:6px; font-size:11.5px; font-weight:500; border:1px solid; white-space:nowrap; }
+.tag .dot { width:5px; height:5px; border-radius:50%; }
+.g1 .group-dot,.g1 .dot{background:var(--g1);} .g1 .tag{background:var(--g1-bg);color:var(--g1);border-color:var(--g1-border);}
+.g2 .group-dot,.g2 .dot{background:var(--g2);} .g2 .tag{background:var(--g2-bg);color:var(--g2);border-color:var(--g2-border);}
+.g3 .group-dot,.g3 .dot{background:var(--g3);} .g3 .tag{background:var(--g3-bg);color:var(--g3);border-color:var(--g3-border);}
+.g4 .group-dot,.g4 .dot{background:var(--g4);} .g4 .tag{background:var(--g4-bg);color:var(--g4);border-color:var(--g4-border);}
+.g5 .group-dot,.g5 .dot{background:var(--g5);} .g5 .tag{background:var(--g5-bg);color:var(--g5);border-color:var(--g5-border);}
+.g6 .group-dot,.g6 .dot{background:var(--g6);} .g6 .tag{background:var(--g6-bg);color:var(--g6);border-color:var(--g6-border);}
+.g7 .group-dot,.g7 .dot{background:var(--g7);} .g7 .tag{background:var(--g7-bg);color:var(--g7);border-color:var(--g7-border);}
+.g8 .group-dot,.g8 .dot{background:var(--g8);} .g8 .tag{background:var(--g8-bg);color:var(--g8);border-color:var(--g8-border);}
+.mockup-gap { height:48px; }
+.app-shell { background:var(--bg); border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.08),0 12px 40px rgba(0,0,0,0.08); border:1px solid var(--border); }
+.topbar { background:white; height:48px; display:flex; align-items:center; padding:0 20px; border-bottom:1px solid var(--border); gap:24px; }
+.topbar-logo { display:flex; align-items:center; gap:8px; }
+.topbar-logo svg { width:20px; height:20px; }
+.topbar-logo span { font-size:13px; font-weight:600; color:var(--navy); letter-spacing:1.5px; }
+.topbar-nav { display:flex; gap:4px; }
+.topbar-tab { font-size:13px; font-weight:500; color:var(--text-secondary); padding:14px 12px; border-bottom:2px solid transparent; }
+.topbar-tab.active { color:var(--blue); font-weight:600; border-bottom-color:var(--blue); }
+.contact-layout { display:grid; grid-template-columns:300px 1fr; min-height:500px; }
+.contact-left { background:white; border-right:1px solid var(--border); padding:28px 24px; }
+.contact-avatar { width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,#6366F1,#8B5CF6); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:600; color:white; margin-bottom:12px; }
+.contact-name { font-size:18px; font-weight:700; margin-bottom:2px; }
+.contact-title { font-size:13px; color:var(--text-secondary); margin-bottom:2px; }
+.contact-org { font-size:13px; color:var(--blue); font-weight:500; margin-bottom:20px; }
+.left-section-label { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#9CA3AF; margin-bottom:10px; margin-top:20px; }
+.tag-group-label { font-size:10px; font-weight:600; letter-spacing:0.5px; color:var(--text-secondary); margin-bottom:6px; margin-top:10px; }
+.tags-row { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:4px; }
+.add-tag-btn { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:6px; border:1px dashed var(--border); font-size:11px; color:var(--text-secondary); cursor:pointer; background:none; font-family:'DM Sans',sans-serif; }
+.info-grid { display:grid; grid-template-columns:70px 1fr; gap:6px 12px; font-size:13px; }
+.info-label { color:var(--text-secondary); }
+.info-val { font-weight:500; }
+.info-val.link { color:var(--blue); }
+.contact-right { padding:24px; }
+.right-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.right-header h3 { font-size:16px; font-weight:600; }
+.btn-primary { background:var(--navy); color:white; border:none; border-radius:8px; padding:7px 14px; font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; }
+.engagement-card { background:white; border-radius:10px; border:1px solid var(--border); padding:16px 18px; margin-bottom:10px; }
+.eng-top { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.eng-badge { font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:4px; }
+.eng-badge.email { background:#DBEAFE; color:#1D4ED8; }
+.eng-badge.meeting { background:#F3E8FF; color:#7C3AED; }
+.eng-badge.call { background:#FEE2E2; color:#DC2626; }
+.eng-badge.note { background:#FEF3C7; color:#B45309; }
+.eng-date { font-size:11px; color:var(--text-secondary); }
+.eng-subject { font-size:14px; font-weight:600; margin-bottom:4px; }
+.eng-body { font-size:12.5px; color:var(--text-secondary); line-height:1.5; }
+.ta-shell { background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 3px rgba(0,0,0,0.08),0 12px 40px rgba(0,0,0,0.08); max-width:480px; padding:20px; }
+.ta-label { font-size:12px; font-weight:600; margin-bottom:8px; }
+.ta-input-area { border:2px solid var(--blue); border-radius:8px; padding:8px 10px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; min-height:40px; margin-bottom:4px; }
+.ta-cursor { font-size:13px; color:var(--text-secondary); border:none; outline:none; flex:1; min-width:80px; font-family:'DM Sans',sans-serif; }
+.ta-dropdown { border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.1); margin-top:6px; overflow:hidden; }
+.ta-group-header { font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#9CA3AF; padding:8px 14px 4px; background:#FAFBFC; }
+.ta-option { display:flex; align-items:center; gap:8px; padding:8px 14px; font-size:13px; }
+.ta-option.highlighted { background:var(--blue-light); }
+.ta-option .dot { width:6px; height:6px; border-radius:50%; }
+.ta-option .match { font-weight:700; }
+.summary-table { width:100%; border-collapse:collapse; background:white; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+.summary-table th { text-align:left; padding:10px 16px; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#9CA3AF; background:#FAFBFC; border-bottom:1px solid var(--border); }
+.summary-table td { padding:10px 16px; font-size:13px; border-bottom:1px solid #F3F4F7; vertical-align:top; }
+.summary-table tr:last-child td { border-bottom:none; }
+.group-cell { display:flex; align-items:center; gap:8px; font-weight:600; }
+.count-cell { font-family:'DM Mono',monospace; color:var(--text-secondary); text-align:center; }
+.swatch { width:8px; height:8px; border-radius:50%; }
+.tags-cell { display:flex; flex-wrap:wrap; gap:4px; }
+.mini-tag { font-size:10.5px; padding:2px 7px; border-radius:4px; font-weight:500; border:1px solid; white-space:nowrap; }
+.summary-table tfoot td { font-weight:700; background:#FAFBFC; border-top:2px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>Markaz CRM — Tag System v2</h1>
+  <p>Complete tag architecture based on MPI's CRM category taxonomy. Each category becomes a color-coded group; subcategories become individual tags. Tags are multi-select, type-ahead searchable, and visually scannable by group color.</p>
+  <div class="stats">
+    <div class="stat-item"><span class="stat-val">8</span><span class="stat-label">Groups</span></div>
+    <div class="stat-item"><span class="stat-val">74</span><span class="stat-label">Tags</span></div>
+    <div class="stat-item"><span class="stat-val">8</span><span class="stat-label">Colors</span></div>
+  </div>
+</div>
+<div class="content">
+<div class="section-label">Complete Taxonomy</div>
+<div class="section-title">8 Groups · 74 Tags</div>
+<div class="section-desc">Each group maps to a CRM category. Tags within a group share the same color family. Contacts can have tags from multiple groups.</div>
+<div class="group-grid">
+  <div class="group-card g1">
+    <div class="group-header"><div class="group-dot"></div><div class="group-name">Industry Affiliations</div><div class="group-count">17 tags</div></div>
+    <div class="group-tags">
+      <span class="tag"><span class="dot"></span>Filmmaker</span><span class="tag"><span class="dot"></span>Executive Producer</span><span class="tag"><span class="dot"></span>Actor / Talent</span><span class="tag"><span class="dot"></span>Screenwriter</span><span class="tag"><span class="dot"></span>Cinematographer / DP</span><span class="tag"><span class="dot"></span>Editor / Post</span><span class="tag"><span class="dot"></span>Composer</span><span class="tag"><span class="dot"></span>VFX / Animation</span><span class="tag"><span class="dot"></span>Sound Designer</span><span class="tag"><span class="dot"></span>Production Company</span><span class="tag"><span class="dot"></span>Casting Agency</span><span class="tag"><span class="dot"></span>Talent Agency</span><span class="tag"><span class="dot"></span>Sales Agent</span><span class="tag"><span class="dot"></span>PR / Publicist</span><span class="tag"><span class="dot"></span>Film Critic</span><span class="tag"><span class="dot"></span>Film School / Professor</span><span class="tag"><span class="dot"></span>Guild / Association</span>
+    </div>
+  </div>
+  <div class="group-card g2">
+    <div class="group-header"><div class="group-dot"></div><div class="group-name">Distribution & Exhibition</div><div class="group-count">10 tags</div></div>
+    <div class="group-tags">
+      <span class="tag"><span class="dot"></span>Streaming / OTT</span><span class="tag"><span class="dot"></span>Theater</span><span class="tag"><span class="dot"></span>Non-Trad Theatrical</span><span class="tag"><span class="dot"></span>Buyer / Acquisitions</span><span class="tag"><span class="dot"></span>TV / Broadcaster</span><span class="tag"><span class="dot"></span>Home Entertainment</span><span class="tag"><span class="dot"></span>Independent Cinema</span><span class="tag"><span class="dot"></span>Intl Sales Rep</span><span class="tag"><span class="dot"></span>Airline / In-Flight</span><span class="tag"><span class="dot"></span>MPI SFA Customer</span>
+    </div>
+  </div>
+  <div class="group-card g3">
+    <div class="group-header"><div class="group-dot"></div><div class="group-name">Business & Corporate</div><div class="group-count">10 tags</div></div>
+    <div class="group-tags">
+      <span class="tag"><span class="dot"></span>Investor / Finance</span><span class="tag"><span class="dot"></span>Legal / Ent. Lawyer</span><span class="tag"><span class="dot"></span>Marketing Agency</span><span class="tag"><span class="dot"></span>Tech / Software</span><span class="tag"><span class="dot"></span>Merch / Licensing</span><span class="tag"><span class="dot"></span>E-Commerce / Retail</span><span class="tag"><span class="dot"></span>Sponsor / Brand</span><span class="tag"><span class="dot"></span>Grant / Funding Org</span><span class="tag"><span class="dot"></span>Accounting / Finance</span><span class="tag"><span class="dot"></span>Vendor / Supplier</span>
+    </div>
+  </div>
+  <div class="group-card g4">
+    <div class="group-header"><div class="group-dot"></div><div class="group-name">Media & Press</div><div class="group-count">8 tags</div></div>
+    <div class="group-tags">
+      <span class="tag"><span class="dot"></span>Entertainment Journalist</span><span class="tag"><span class="dot"></span>Podcast / Influencer</span><span class="tag"><span class="dot"></span>Publication Editor</span><span class="tag"><span class="dot"></span>Social Media Influencer</span><span class="tag"><span class="dot"></span>YouTube Creator</span><span class="tag"><span class="dot"></span>Trade Press / Analyst</span><span class="tag"><span class="dot"></span>PR / Comms</span><span class="tag"><span class="dot"></span>Critic / Aggregator</span>
+    </div>
+  </div>
+  <div class="group-card g5">
+    <div class="group-header"><div class="group-dot"></div><div class="group-name">Festivals, Funds & Events</div><div class="group-count">7 tags</div></div>
+    <div class="group-tags">
+      <span class="tag"><span class="dot"></span>Festival Programmer</span><span class="tag"><span class="dot"></span>Festival Director</span><span class="tag"><span class="dot"></span>Festival Buyer / Curator</span><span class="tag"><span class="dot"></span>Award Committee / Juror</span><span class="tag"><span class="dot"></span>Event Planner</span><span class="tag"><span class="dot"></span>Market Organizer</span><span class="tag"><span class="dot"></span>Film Fund</span>
+    </div>
+  </div>
+  <div class="group-card g6">
+    <div class="group-header"><div class="group-dot"></div><div class="group-name">Internal & Partner</div><div class="group-count">6 tags</div></div>
+    <div class="group-tags">
+      <span class="tag"><span class="dot"></span>MPI Media Group</span><span class="tag"><span class="dot"></span>Watermelon Pictures</span><span class="tag"><span class="dot"></span>MPI SFA</span><span class="tag"><span class="dot"></span>Consultant / Advisor</span><span class="tag"><span class="dot"></span>Freelancer / Contractor</span><span class="tag"><span class="dot"></span>Production Crew</span>
+    </div>
+  </div>
+  <div class="group-card g7">
+    <div class="group-header"><div class="group-dot"></div><div class="group-name">Vendors & Services</div><div class="group-count">11 tags</div></div>
+    <div class="group-tags">
+      <span class="tag"><span class="dot"></span>Equipment Rental</span><span class="tag"><span class="dot"></span>Post-Production House</span><span class="tag"><span class="dot"></span>Film Lab / Archival</span><span class="tag"><span class="dot"></span>Graphic / Motion Design</span><span class="tag"><span class="dot"></span>Catering / Set Services</span><span class="tag"><span class="dot"></span>Transport / Logistics</span><span class="tag"><span class="dot"></span>Insurance</span><span class="tag"><span class="dot"></span>Set / Prop Design</span><span class="tag"><span class="dot"></span>Wardrobe / Costume</span><span class="tag"><span class="dot"></span>Casting Services</span><span class="tag"><span class="dot"></span>Legal / Compliance</span>
+    </div>
+  </div>
+  <div class="group-card g8">
+    <div class="group-header"><div class="group-dot"></div><div class="group-name">Audience & Outreach</div><div class="group-count">5 tags</div></div>
+    <div class="group-tags">
+      <span class="tag"><span class="dot"></span>Influencer</span><span class="tag"><span class="dot"></span>Customer / Subscriber</span><span class="tag"><span class="dot"></span>Crowdfunding Backer</span><span class="tag"><span class="dot"></span>Fan Community</span><span class="tag"><span class="dot"></span>Email Subscriber</span>
+    </div>
+  </div>
+</div>
+
+<div class="mockup-gap"></div>
+<div class="section-label">In Context</div>
+<div class="section-title">Contact Detail — Multi-Group Tags</div>
+<div class="section-desc">Tags on a contact record are grouped visually by category. Multi-group contacts show clear separation with group labels above each cluster.</div>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 400 400" width="20" height="20"><path fill="#1B2A4A" d="M 108,80 L 180,175 L 200,195 L 200,165 L 140,80 Z"/><path fill="#1B2A4A" d="M 292,80 L 220,175 L 200,195 L 200,165 L 260,80 Z"/><path fill="#1B2A4A" d="M 108,320 L 180,225 L 200,205 L 200,235 L 140,320 Z"/><path fill="#1B2A4A" d="M 292,320 L 220,225 L 200,205 L 200,235 L 260,320 Z"/><polygon fill="#2E75B6" points="200,172 216,200 200,228 184,200"/></svg>
+      <span>MARKAZ</span>
+    </div>
+    <div class="topbar-nav">
+      <div class="topbar-tab">Dashboard</div>
+      <div class="topbar-tab active">Contacts</div>
+      <div class="topbar-tab">Accounts</div>
+      <div class="topbar-tab">Engagements</div>
+    </div>
+  </div>
+  <div class="contact-layout">
+    <div class="contact-left">
+      <div class="contact-avatar">SC</div>
+      <div class="contact-name">Sarah Chen</div>
+      <div class="contact-title">Director of Acquisitions</div>
+      <div class="contact-org">Magnolia Pictures</div>
+      <div class="left-section-label">Tags</div>
+      <div class="tag-group-label" style="color:var(--g2);">Distribution & Exhibition</div>
+      <div class="tags-row">
+        <span class="tag g2"><span class="dot"></span>Buyer / Acquisitions</span>
+        <span class="tag g2"><span class="dot"></span>Streaming / OTT</span>
+      </div>
+      <div class="tag-group-label" style="color:var(--g5);">Festivals & Events</div>
+      <div class="tags-row"><span class="tag g5"><span class="dot"></span>Festival Buyer / Curator</span></div>
+      <div class="tag-group-label" style="color:var(--g4);">Media & Press</div>
+      <div class="tags-row"><span class="tag g4"><span class="dot"></span>Trade Press / Analyst</span></div>
+      <div class="tags-row" style="margin-top:8px;"><button class="add-tag-btn">+ Add tag</button></div>
+      <div class="left-section-label">Contact Info</div>
+      <div class="info-grid">
+        <span class="info-label">Email</span><span class="info-val link">s.chen@magnolia.com</span>
+        <span class="info-label">Phone</span><span class="info-val">+1 (212) 555-0147</span>
+        <span class="info-label">Account</span><span class="info-val link">Magnolia Pictures</span>
+        <span class="info-label">Location</span><span class="info-val">New York, NY</span>
+        <span class="info-label">Added</span><span class="info-val">Jan 14, 2026</span>
+      </div>
+      <div class="left-section-label">Groups (Auto)</div>
+      <div class="tags-row">
+        <span class="tag g2" style="font-size:10px;padding:3px 8px;">Distribution</span>
+        <span class="tag g5" style="font-size:10px;padding:3px 8px;">Festivals</span>
+        <span class="tag g4" style="font-size:10px;padding:3px 8px;">Media</span>
+      </div>
+    </div>
+    <div class="contact-right">
+      <div class="right-header"><h3>Engagements</h3><button class="btn-primary">+ New Engagement</button></div>
+      <div class="engagement-card">
+        <div class="eng-top"><span class="eng-badge email">Email</span><span class="eng-date">Feb 21, 2026 · 3:42 PM</span></div>
+        <div class="eng-subject">Re: Spring Lineup Screening Availability</div>
+        <div class="eng-body">Sarah confirmed interest in screening "The Orchard" and "Below the Surface." Requested screener links by end of week.</div>
+      </div>
+      <div class="engagement-card">
+        <div class="eng-top"><span class="eng-badge meeting">Meeting</span><span class="eng-date">Feb 18, 2026 · 11:00 AM</span></div>
+        <div class="eng-subject">EFM Berlin — Booth Meeting</div>
+        <div class="eng-body">30-min meeting at our booth. Strong interest in doc titles. Will follow up with screener access post-market.</div>
+      </div>
+      <div class="engagement-card">
+        <div class="eng-top"><span class="eng-badge note">Note</span><span class="eng-date">Feb 3, 2026</span></div>
+        <div class="eng-subject">Internal: Pre-market prep</div>
+        <div class="eng-body">Sarah attending EFM Berlin this year. Schedule booth meeting. She acquired two titles last year — prioritize.</div>
+      </div>
+      <div class="engagement-card">
+        <div class="eng-top"><span class="eng-badge call">Call</span><span class="eng-date">Jan 22, 2026 · 2:15 PM</span></div>
+        <div class="eng-subject">Q1 check-in</div>
+        <div class="eng-body">Magnolia expanding their doc slate this year, looking for 8-10 titles. Mentioned interest in theatrical potential.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mockup-gap"></div>
+<div class="section-label">Interaction</div>
+<div class="section-title">Tag Input — Type-Ahead Search</div>
+<div class="section-desc">Type-ahead search across all 74 tags. Results grouped by category. Typing "pro" surfaces matches across multiple groups simultaneously.</div>
+<div class="ta-shell">
+  <div class="ta-label">Add Tags</div>
+  <div class="ta-input-area">
+    <span class="tag g2" style="font-size:11px;"><span class="dot"></span>Buyer / Acquisitions <span style="cursor:pointer;opacity:0.5;margin-left:2px;">×</span></span>
+    <span class="tag g5" style="font-size:11px;"><span class="dot"></span>Festival Buyer <span style="cursor:pointer;opacity:0.5;margin-left:2px;">×</span></span>
+    <input class="ta-cursor" value="pro" readonly>
+  </div>
+  <div class="ta-dropdown">
+    <div class="ta-group-header" style="color:var(--g1);">● Industry Affiliations</div>
+    <div class="ta-option highlighted"><span class="dot" style="background:var(--g1);"></span><span><span class="match">Pro</span>duction Company</span></div>
+    <div class="ta-option"><span class="dot" style="background:var(--g1);"></span><span>Executive <span class="match">Pro</span>ducer</span></div>
+    <div class="ta-option"><span class="dot" style="background:var(--g1);"></span><span>Film School / <span class="match">Pro</span>fessor</span></div>
+    <div class="ta-group-header" style="color:var(--g6);">● Internal & Partner</div>
+    <div class="ta-option"><span class="dot" style="background:var(--g6);"></span><span><span class="match">Pro</span>duction Crew</span></div>
+    <div class="ta-group-header" style="color:var(--g7);">● Vendors & Services</div>
+    <div class="ta-option"><span class="dot" style="background:var(--g7);"></span><span>Post-<span class="match">Pro</span>duction House</span></div>
+    <div class="ta-option"><span class="dot" style="background:var(--g7);"></span><span>Set / <span class="match">Pro</span>p Design</span></div>
+  </div>
+</div>
+
+<div class="mockup-gap"></div>
+<div class="section-label">Reference</div>
+<div class="section-title">Complete Tag Index</div>
+<div class="section-desc">Quick-reference table of all groups, colors, and tag counts.</div>
+<table class="summary-table">
+  <thead><tr><th style="width:40px;">#</th><th style="width:220px;">Group</th><th style="width:80px;">Color</th><th style="width:60px;">Tags</th><th>Sample Tags</th></tr></thead>
+  <tbody>
+    <tr><td style="font-family:'DM Mono',monospace;color:#9CA3AF;">1</td><td><div class="group-cell"><span class="swatch" style="background:var(--g1);"></span>Industry Affiliations</div></td><td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--g1);">Indigo</span></td><td class="count-cell">17</td><td><div class="tags-cell"><span class="mini-tag g1">Filmmaker</span><span class="mini-tag g1">Sales Agent</span><span class="mini-tag g1">Production Co.</span></div></td></tr>
+    <tr><td style="font-family:'DM Mono',monospace;color:#9CA3AF;">2</td><td><div class="group-cell"><span class="swatch" style="background:var(--g2);"></span>Distribution & Exhibition</div></td><td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--g2);">Orange</span></td><td class="count-cell">10</td><td><div class="tags-cell"><span class="mini-tag g2">Buyer / Acq.</span><span class="mini-tag g2">Streaming</span><span class="mini-tag g2">Theater</span></div></td></tr>
+    <tr><td style="font-family:'DM Mono',monospace;color:#9CA3AF;">3</td><td><div class="group-cell"><span class="swatch" style="background:var(--g3);"></span>Business & Corporate</div></td><td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--g3);">Teal</span></td><td class="count-cell">10</td><td><div class="tags-cell"><span class="mini-tag g3">Investor</span><span class="mini-tag g3">Legal</span><span class="mini-tag g3">Marketing</span></div></td></tr>
+    <tr><td style="font-family:'DM Mono',monospace;color:#9CA3AF;">4</td><td><div class="group-cell"><span class="swatch" style="background:var(--g4);"></span>Media & Press</div></td><td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--g4);">Pink</span></td><td class="count-cell">8</td><td><div class="tags-cell"><span class="mini-tag g4">Journalist</span><span class="mini-tag g4">YouTube</span><span class="mini-tag g4">Critic</span></div></td></tr>
+    <tr><td style="font-family:'DM Mono',monospace;color:#9CA3AF;">5</td><td><div class="group-cell"><span class="swatch" style="background:var(--g5);"></span>Festivals, Funds & Events</div></td><td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--g5);">Blue</span></td><td class="count-cell">7</td><td><div class="tags-cell"><span class="mini-tag g5">Programmer</span><span class="mini-tag g5">Film Fund</span><span class="mini-tag g5">Market Org.</span></div></td></tr>
+    <tr><td style="font-family:'DM Mono',monospace;color:#9CA3AF;">6</td><td><div class="group-cell"><span class="swatch" style="background:var(--g6);"></span>Internal & Partner</div></td><td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--g6);">Navy</span></td><td class="count-cell">6</td><td><div class="tags-cell"><span class="mini-tag g6">MPI Media</span><span class="mini-tag g6">Watermelon</span><span class="mini-tag g6">Freelancer</span></div></td></tr>
+    <tr><td style="font-family:'DM Mono',monospace;color:#9CA3AF;">7</td><td><div class="group-cell"><span class="swatch" style="background:var(--g7);"></span>Vendors & Services</div></td><td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--g7);">Purple</span></td><td class="count-cell">11</td><td><div class="tags-cell"><span class="mini-tag g7">Post House</span><span class="mini-tag g7">Film Lab</span><span class="mini-tag g7">Insurance</span></div></td></tr>
+    <tr><td style="font-family:'DM Mono',monospace;color:#9CA3AF;">8</td><td><div class="group-cell"><span class="swatch" style="background:var(--g8);"></span>Audience & Outreach</div></td><td><span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--g8);">Green</span></td><td class="count-cell">5</td><td><div class="tags-cell"><span class="mini-tag g8">Subscriber</span><span class="mini-tag g8">Fan Community</span><span class="mini-tag g8">Influencer</span></div></td></tr>
+  </tbody>
+  <tfoot><tr><td></td><td>Total</td><td></td><td class="count-cell">74</td><td></td></tr></tfoot>
+</table>
+<div style="height:60px;"></div>
+</div>
+</body>
+</html>

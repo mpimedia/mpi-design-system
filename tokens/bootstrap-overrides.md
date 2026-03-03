@@ -2,7 +2,7 @@
 
 MPI-specific customizations to Bootstrap 5 defaults.
 
-> **Status:** Pending — overrides will be derived from approved designs during Q&A review sessions.
+> **Status:** In progress — core color overrides confirmed (2026-03-02). Component overrides being finalized.
 
 ## Philosophy
 
@@ -33,11 +33,14 @@ The goal is a single `_mpi_overrides.scss` partial maintained in this repo and d
 
 ### Colors
 
-See [colors.md](colors.md). Overrides to be determined from designs:
+See [colors.md](colors.md) for full palette. Confirmed overrides:
 
 ```scss
-// $primary: $mpi-primary;
-// $secondary: $mpi-secondary;
+$primary: #2E75B6;
+$success: #22A06B;
+$warning: #D4772C;
+// $danger: #DC3545;  — Bootstrap default, no override needed
+$info: #2E75B6;
 ```
 
 ### Typography
@@ -50,17 +53,22 @@ See [typography.md](typography.md). Overrides to be determined from designs:
 
 ### Component Overrides
 
-_To be populated after Q&A review of approved designs._
+Confirmed from Q&A Session 001:
 
-Open questions from legacy apps that designs should resolve:
+```scss
+// Badges — pill shape across the board
+$badge-border-radius: 999px;
+```
 
-| Question | Legacy Context |
-|---|---|
-| Button border-radius | SFA uses `3.125rem` (pill buttons). Other apps use Bootstrap default. |
-| Button padding | SFA has custom padding values. Other apps use Bootstrap default. |
-| Link color | avails_server uses `#0a3d7e`. Others use Bootstrap default. |
-| Card border-radius | Unknown — pending designs. |
-| Navbar style | V2 (white topbar) confirmed as canonical direction in Issue #5. |
+Remaining questions from legacy apps (still need design confirmation):
+
+| Question | Legacy Context | Status |
+|---|---|---|
+| Button border-radius | SFA uses `3.125rem` (pill buttons). Other apps use Bootstrap default. | Pending — badge is pill, button TBD |
+| Button padding | SFA has custom padding values. Other apps use Bootstrap default. | Pending |
+| Link color | avails_server uses `#0a3d7e`. Others use Bootstrap default. | **Resolved** — use `$mpi-primary` (`#2E75B6`) |
+| Card border-radius | Unknown — pending designs. | Pending |
+| Navbar style | V2 (white topbar) confirmed as canonical direction in Issue #5. | **Confirmed** |
 
 ## Legacy Reference
 

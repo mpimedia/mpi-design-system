@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>List View Layout — MPI Design System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { padding: 0; background: #F5F7FA; margin: 0; }
+    .preview-wrapper { padding: 32px; }
+    .preview-section { margin-bottom: 32px; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
+    .shell { border: 1px solid #DEE2E6; border-radius: 8px; overflow: hidden; background: #F5F7FA; }
+    .topbar { background: #fff; border-bottom: 1px solid #DEE2E6; padding: 0 24px; display: flex; align-items: center; height: 48px; }
+    .logo { display: flex; align-items: center; gap: 6px; margin-right: 24px; text-decoration: none; }
+    .logo svg { width: 24px; height: 24px; }
+    .logo-text { font-size: 12px; font-weight: 300; color: #1B2A4A; letter-spacing: 0.12em; }
+    .nav-item { color: #6C757D; text-decoration: none; padding: 12px 10px; font-size: 13px; font-weight: 500; }
+    .nav-item.active { color: #2E75B6; font-weight: 600; border-bottom: 2px solid #2E75B6; }
+    .nav-search { margin-left: auto; position: relative; }
+    .nav-search input { font-size: 12px; border: 1px solid #DEE2E6; border-radius: 5px; padding: 5px 10px 5px 28px; width: 180px; background: #F5F7FA; }
+    .nav-search .icon { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #6C757D; font-size: 12px; }
+    .content-area { padding: 20px 24px; }
+
+    /* Filter chips */
+    .group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-right: 6px; }
+    .group-chip { display: inline-flex; align-items: center; gap: 3px; padding: 4px 10px; border-radius: 999px; border: 1px solid #DEE2E6; background: #fff; font-size: 12px; font-weight: 500; color: #1B2A4A; text-decoration: none; }
+    .group-chip .count { font-weight: 600; color: #6C757D; font-size: 11px; }
+    .group-chip.selected { border-color: #E8733A; background: #FEF3EC; color: #E8733A; }
+    .group-chip.selected .count { color: #E8733A; }
+    .group-chip.selected-all { border-color: #2E75B6; background: #EBF3FB; color: #2E75B6; }
+    .group-chip.selected-all .count { color: #2E75B6; }
+
+    /* Sub-group filter pills */
+    .subgroup-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; padding: 8px 12px; background: #fff; border: 1px solid #DEE2E6; border-radius: 6px; }
+    .subgroup-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-right: 4px; }
+    .subgroup-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; border: 1px solid #DEE2E6; background: #fff; font-size: 11px; font-weight: 500; color: #6C757D; text-decoration: none; }
+    .subgroup-pill.selected { border-color: #E8733A; background: #FEF3EC; color: #E8733A; font-weight: 600; }
+
+    /* Toggle */
+    .toggle-group { display: inline-flex; border: 1px solid #DEE2E6; border-radius: 5px; overflow: hidden; }
+    .toggle-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 26px; background: #fff; color: #6C757D; border: none; font-size: 12px; }
+    .toggle-btn:not(:last-child) { border-right: 1px solid #DEE2E6; }
+    .toggle-btn.active { background: #2E75B6; color: #fff; }
+
+    /* Toolbar */
+    .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .toolbar-left { display: flex; align-items: center; gap: 8px; }
+    .toolbar-right { display: flex; align-items: center; gap: 10px; }
+    .showing-text { font-size: 12px; color: #6C757D; }
+    .showing-text strong { color: #2E75B6; }
+    .sort-dropdown { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid #DEE2E6; border-radius: 5px; background: #fff; font-size: 12px; color: #1B2A4A; cursor: pointer; }
+    .sort-dropdown .bi { font-size: 10px; color: #6C757D; }
+
+    /* Table */
+    th { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; white-space: nowrap; }
+    .avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; font-weight: 600; flex-shrink: 0; width: 32px; height: 32px; font-size: 11px; }
+    .contact-name { font-weight: 600; color: #1B2A4A; font-size: 13px; }
+    .contact-title { font-size: 11px; color: #6C757D; }
+    .tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 500; white-space: nowrap; }
+    .tag-dot { width: 5px; height: 5px; border-radius: 50%; margin-right: 4px; }
+    .account-link { color: #2E75B6; text-decoration: none; font-size: 12px; }
+    .meta-text { font-size: 12px; color: #6C757D; }
+    .account-name { font-weight: 600; color: #1B2A4A; font-size: 13px; }
+
+    /* Health badge */
+    .health-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+    .health-good { color: #22A06B; background: #ECF8F4; }
+    .health-fair { color: #D4772C; background: #FEF3EC; }
+    .health-poor { color: #DC3545; background: #FDE8EA; }
+
+    /* Group dots (for account tag groups) */
+    .group-dots { display: inline-flex; align-items: center; gap: 4px; }
+    .group-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* Pagination */
+    .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid #DEE2E6; }
+    .page-btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 5px; border: 1px solid #DEE2E6; background: #fff; color: #1B2A4A; font-size: 12px; text-decoration: none; }
+    .page-btn.active { background: #2E75B6; color: #fff; border-color: #2E75B6; }
+    .page-btn.disabled { color: #CED4DA; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div class="preview-wrapper">
+    <h4 class="mb-1" style="color:#1B2A4A;">List View Layout</h4>
+    <p class="text-muted small mb-4">Full list view layout combining nav bar, filter chip bar, sub-group filters, result toolbar with list/card toggle, data table, and pagination.</p>
+
+    <!-- ============================================================ -->
+    <!-- Section 1: Contacts List — With Sub-Group Filter (Buyers Selected) -->
+    <!-- ============================================================ -->
+    <div class="preview-section">
+      <div class="preview-label">Contacts List — With Sub-Group Filter (Buyers Selected)</div>
+      <div class="shell">
+        <!-- Topbar with Nexus brand mark + CRM sub-nav -->
+        <div class="topbar">
+          <a class="logo" href="#">
+            <svg style="width:24px;height:24px;" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#1B2A4A" d="M 108,80 L 180,175 L 200,195 L 200,165 L 140,80 Z"/>
+              <path fill="#1B2A4A" d="M 292,80 L 220,175 L 200,195 L 200,165 L 260,80 Z"/>
+              <path fill="#1B2A4A" d="M 108,320 L 180,225 L 200,205 L 200,235 L 140,320 Z"/>
+              <path fill="#1B2A4A" d="M 292,320 L 220,225 L 200,205 L 200,235 L 260,320 Z"/>
+              <polygon fill="#2E75B6" points="200,172 216,200 200,228 184,200"/>
+            </svg>
+            <span class="logo-text">MARKAZ</span>
+          </a>
+          <a class="nav-item" href="#">Dashboard</a>
+          <a class="nav-item active" href="#">Contacts</a>
+          <a class="nav-item" href="#">Accounts</a>
+          <a class="nav-item" href="#">Engagements</a>
+          <div class="nav-search">
+            <span class="icon"><i class="bi bi-search"></i></span>
+            <input type="text" placeholder="Search contacts...">
+          </div>
+        </div>
+        <div class="content-area">
+          <!-- Group filter chips -->
+          <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+            <span class="group-label">GROUPS:</span>
+            <a class="group-chip" href="#">All <span class="count">2,307</span></a>
+            <a class="group-chip selected" href="#">Buyers <span class="count">342</span></a>
+            <a class="group-chip" href="#">Press <span class="count">289</span></a>
+            <a class="group-chip" href="#">Festivals <span class="count">156</span></a>
+            <a class="group-chip" href="#">Sellers <span class="count">98</span></a>
+            <a class="group-chip" href="#">Institutional <span class="count">67</span></a>
+            <a class="group-chip" href="#">Organizations <span class="count">45</span></a>
+            <a class="group-chip" href="#">Internal <span class="count">23</span></a>
+          </div>
+
+          <!-- Sub-group filter pills (shown when Buyers is selected) -->
+          <div class="subgroup-bar">
+            <span class="subgroup-label">SUB-GROUPS:</span>
+            <a class="subgroup-pill" href="#">All</a>
+            <a class="subgroup-pill selected" href="#">Theatrical</a>
+            <a class="subgroup-pill" href="#">Digital/Streaming</a>
+            <a class="subgroup-pill" href="#">Television</a>
+            <a class="subgroup-pill" href="#">All Rights</a>
+            <a class="subgroup-pill" href="#">Educational</a>
+          </div>
+
+          <!-- Toolbar: showing count, list/card toggle, sort dropdown -->
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <span class="showing-text">Showing <strong>1–25</strong> of <strong>342</strong> Contacts</span>
+            </div>
+            <div class="toolbar-right">
+              <!-- List/Card toggle -->
+              <div class="toggle-group">
+                <button class="toggle-btn active" title="List view"><i class="bi bi-list-ul"></i></button>
+                <button class="toggle-btn" title="Card view"><i class="bi bi-grid-3x2-gap"></i></button>
+              </div>
+              <!-- Sort dropdown -->
+              <button class="sort-dropdown">
+                Sort: Last Engaged <i class="bi bi-chevron-down"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Data table -->
+          <div class="bg-white rounded" style="border:1px solid #DEE2E6;">
+            <table class="table table-hover mb-0" style="font-size:13px;">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Tags</th>
+                  <th>Last Engagement</th>
+                  <th>Account</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar" style="background:#1B2A4A;">SC</div>
+                      <div><div class="contact-name">Sarah Chen</div><div class="contact-title">Dir. of Acquisitions</div></div>
+                    </div>
+                  </td>
+                  <td class="align-middle">
+                    <div class="d-flex flex-wrap gap-2">
+                      <span class="tag"><span class="tag-dot" style="background:#E8733A;"></span>Buyer — Theatrical</span>
+                      <span class="tag"><span class="tag-dot" style="background:#E8733A;"></span>Buyer — Digital</span>
+                      <span class="tag"><span class="tag-dot" style="background:#2E75B6;"></span>Fest — Acquisitions</span>
+                    </div>
+                  </td>
+                  <td class="align-middle meta-text">2 days ago</td>
+                  <td class="align-middle"><a class="account-link" href="#">Magnolia Pictures</a></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar" style="background:#E8733A;">JP</div>
+                      <div><div class="contact-name">James Park</div><div class="contact-title">VP Content</div></div>
+                    </div>
+                  </td>
+                  <td class="align-middle">
+                    <span class="tag"><span class="tag-dot" style="background:#E8733A;"></span>Buyer — Digital/Streaming</span>
+                  </td>
+                  <td class="align-middle meta-text">1 week ago</td>
+                  <td class="align-middle"><a class="account-link" href="#">MUBI</a></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar" style="background:#22A06B;">ML</div>
+                      <div><div class="contact-name">Maria Lopez</div><div class="contact-title">Acquisitions Manager</div></div>
+                    </div>
+                  </td>
+                  <td class="align-middle">
+                    <div class="d-flex flex-wrap gap-2">
+                      <span class="tag"><span class="tag-dot" style="background:#E8733A;"></span>Buyer — All Rights</span>
+                      <span class="tag"><span class="tag-dot" style="background:#2E75B6;"></span>Fest — Programmer</span>
+                    </div>
+                  </td>
+                  <td class="align-middle meta-text">3 days ago</td>
+                  <td class="align-middle"><a class="account-link" href="#">Kino Lorber</a></td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- Pagination -->
+            <div class="pagination-bar">
+              <span class="showing-text">Showing <strong>1–25</strong> of <strong>342</strong></span>
+              <div class="d-flex align-items-center gap-1">
+                <a class="page-btn disabled" href="#"><i class="bi bi-chevron-left" style="font-size:10px;"></i></a>
+                <a class="page-btn active" href="#">1</a>
+                <a class="page-btn" href="#">2</a>
+                <a class="page-btn" href="#">3</a>
+                <a class="page-btn" href="#">4</a>
+                <span style="font-size:12px; color:#6C757D; padding:0 4px;">...</span>
+                <a class="page-btn" href="#">14</a>
+                <a class="page-btn" href="#"><i class="bi bi-chevron-right" style="font-size:10px;"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- Section 2: Accounts List — Different Column Structure -->
+    <!-- ============================================================ -->
+    <div class="preview-section">
+      <div class="preview-label">Accounts List — Different Column Structure</div>
+      <div class="shell">
+        <!-- Topbar with Nexus brand mark + CRM sub-nav -->
+        <div class="topbar">
+          <a class="logo" href="#">
+            <svg style="width:24px;height:24px;" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#1B2A4A" d="M 108,80 L 180,175 L 200,195 L 200,165 L 140,80 Z"/>
+              <path fill="#1B2A4A" d="M 292,80 L 220,175 L 200,195 L 200,165 L 260,80 Z"/>
+              <path fill="#1B2A4A" d="M 108,320 L 180,225 L 200,205 L 200,235 L 140,320 Z"/>
+              <path fill="#1B2A4A" d="M 292,320 L 220,225 L 200,205 L 200,235 L 260,320 Z"/>
+              <polygon fill="#2E75B6" points="200,172 216,200 200,228 184,200"/>
+            </svg>
+            <span class="logo-text">MARKAZ</span>
+          </a>
+          <a class="nav-item" href="#">Dashboard</a>
+          <a class="nav-item" href="#">Contacts</a>
+          <a class="nav-item active" href="#">Accounts</a>
+          <a class="nav-item" href="#">Engagements</a>
+          <div class="nav-search">
+            <span class="icon"><i class="bi bi-search"></i></span>
+            <input type="text" placeholder="Search accounts...">
+          </div>
+        </div>
+        <div class="content-area">
+          <!-- Group filter chips (All selected) -->
+          <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
+            <span class="group-label">GROUPS:</span>
+            <a class="group-chip selected-all" href="#">All <span class="count">418</span></a>
+            <a class="group-chip" href="#">Buyers <span class="count">185</span></a>
+            <a class="group-chip" href="#">Press <span class="count">72</span></a>
+            <a class="group-chip" href="#">Festivals <span class="count">64</span></a>
+            <a class="group-chip" href="#">Sellers <span class="count">41</span></a>
+            <a class="group-chip" href="#">Institutional <span class="count">33</span></a>
+            <a class="group-chip" href="#">Organizations <span class="count">23</span></a>
+          </div>
+
+          <!-- Toolbar: showing count, list/card toggle, sort dropdown -->
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <span class="showing-text">Showing <strong>1–25</strong> of <strong>418</strong> Accounts</span>
+            </div>
+            <div class="toolbar-right">
+              <div class="toggle-group">
+                <button class="toggle-btn active" title="List view"><i class="bi bi-list-ul"></i></button>
+                <button class="toggle-btn" title="Card view"><i class="bi bi-grid-3x2-gap"></i></button>
+              </div>
+              <button class="sort-dropdown">
+                Sort: Last Engaged <i class="bi bi-chevron-down"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Data table: Account columns -->
+          <div class="bg-white rounded" style="border:1px solid #DEE2E6;">
+            <table class="table table-hover mb-0" style="font-size:13px;">
+              <thead>
+                <tr>
+                  <th>Account</th>
+                  <th>Primary Contact</th>
+                  <th>Contacts</th>
+                  <th>Tag Groups</th>
+                  <th>Health</th>
+                  <th>Last Engaged</th>
+                  <th>Owner</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="align-middle">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar" style="background:#2E75B6; width:28px; height:28px; font-size:10px;">MP</div>
+                      <span class="account-name">Magnolia Pictures</span>
+                    </div>
+                  </td>
+                  <td class="align-middle meta-text">Sarah Chen</td>
+                  <td class="align-middle meta-text" style="text-align:center;">4</td>
+                  <td class="align-middle">
+                    <div class="group-dots">
+                      <span class="group-dot" style="background:#E8733A;" title="Buyers"></span>
+                      <span class="group-dot" style="background:#2E75B6;" title="Festivals"></span>
+                    </div>
+                  </td>
+                  <td class="align-middle"><span class="health-badge health-good">Good</span></td>
+                  <td class="align-middle meta-text">2 days ago</td>
+                  <td class="align-middle meta-text">Badie Ali</td>
+                </tr>
+                <tr>
+                  <td class="align-middle">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar" style="background:#8B5CF6; width:28px; height:28px; font-size:10px;">MU</div>
+                      <span class="account-name">MUBI</span>
+                    </div>
+                  </td>
+                  <td class="align-middle meta-text">James Park</td>
+                  <td class="align-middle meta-text" style="text-align:center;">2</td>
+                  <td class="align-middle">
+                    <div class="group-dots">
+                      <span class="group-dot" style="background:#E8733A;" title="Buyers"></span>
+                    </div>
+                  </td>
+                  <td class="align-middle"><span class="health-badge health-fair">Fair</span></td>
+                  <td class="align-middle meta-text">1 week ago</td>
+                  <td class="align-middle meta-text">Randy Burgess</td>
+                </tr>
+                <tr>
+                  <td class="align-middle">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar" style="background:#22A06B; width:28px; height:28px; font-size:10px;">KL</div>
+                      <span class="account-name">Kino Lorber</span>
+                    </div>
+                  </td>
+                  <td class="align-middle meta-text">Maria Lopez</td>
+                  <td class="align-middle meta-text" style="text-align:center;">6</td>
+                  <td class="align-middle">
+                    <div class="group-dots">
+                      <span class="group-dot" style="background:#E8733A;" title="Buyers"></span>
+                      <span class="group-dot" style="background:#2E75B6;" title="Festivals"></span>
+                      <span class="group-dot" style="background:#D97706;" title="Institutional"></span>
+                    </div>
+                  </td>
+                  <td class="align-middle"><span class="health-badge health-good">Good</span></td>
+                  <td class="align-middle meta-text">3 days ago</td>
+                  <td class="align-middle meta-text">Badie Ali</td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- Pagination -->
+            <div class="pagination-bar">
+              <span class="showing-text">Showing <strong>1–25</strong> of <strong>418</strong></span>
+              <div class="d-flex align-items-center gap-1">
+                <a class="page-btn disabled" href="#"><i class="bi bi-chevron-left" style="font-size:10px;"></i></a>
+                <a class="page-btn active" href="#">1</a>
+                <a class="page-btn" href="#">2</a>
+                <a class="page-btn" href="#">3</a>
+                <a class="page-btn" href="#">4</a>
+                <span style="font-size:12px; color:#6C757D; padding:0 4px;">...</span>
+                <a class="page-btn" href="#">17</a>
+                <a class="page-btn" href="#"><i class="bi bi-chevron-right" style="font-size:10px;"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

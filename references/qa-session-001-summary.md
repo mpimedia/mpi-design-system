@@ -1,9 +1,10 @@
-# Q&A Session 001 — Summary & Questions for Badie
+# Q&A Session 001 — Summary
 
 > **Date:** 2026-03-02
 > **Designs reviewed:** 16 total (2 brand/app + 14 CRM)
+> **Status:** All 14 questions answered. Token files updated.
 
-## What Was Confirmed
+## What Was Confirmed (Before Q&A)
 
 1. Brand identity (The Nexus) is **stable** — ready to extract tokens
 2. Markaz layout is **canonical** — all MPI apps follow this pattern
@@ -11,47 +12,91 @@
 4. **Colors V1** — green `#22A06B`, amber `#D4772C` (not Tailwind V2)
 5. **Font** — Bootstrap default system stack (not DM Sans)
 
-## Draft Token Values Extracted
+## Badie's Answers (14 Questions)
 
-All approximate — need Badie confirmation.
+### Colors (Q1–Q6)
 
-### Core Palette
+**Q1. Primary blue hex?**
+Answer: `#2E75B6` — used for buttons, links, active nav states.
 
-| Token | Draft Value | Confidence | Source |
-|---|---|---|---|
-| `$mpi-primary` | ~`#2563EB` | Medium | Active nav, primary buttons |
-| `$mpi-success` | `#22A06B` | **Confirmed** | Issue #5 |
-| `$mpi-warning` | `#D4772C` | **Confirmed** | Issue #5 |
-| `$mpi-danger` | ~`#DC3545` | Medium | May be Bootstrap default |
-| `$mpi-info` | ~`#3B82F6` | Low | Informational badges |
-| `$mpi-brand-navy` | ~`#1E2A4A` | Medium | Logo dark backgrounds |
-| `$mpi-brand-blue-accent` | ~`#4A90D9` | Medium | Logo diamond |
-| `$mpi-text` | ~`#1A1A2E` | Medium | Primary text |
-| `$mpi-text-muted` | ~`#6C757D` | High | Likely Bootstrap default |
-| `$mpi-border` | ~`#DEE2E6` | High | Likely Bootstrap default |
-| `$mpi-background` | ~`#F5F7FA` | Medium | Page background |
-| `$mpi-surface` | `#FFFFFF` | **Confirmed** | Cards, panels |
+**Q2. Brand navy hex?**
+Answer: `#1B2A4A` — used for logo backgrounds, headings, body text.
 
-### Tag Group Colors (CRM — need exact values)
+**Q3. Brand blue accent (Nexus diamond) hex?**
+Answer: `#4EA8DE`
 
-| Group | Draft Color |
+**Q4. Is danger/red Bootstrap default?**
+Answer: Yes — `#DC3545`, no custom value needed.
+
+**Q5. Tag group palette?**
+Answer: Confirmed with exact values:
+
+| Group | Primary | Background |
+|---|---|---|
+| Buyers | `#E8733A` | `#FEF3EC` |
+| Press | `#2DA67E` | `#ECF8F4` |
+| Festivals | `#2E75B6` | `#EBF3FB` |
+| Sellers | `#8B5CF6` | `#F3EFFE` |
+| Institutional | `#D97706` | `#FEF9EC` |
+| Organizations | `#6366F1` | `#EEEFFE` |
+| Internal | `#64748B` | `#F1F5F9` |
+
+**Q6. Engagement type colors?**
+Answer: Confirmed with one change from draft (Meeting changed to purple, Note changed to orange):
+
+| Type | Color |
 |---|---|
-| Buyers | ~`#D4772C` (amber/orange) |
-| Press | ~`#3B82F6` (blue) |
-| Festivals | ~`#06B6D4` (teal) |
-| Sellers | ~`#22A06B` (green) |
-| Institutional | ~`#8B5CF6` (purple) |
-| Organizations | ~`#6B7280` (gray) |
-| Internal | ~`#9CA3AF` (light gray) |
+| Email | `#2E75B6` (blue) |
+| Meeting | `#8B5CF6` (purple) |
+| Call | `#16A34A` (green) |
+| Note | `#E8913A` (orange) |
 
-### Engagement Type Colors (CRM — need confirmation)
+### Navigation (Q7–Q8)
 
-| Type | Draft Color |
-|---|---|
-| Email | ~`#2563EB` (blue) |
-| Meeting | ~`#D4772C` (orange) |
-| Call | ~`#22A06B` (green) |
-| Note | ~`#6B7280` (gray) |
+**Q7. Section mapping?**
+Answer: Reorganized from 7 sections to 6 top-bar items:
+- Rights + Avails → combined as "Rights & Avails"
+- Assets → moved under Content
+- Releases → stays as own top-bar item
+- Final top bar: Dashboard, Content (includes Assets), CRM, Rights & Avails, Releases, Screenings
+
+**Q8. CRM sub-nav integration?**
+Answer: Confirmed. Second bar below top bar with: Dashboard, Contacts, Accounts, Engagements.
+
+### Components (Q9–Q14)
+
+**Q9. Avatar color assignment?**
+Answer: Deterministic — derived from contact's name via hash. No manual assignment.
+
+**Q10. Badge shape?**
+Answer: Pill (`border-radius: 999px`) across the board.
+
+**Q11. Contact detail right panel?**
+Answer: Tabbed. One page, two tabs:
+- Tab 1: Engagement Timeline
+- Tab 2: Data Quality
+
+**Q12. Data quality scoring thresholds?**
+Answer: Field-based tiers, not just percentages:
+- Poor: Name + Company only (0–29%)
+- Fair: Name + Company + Email or Phone (30–49%)
+- Good: Name + Company + Title + Email + Phone + Tags (50–84%)
+- Excellent: All of the above + Engagement History (85–100%)
+- Numeric scores weighted by field importance (for sorting)
+
+**Q13. Card/list toggle?**
+Answer: List view is default. Toggle to card view available on list pages (lower priority than list view).
+
+**Q14. Sidebar browser pattern?**
+Answer: Section-specific, not universal. Content gets the title list sidebar. Other sections get their own layout.
+
+## Token Files Updated
+
+All answers have been recorded in:
+- `tokens/colors.md` — Full palette with confirmed hex values
+- `tokens/navigation.md` — Navigation structure and section mapping (new file)
+- `tokens/components.md` — Component behavior decisions (new file)
+- `tokens/bootstrap-overrides.md` — Confirmed SCSS overrides
 
 ## Component Inventory
 
@@ -85,28 +130,6 @@ All approximate — need Badie confirmation.
 | Detail (two-panel) | Left profile panel + right content with tabs |
 | Detail (three-panel) | Breadcrumb + main content + right sidebar |
 | Title detail | Hero + stats row + tabs + sectioned content |
-
-## Consolidated Questions for Badie
-
-### Colors (must answer for token files)
-1. **Exact hex for primary blue** — the blue used in active nav items, primary buttons, links. Is it `#2563EB` or something else?
-2. **Exact hex for brand navy** — the dark background in the logo lockups. Is it `#1E2A4A` or something else?
-3. **Exact hex for brand blue accent** — the diamond in the X mark.
-4. **Is danger/red Bootstrap default** (`#DC3545`) or a custom value?
-5. **Tag group palette** — exact hex for each of the 7 tag group colors (Buyers, Press, Festivals, Sellers, Institutional, Organizations, Internal)?
-6. **Engagement type colors** — are EMAIL=blue, MEETING=orange, CALL=green, NOTE=gray the final mapping?
-
-### Navigation
-7. **Section mapping** — Markaz has 7 sections (Rights, CRM, Content, Websites, Assets, Releases, Screenings) but the Content design shows 5 top-bar items (Dashboard, Content, CRM, Avails, Screenings). How do the missing sections map?
-8. **CRM sub-nav integration** — when CRM is inside Markaz, does the CRM 4-item nav (Dashboard, Contacts, Accounts, Engagements) sit as a second bar below the Markaz top bar?
-
-### Components
-9. **Avatar color assignment** — are avatar colors deterministic (derived from name) or manual?
-10. **Badge shape** — some badges are pill-shaped, others rectangular. Which is canonical?
-11. **Contact detail right panel** — Screens 01 and 14 show different right-panel content (engagement timeline vs data completeness). Are these tabs on the same page?
-12. **Progress ring / data quality thresholds** — at what percentages do grades change (Excellent ≥80%? Good ≥60%? Fair ≥40%? Poor <40%)?
-13. **Card/list toggle** — available on all list pages or just contacts search?
-14. **Sidebar browser pattern** — does every Markaz section have a left sidebar browser (like Content's title list), or is it section-specific?
 
 ## Files Reference
 

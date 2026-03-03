@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ActionButton — MPI Design System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { padding: 32px; background: #fff; }
+    .preview-section { margin-bottom: 32px; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
+    .preview-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .btn-primary { background-color: #2E75B6 !important; border-color: #2E75B6 !important; }
+    .btn-outline-primary { color: #2E75B6 !important; border-color: #2E75B6 !important; }
+    .btn-outline-primary:hover { background-color: #2E75B6 !important; color: #fff !important; }
+    .btn-success { background-color: #22A06B !important; border-color: #22A06B !important; }
+    .btn-danger { background-color: #DC3545 !important; border-color: #DC3545 !important; }
+    .btn-warning { background-color: #D4772C !important; border-color: #D4772C !important; color: #fff !important; }
+  </style>
+</head>
+<body>
+  <h4 class="mb-1">ActionButton</h4>
+  <p class="text-muted small mb-4">Standard buttons using MPI's confirmed color palette. Bootstrap 5 <code>.btn</code> classes with MPI color overrides.</p>
+
+  <div class="preview-section">
+    <div class="preview-label">Primary Actions</div>
+    <div class="preview-row">
+      <button class="btn btn-primary">Save Contact</button>
+      <button class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add New</button>
+      <button class="btn btn-primary" disabled>Saving...</button>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">Semantic Variants</div>
+    <div class="preview-row">
+      <button class="btn btn-primary">Primary</button>
+      <button class="btn btn-success">Success</button>
+      <button class="btn btn-danger">Danger</button>
+      <button class="btn btn-warning">Warning</button>
+      <button class="btn btn-secondary">Secondary</button>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">Outline Variants</div>
+    <div class="preview-row">
+      <button class="btn btn-outline-primary">Primary</button>
+      <button class="btn btn-outline-secondary">Secondary</button>
+      <button class="btn btn-outline-danger">Delete</button>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">Sizes</div>
+    <div class="preview-row">
+      <button class="btn btn-primary btn-sm">Small</button>
+      <button class="btn btn-primary">Default</button>
+      <button class="btn btn-primary btn-lg">Large</button>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">With Icons</div>
+    <div class="preview-row">
+      <button class="btn btn-primary"><i class="bi bi-envelope me-1"></i>Send Email</button>
+      <button class="btn btn-outline-primary"><i class="bi bi-download me-1"></i>Export</button>
+      <button class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i>Delete</button>
+      <button class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Approve</button>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">In Context — Page Header Actions</div>
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3" style="max-width: 600px;">
+      <h5 class="mb-0" style="color: #1B2A4A;">Contacts</h5>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary btn-sm"><i class="bi bi-funnel me-1"></i>Filter</button>
+        <button class="btn btn-outline-primary btn-sm"><i class="bi bi-download me-1"></i>Export</button>
+        <button class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Add Contact</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
