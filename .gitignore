@@ -39,6 +39,13 @@
 
 .DS_Store
 
+# Gem build artifacts
+/pkg/
+/doc/
+
+# Lockfile (engines don't commit Gemfile.lock)
+Gemfile.lock
+
 /node_modules
 
 # Claude Code local settings
@@ -63,3 +70,12 @@ npm-debug.log
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
+
+# Dummy app secrets and logs
+spec/dummy/config/master.key
+spec/dummy/config/credentials.yml.enc
+spec/dummy/log/*.log
+spec/dummy/tmp/
+
+# Playwright MCP logs
+.playwright-mcp/
