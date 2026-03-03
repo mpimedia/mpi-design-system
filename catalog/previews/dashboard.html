@@ -66,8 +66,14 @@
       <div class="shell">
         <div class="topbar">
           <a class="logo" href="#">
-            <span class="logo-x">X</span>
-            <span class="logo-text">MARKAZ</span>
+            <svg style="width:24px;height:24px;" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#1B2A4A" d="M 108,80 L 180,175 L 200,195 L 200,165 L 140,80 Z"/>
+              <path fill="#1B2A4A" d="M 292,80 L 220,175 L 200,195 L 200,165 L 260,80 Z"/>
+              <path fill="#1B2A4A" d="M 108,320 L 180,225 L 200,205 L 200,235 L 140,320 Z"/>
+              <path fill="#1B2A4A" d="M 292,320 L 220,225 L 200,205 L 200,235 L 260,320 Z"/>
+              <polygon fill="#2E75B6" points="200,172 216,200 200,228 184,200"/>
+            </svg>
+            <span class="logo-text" style="font-weight:300;">MARKAZ</span>
           </a>
           <a class="nav-item active" href="#">Dashboard</a>
           <a class="nav-item" href="#">Contacts</a>
@@ -110,7 +116,7 @@
               <div class="stat-card">
                 <div class="stat-label">Overdue Follow-Ups</div>
                 <div class="stat-value" style="color:#DC3545;">12</div>
-                <div class="stat-trend trend-down"><i class="bi bi-arrow-up"></i> 3 since yesterday</div>
+                <div class="stat-trend trend-down"><i class="bi bi-arrow-down"></i> 3 since yesterday</div>
               </div>
             </div>
           </div>
@@ -191,8 +197,20 @@
 
             <!-- Right column -->
             <div class="col-4">
-              <!-- Follow-up Queue -->
+              <!-- Quick Actions (above Follow-up Queue per Badie's feedback) -->
               <div class="card mb-4">
+                <div class="card-body">
+                  <div class="widget-title mb-2">Quick Actions</div>
+                  <div class="d-grid gap-2">
+                    <a class="quick-action" href="#">+ Add new Contact</a>
+                    <a class="quick-action" href="#">+ Add new Account</a>
+                    <a class="quick-action" href="#">+ Add new Engagement</a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Follow-up Queue -->
+              <div class="card">
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-center mb-2">
                     <div class="widget-title">Follow-up Queue</div>
@@ -237,18 +255,6 @@
                       <div class="text-muted" style="font-size:10px;">Investor deck — Archstone Capital</div>
                     </div>
                     <div class="followup-status" style="color:#6C757D;">In 3 days</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Quick Actions -->
-              <div class="card">
-                <div class="card-body">
-                  <div class="widget-title mb-2">Quick Actions</div>
-                  <div class="d-grid gap-2">
-                    <a class="quick-action" href="#">+ Log new engagement</a>
-                    <a class="quick-action" href="#">+ Add new contact</a>
-                    <a class="quick-action" href="#">+ Create new account</a>
                   </div>
                 </div>
               </div>

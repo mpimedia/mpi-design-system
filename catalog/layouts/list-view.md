@@ -16,7 +16,7 @@ Full list view layout combining nav bar, group filter chips, sub-group filter ba
 - **List/card toggle** — List view is default. Card toggle switches to ContactCard (#23) grid. Toggle uses icon buttons (list icon active = blue)
 - **Sort dropdown** — "Sort: Last Engaged" with chevron. Options: Last Engaged, Name A–Z, Name Z–A, Date Added, Account, Engagement Count
 - **Contacts vs. Accounts** — Different column structures per entity type
-- **Pagination** — Default 25 per page with per-page selector (25/50/100). "Load more" option also acceptable. Badie does not want to limit to just 25
+- **Pagination** — Uses the standard Pagination component. Default 25 per page. A per-page selector (e.g., 25/50/100) is added only when explicitly requested. "Load more" option also acceptable; Badie does not want to limit users to just 25 items
 - **Tag Groups column (Accounts)** — Show group names as colored pills (not just dots). Confirmed per Badie's re-review
 - **Brand mark** — Nexus SVG (not "X MARKAZ" text)
 

@@ -63,7 +63,7 @@ These tokens map to Bootstrap's color system via SCSS variable overrides:
 $primary: #2E75B6;
 $success: #22A06B;
 $warning: #D4772C;
-$danger: #DC3545;  // Bootstrap default, no override needed
+// $danger uses Bootstrap default (#DC3545) — no override needed
 $info: #2E75B6;
 ```
 
