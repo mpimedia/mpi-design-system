@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SearchBar — MPI Design System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { padding: 32px; background: #fff; }
+    .preview-section { margin-bottom: 32px; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
+    .btn-primary { background-color: #2E75B6 !important; border-color: #2E75B6 !important; }
+    .btn-outline-primary { color: #2E75B6 !important; border-color: #2E75B6 !important; }
+    .form-control:focus { border-color: #2E75B6; box-shadow: 0 0 0 0.2rem rgba(46, 117, 182, 0.25); }
+    .tag-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <h4 class="mb-1">SearchBar</h4>
+  <p class="text-muted small mb-4">Search input with icon, used for filtering lists, contacts, and content.</p>
+
+  <div class="preview-section">
+    <div class="preview-label">Default</div>
+    <div class="input-group" style="max-width: 400px;">
+      <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control" placeholder="Search contacts..." aria-label="Search">
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">With Value</div>
+    <div class="input-group" style="max-width: 400px;">
+      <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control" value="John Smith" aria-label="Search">
+      <button class="btn btn-outline-secondary" type="button" aria-label="Clear"><i class="bi bi-x-lg"></i></button>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">With Search Button</div>
+    <div class="input-group" style="max-width: 400px;">
+      <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control" placeholder="Search titles..." aria-label="Search">
+      <button class="btn btn-primary" type="button">Search</button>
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">Full Width</div>
+    <div class="input-group" style="max-width: 600px;">
+      <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+      <input type="text" class="form-control form-control-lg" placeholder="Search across all contacts, accounts, and engagements..." aria-label="Search">
+    </div>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">In Context — List Page Header</div>
+    <div class="border rounded p-3" style="max-width: 600px; background: #F5F7FA;">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0" style="color: #1B2A4A;">Contacts</h5>
+        <button class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Add Contact</button>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <div class="input-group flex-grow-1">
+          <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control" placeholder="Search contacts..." aria-label="Search">
+        </div>
+        <button class="btn btn-outline-primary btn-sm"><i class="bi bi-funnel me-1"></i>Filter</button>
+      </div>
+      <div class="d-flex gap-1 mt-2">
+        <span class="tag-chip" style="color: #E8733A; background: #FEF3EC;">Buyers <span style="cursor:pointer;opacity:0.6;">&times;</span></span>
+        <span class="tag-chip" style="color: #2E75B6; background: #EBF3FB;">Festivals <span style="cursor:pointer;opacity:0.6;">&times;</span></span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

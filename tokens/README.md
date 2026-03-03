@@ -4,7 +4,7 @@ Design tokens are the foundational values that define MPI's visual language. The
 
 ## Current Status
 
-Token values are **pending** — they will be derived from Badie's approved designs through a Q&A review process, not from legacy app code. The token files define the structure and categories; values will be filled in once designs are reviewed.
+Core token values are **confirmed** as of 2026-03-02 (Q&A Session 001). Colors, navigation structure, and key component decisions are finalized. Typography and spacing remain at Bootstrap defaults.
 
 ## Process
 
@@ -19,10 +19,12 @@ Token values are **pending** — they will be derived from Badie's approved desi
 
 | File | Contents | Status |
 |---|---|---|
-| [colors.md](colors.md) | Brand colors, semantic colors, neutral palette | Pending designs |
-| [typography.md](typography.md) | Font families, type scale, heading sizes | Partially confirmed (Bootstrap defaults) |
+| [colors.md](colors.md) | Brand colors, semantic colors, tag/engagement palettes | **Confirmed** |
+| [typography.md](typography.md) | Font families, type scale, heading sizes | Baseline (Bootstrap defaults) |
 | [spacing.md](spacing.md) | Spacing scale, component spacing guidelines | Baseline (Bootstrap defaults) |
-| [bootstrap-overrides.md](bootstrap-overrides.md) | MPI customizations to Bootstrap 5 defaults | Pending designs |
+| [navigation.md](navigation.md) | App navigation structure, section mapping | **Confirmed** |
+| [components.md](components.md) | Component behavior decisions (avatars, badges, etc.) | **Confirmed** |
+| [bootstrap-overrides.md](bootstrap-overrides.md) | MPI customizations to Bootstrap 5 defaults | In progress |
 
 ## Adding New Tokens
 
