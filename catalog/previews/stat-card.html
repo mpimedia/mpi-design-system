@@ -8,112 +8,86 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body { padding: 32px; background: #F5F7FA; }
-    .preview-section { margin-bottom: 32px; }
+    .preview-section { margin-bottom: 40px; }
     .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
-    .stat-value { font-size: 28px; font-weight: 700; color: #1B2A4A; line-height: 1.2; }
-    .stat-label { font-size: 13px; color: #6C757D; margin-bottom: 4px; }
-    .stat-trend { font-size: 12px; font-weight: 600; }
+    .stat-card { background: #fff; border: 1px solid #DEE2E6; border-radius: 8px; padding: 20px; }
+    .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-bottom: 8px; }
+    .stat-value { font-size: 32px; font-weight: 700; color: #1B2A4A; line-height: 1.1; margin-bottom: 4px; }
+    .stat-trend { font-size: 12px; font-weight: 500; }
     .trend-up { color: #22A06B; }
     .trend-down { color: #DC3545; }
-    .skeleton { background: linear-gradient(90deg, #e9ecef 25%, #f8f9fa 50%, #e9ecef 75%); background-size: 200% 100%; border-radius: 4px; animation: shimmer 1.5s infinite; }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .trend-neutral { color: #6C757D; }
   </style>
 </head>
 <body>
   <h4 class="mb-1" style="color:#1B2A4A;">StatCard</h4>
-  <p class="text-muted small mb-4">Card displaying a single metric with label, value, and optional trend. Used in dashboard stat rows.</p>
+  <p class="text-muted small mb-4">Top-level metric card for dashboards. ALL-CAPS label, large number, and trend indicator. From Figma Screen 7 (CRM Dashboard).</p>
 
+  <!-- Dashboard row — exact layout from Figma Screen 7 -->
   <div class="preview-section">
-    <div class="preview-label">Dashboard Row — 4 Cards</div>
-    <div class="row g-3" style="max-width:800px;">
+    <div class="preview-label">Dashboard Row — From Figma Screen 7 (CRM Dashboard)</div>
+    <div class="row g-3" style="max-width:900px;">
       <div class="col-3">
-        <div class="card">
-          <div class="card-body">
-            <div class="stat-label">Total Contacts</div>
-            <div class="stat-value">1,248</div>
-            <div class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> 12% this month</div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Contacts</div>
+          <div class="stat-value">2,307</div>
+          <div class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> 34 this month</div>
         </div>
       </div>
       <div class="col-3">
-        <div class="card">
-          <div class="card-body">
-            <div class="stat-label">Active Accounts</div>
-            <div class="stat-value">56</div>
-            <div class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> 3 new</div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-label">Engagements This Week</div>
+          <div class="stat-value">47</div>
+          <div class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> 12% vs last week</div>
         </div>
       </div>
       <div class="col-3">
-        <div class="card">
-          <div class="card-body">
-            <div class="stat-label">Engagements</div>
-            <div class="stat-value">342</div>
-            <div class="stat-trend trend-down"><i class="bi bi-arrow-down"></i> 5% this month</div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-label">Accounts</div>
+          <div class="stat-value">418</div>
+          <div class="stat-trend trend-neutral">8 added this month</div>
         </div>
       </div>
       <div class="col-3">
-        <div class="card">
-          <div class="card-body">
-            <div class="stat-label">Follow-ups Due</div>
-            <div class="stat-value" style="color:#DC3545;">7</div>
-            <div class="stat-trend" style="color:#D4772C;">3 overdue</div>
-          </div>
+        <div class="stat-card">
+          <div class="stat-label">Overdue Follow-Ups</div>
+          <div class="stat-value" style="color:#DC3545;">12</div>
+          <div class="stat-trend trend-down"><i class="bi bi-arrow-up"></i> 3 since yesterday</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Single card variants -->
   <div class="preview-section">
-    <div class="preview-label">With Color Accent</div>
+    <div class="preview-label">Variants</div>
     <div class="row g-3" style="max-width:600px;">
-      <div class="col-4">
-        <div class="card" style="border-left: 3px solid #2E75B6;">
-          <div class="card-body">
-            <div class="stat-label">Contacts</div>
-            <div class="stat-value">1,248</div>
-          </div>
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="stat-label">Positive Trend</div>
+          <div class="stat-value">2,307</div>
+          <div class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> 34 this month</div>
         </div>
       </div>
-      <div class="col-4">
-        <div class="card" style="border-left: 3px solid #22A06B;">
-          <div class="card-body">
-            <div class="stat-label">Active</div>
-            <div class="stat-value">892</div>
-          </div>
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="stat-label">Negative / Alert</div>
+          <div class="stat-value" style="color:#DC3545;">12</div>
+          <div class="stat-trend trend-down"><i class="bi bi-arrow-up"></i> 3 since yesterday</div>
         </div>
       </div>
-      <div class="col-4">
-        <div class="card" style="border-left: 3px solid #D4772C;">
-          <div class="card-body">
-            <div class="stat-label">Pending</div>
-            <div class="stat-value">156</div>
-          </div>
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="stat-label">Neutral Trend</div>
+          <div class="stat-value">418</div>
+          <div class="stat-trend trend-neutral">8 added this month</div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="preview-section">
-    <div class="preview-label">Loading Skeleton</div>
-    <div class="row g-3" style="max-width:800px;">
-      <div class="col-3">
-        <div class="card">
-          <div class="card-body">
-            <div class="skeleton" style="width:80px;height:14px;margin-bottom:8px;"></div>
-            <div class="skeleton" style="width:60px;height:32px;margin-bottom:8px;"></div>
-            <div class="skeleton" style="width:100px;height:12px;"></div>
-          </div>
-        </div>
-      </div>
-      <div class="col-3">
-        <div class="card">
-          <div class="card-body">
-            <div class="skeleton" style="width:90px;height:14px;margin-bottom:8px;"></div>
-            <div class="skeleton" style="width:45px;height:32px;margin-bottom:8px;"></div>
-            <div class="skeleton" style="width:70px;height:12px;"></div>
-          </div>
+      <div class="col-6">
+        <div class="stat-card">
+          <div class="stat-label">Percentage Trend</div>
+          <div class="stat-value">47</div>
+          <div class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> 12% vs last week</div>
         </div>
       </div>
     </div>

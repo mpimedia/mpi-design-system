@@ -5,75 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TabBar — MPI Design System</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <style>
     body { padding: 32px; background: #fff; }
-    .preview-section { margin-bottom: 32px; }
+    .preview-section { margin-bottom: 40px; }
     .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
-    .nav-tabs .nav-link { color: #6C757D; font-size: 14px; }
-    .nav-tabs .nav-link.active { color: #2E75B6; font-weight: 600; border-bottom-color: #2E75B6; }
-    .nav-tabs .nav-link:hover { color: #2E75B6; }
     .badge { border-radius: 999px !important; }
+    .tab-link { color: #6C757D; font-size: 14px; font-weight: 500; padding: 10px 16px; text-decoration: none; border-bottom: 2px solid transparent; display: inline-block; }
+    .tab-link:hover { color: #2E75B6; }
+    .tab-link.active { color: #2E75B6; font-weight: 600; border-bottom-color: #2E75B6; }
+    .tab-link .count { font-size: 12px; color: #6C757D; margin-left: 4px; }
+    .tab-link.active .count { color: #2E75B6; }
+    .tab-bar { border-bottom: 1px solid #DEE2E6; display: flex; gap: 0; }
+    .panel { background: #F5F7FA; border-radius: 8px; padding: 20px; max-width: 520px; }
+    /* Pill tab variant (from Account detail) */
+    .pill-tab { display: inline-block; padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; text-decoration: none; color: #6C757D; border: 1px solid #DEE2E6; }
+    .pill-tab.active { background: #2E75B6; color: #fff; border-color: #2E75B6; font-weight: 600; }
   </style>
 </head>
 <body>
-  <h4 class="mb-1">TabBar</h4>
-  <p class="text-muted small mb-4">Horizontal tab navigation with optional count badges. Used for switching content panels within a page.</p>
+  <h4 class="mb-1" style="color:#1B2A4A;">TabBar</h4>
+  <p class="text-muted small mb-4">Horizontal tab navigation with optional counts. Used for content panels within a page. Two styles: underline tabs and pill tabs.</p>
 
+  <!-- Underline tabs — from Markaz Content screen -->
   <div class="preview-section">
-    <div class="preview-label">Default Tabs</div>
-    <ul class="nav nav-tabs" style="max-width:500px;">
-      <li class="nav-item"><a class="nav-link active" href="#">Engagement Timeline</a></li>
-      <li class="nav-item"><a class="nav-link" href="#">Data Quality</a></li>
-    </ul>
+    <div class="preview-label">Underline Tabs — Content Detail (from Figma)</div>
+    <div class="tab-bar" style="max-width:700px;">
+      <a class="tab-link active" href="#">Metadata</a>
+      <a class="tab-link" href="#">Archive Files <span class="count">47</span></a>
+      <a class="tab-link" href="#">Delivery Tracking</a>
+      <a class="tab-link" href="#">Press <span class="count">8</span></a>
+      <a class="tab-link" href="#">Awards <span class="count">12</span></a>
+      <a class="tab-link" href="#">Rights &amp; Avails</a>
+    </div>
   </div>
 
+  <!-- Underline tabs — from Engagement Detail screen 11 -->
   <div class="preview-section">
-    <div class="preview-label">Tabs With Count Badges</div>
-    <ul class="nav nav-tabs" style="max-width:600px;">
-      <li class="nav-item"><a class="nav-link active" href="#">Contacts <span class="badge" style="background:#2E75B6; font-size:11px;">248</span></a></li>
-      <li class="nav-item"><a class="nav-link" href="#">Accounts <span class="badge bg-secondary" style="font-size:11px;">56</span></a></li>
-      <li class="nav-item"><a class="nav-link" href="#">Engagements <span class="badge bg-secondary" style="font-size:11px;">1,024</span></a></li>
-    </ul>
+    <div class="preview-label">Underline Tabs — Engagement Detail (from Figma Screen 11)</div>
+    <div class="tab-bar" style="max-width:400px;">
+      <a class="tab-link active" href="#">Content</a>
+      <a class="tab-link" href="#">Thread <span class="count">(4)</span></a>
+      <a class="tab-link" href="#">Activity Log</a>
+    </div>
   </div>
 
+  <!-- Pill tabs — from Account Detail screen 9 -->
   <div class="preview-section">
-    <div class="preview-label">Three Tabs — Middle Active</div>
-    <ul class="nav nav-tabs" style="max-width:500px;">
-      <li class="nav-item"><a class="nav-link" href="#">Overview</a></li>
-      <li class="nav-item"><a class="nav-link active" href="#">Details</a></li>
-      <li class="nav-item"><a class="nav-link" href="#">History</a></li>
-    </ul>
+    <div class="preview-label">Pill Tabs — Account Detail (from Figma Screen 9)</div>
+    <div class="d-flex gap-2">
+      <a class="pill-tab active" href="#">Contacts (7)</a>
+      <a class="pill-tab" href="#">Engagements (34)</a>
+      <a class="pill-tab" href="#">Titles (12)</a>
+    </div>
   </div>
 
+  <!-- In-panel context — Contact Detail right panel (Q&A confirmed tabs) -->
   <div class="preview-section">
-    <div class="preview-label">In Context — Contact Detail Right Panel</div>
-    <div class="border rounded" style="max-width:500px;">
-      <ul class="nav nav-tabs px-3 pt-2">
-        <li class="nav-item"><a class="nav-link active" href="#">Engagement Timeline</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Data Quality</a></li>
-      </ul>
-      <div class="p-3">
-        <div class="d-flex align-items-start gap-2 mb-3 pb-3 border-bottom">
-          <div style="width:8px;height:8px;border-radius:50%;background:#2E75B6;margin-top:6px;flex-shrink:0;"></div>
-          <div>
-            <div class="small"><strong>Email sent</strong> — Follow-up RE: MIPCOM screening</div>
-            <div class="text-muted" style="font-size:12px;">Mar 1, 2026</div>
-          </div>
-        </div>
-        <div class="d-flex align-items-start gap-2 mb-3 pb-3 border-bottom">
-          <div style="width:8px;height:8px;border-radius:50%;background:#8B5CF6;margin-top:6px;flex-shrink:0;"></div>
-          <div>
-            <div class="small"><strong>Meeting</strong> — Lunch at Cannes</div>
-            <div class="text-muted" style="font-size:12px;">Feb 28, 2026</div>
-          </div>
-        </div>
-        <div class="d-flex align-items-start gap-2">
-          <div style="width:8px;height:8px;border-radius:50%;background:#16A34A;margin-top:6px;flex-shrink:0;"></div>
-          <div>
-            <div class="small"><strong>Call</strong> — Intro call with VP Acquisitions</div>
-            <div class="text-muted" style="font-size:12px;">Feb 25, 2026</div>
-          </div>
-        </div>
+    <div class="preview-label">In Panel Context — Contact Detail Right Panel (Q&amp;A Confirmed Tabs)</div>
+    <div class="panel">
+      <div class="tab-bar mb-3">
+        <a class="tab-link active" href="#">Engagements</a>
+        <a class="tab-link" href="#">Data Quality</a>
+      </div>
+      <div class="text-muted text-center py-4 small">
+        Tab content renders here
+      </div>
+    </div>
+  </div>
+
+  <!-- States -->
+  <div class="preview-section">
+    <div class="preview-label">States</div>
+    <div class="d-flex gap-4 align-items-end">
+      <div>
+        <div class="text-muted small mb-1">Default</div>
+        <span class="tab-link">Tab Label</span>
+      </div>
+      <div>
+        <div class="text-muted small mb-1">Active</div>
+        <span class="tab-link active">Tab Label</span>
+      </div>
+      <div>
+        <div class="text-muted small mb-1">With Count</div>
+        <span class="tab-link">Archive Files <span class="count">47</span></span>
+      </div>
+      <div>
+        <div class="text-muted small mb-1">Disabled</div>
+        <span class="tab-link" style="color:#CED4DA; cursor:not-allowed;">Disabled</span>
       </div>
     </div>
   </div>

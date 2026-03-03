@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Shell — MPI Design System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { padding: 32px; background: #F5F7FA; }
+    .preview-section { margin-bottom: 40px; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
+    .shell { border: 1px solid #DEE2E6; border-radius: 8px; overflow: hidden; background: #F5F7FA; }
+    .topbar { background: #fff; border-bottom: 1px solid #DEE2E6; padding: 0 24px; display: flex; align-items: center; height: 52px; gap: 0; }
+    .logo { display: flex; align-items: center; gap: 8px; margin-right: 28px; text-decoration: none; }
+    .logo-mark { width: 28px; height: 28px; flex-shrink: 0; }
+    .logo-text { font-size: 14px; font-weight: 300; color: #1B2A4A; letter-spacing: 0.12em; }
+    .nav-item { color: #6C757D; text-decoration: none; padding: 14px 12px; font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent; white-space: nowrap; }
+    .nav-item:hover { color: #2E75B6; }
+    .nav-item.active { color: #2E75B6; border-bottom-color: #2E75B6; font-weight: 600; }
+    .nav-search { margin-left: auto; }
+    .nav-search input { font-size: 13px; border: 1px solid #DEE2E6; border-radius: 6px; padding: 6px 12px 6px 32px; width: 240px; background: #F5F7FA; }
+    .nav-search .icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #6C757D; font-size: 13px; }
+    .avatar-nav { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; color: #fff; font-weight: 600; font-size: 12px; background: #2E75B6; margin-left: 12px; }
+    .subnav { background: #fff; border-bottom: 1px solid #DEE2E6; padding: 0 24px; display: flex; align-items: center; height: 42px; }
+    .subnav-item { color: #6C757D; text-decoration: none; padding: 10px 12px; font-size: 13px; font-weight: 500; }
+    .subnav-item.active { color: #2E75B6; font-weight: 600; border-bottom: 2px solid #2E75B6; }
+    .subnav-item:hover { color: #2E75B6; }
+    .content-area { padding: 24px; min-height: 120px; }
+    .sidebar { width: 180px; border-right: 1px solid #DEE2E6; background: #fff; padding: 16px; }
+    .sidebar-tabs { display: flex; gap: 0; margin-bottom: 12px; }
+    .sidebar-tab { padding: 6px 12px; font-size: 12px; font-weight: 500; color: #6C757D; text-decoration: none; border-bottom: 2px solid transparent; }
+    .sidebar-tab.active { color: #2E75B6; font-weight: 600; border-bottom-color: #2E75B6; }
+    .sidebar-search { font-size: 12px; border: 1px solid #DEE2E6; border-radius: 4px; padding: 5px 8px; width: 100%; margin-bottom: 8px; }
+    .sidebar-chip { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; border: 1px solid #DEE2E6; color: #6C757D; margin: 0 2px 4px 0; cursor: pointer; }
+    .sidebar-chip.active { background: #2E75B6; color: #fff; border-color: #2E75B6; }
+    .sidebar-item { padding: 6px 0; font-size: 12px; border-bottom: 1px solid #F0F0F0; }
+    .sidebar-item-title { font-weight: 600; color: #1B2A4A; }
+    .sidebar-item-meta { font-size: 10px; color: #6C757D; }
+    .sidebar-item-score { font-size: 11px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h4 class="mb-1" style="color:#1B2A4A;">App Shell</h4>
+  <p class="text-muted small mb-4">Global application frame for all Markaz sections. White top bar with Nexus brand mark, Level 1 nav (6 sections), global search, user avatar. Sections with sub-navigation get Level 2 bar. Content section includes a left sidebar browser.</p>
+
+  <!-- CRM Context — Level 1 + Level 2 -->
+  <div class="preview-section">
+    <div class="preview-label">CRM Context — Two-Level Navigation (From Figma CRM Screens + Q&amp;A)</div>
+    <div class="shell">
+      <div class="topbar">
+        <a class="logo" href="#">
+          <svg class="logo-mark" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#1B2A4A" d="M 108,80 L 180,175 L 200,195 L 200,165 L 140,80 Z"/>
+            <path fill="#1B2A4A" d="M 292,80 L 220,175 L 200,195 L 200,165 L 260,80 Z"/>
+            <path fill="#1B2A4A" d="M 108,320 L 180,225 L 200,205 L 200,235 L 140,320 Z"/>
+            <path fill="#1B2A4A" d="M 292,320 L 220,225 L 200,205 L 200,235 L 260,320 Z"/>
+            <polygon fill="#2E75B6" points="200,172 216,200 200,228 184,200"/>
+          </svg>
+          <span class="logo-text">MARKAZ</span>
+        </a>
+        <a class="nav-item" href="#">Dashboard</a>
+        <a class="nav-item" href="#">Content</a>
+        <a class="nav-item active" href="#">CRM</a>
+        <a class="nav-item" href="#">Avails</a>
+        <a class="nav-item" href="#">Releases</a>
+        <a class="nav-item" href="#">Screenings</a>
+        <div class="nav-search position-relative">
+          <span class="icon"><i class="bi bi-search"></i></span>
+          <input type="text" placeholder="Search contacts...">
+        </div>
+        <div class="avatar-nav">BA</div>
+      </div>
+      <div class="subnav">
+        <a class="subnav-item" href="#">Dashboard</a>
+        <a class="subnav-item active" href="#">Contacts</a>
+        <a class="subnav-item" href="#">Accounts</a>
+        <a class="subnav-item" href="#">Engagements</a>
+      </div>
+      <div class="content-area text-center text-muted">
+        <div class="small">CRM → Contacts page content renders here</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Context — with sidebar browser -->
+  <div class="preview-section">
+    <div class="preview-label">Content Context — With Sidebar Browser (From Figma Markaz Content)</div>
+    <div class="shell">
+      <div class="topbar">
+        <a class="logo" href="#">
+          <svg class="logo-mark" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#1B2A4A" d="M 108,80 L 180,175 L 200,195 L 200,165 L 140,80 Z"/>
+            <path fill="#1B2A4A" d="M 292,80 L 220,175 L 200,195 L 200,165 L 260,80 Z"/>
+            <path fill="#1B2A4A" d="M 108,320 L 180,225 L 200,205 L 200,235 L 140,320 Z"/>
+            <path fill="#1B2A4A" d="M 292,320 L 220,225 L 200,205 L 200,235 L 260,320 Z"/>
+            <polygon fill="#2E75B6" points="200,172 216,200 200,228 184,200"/>
+          </svg>
+          <span class="logo-text">MARKAZ</span>
+        </a>
+        <a class="nav-item" href="#">Dashboard</a>
+        <a class="nav-item active" href="#">Content</a>
+        <a class="nav-item" href="#">CRM</a>
+        <a class="nav-item" href="#">Avails</a>
+        <a class="nav-item" href="#">Releases</a>
+        <a class="nav-item" href="#">Screenings</a>
+        <div class="nav-search position-relative">
+          <span class="icon"><i class="bi bi-search"></i></span>
+          <input type="text" placeholder="Search titles, contacts, files...">
+        </div>
+        <div class="avatar-nav">BA</div>
+      </div>
+      <div class="d-flex">
+        <div class="sidebar">
+          <div class="sidebar-tabs">
+            <a class="sidebar-tab active" href="#">Titles</a>
+            <a class="sidebar-tab" href="#">Library</a>
+          </div>
+          <input class="sidebar-search" type="text" placeholder="Search titles...">
+          <div class="mb-2">
+            <span class="sidebar-chip active">All</span>
+            <span class="sidebar-chip">MPI</span>
+            <span class="sidebar-chip">Dark Sky</span>
+            <span class="sidebar-chip">WP</span>
+          </div>
+          <div class="sidebar-item">
+            <div class="d-flex justify-content-between">
+              <div class="sidebar-item-title">The Harvest</div>
+              <span class="sidebar-item-score" style="color:#22A06B;">85%</span>
+            </div>
+            <div class="sidebar-item-meta">2024 · DARK SKY</div>
+          </div>
+          <div class="sidebar-item">
+            <div class="d-flex justify-content-between">
+              <div class="sidebar-item-title">Nightbound</div>
+              <span class="sidebar-item-score" style="color:#D4772C;">68%</span>
+            </div>
+            <div class="sidebar-item-meta">2023 · DARK SKY</div>
+          </div>
+          <div class="sidebar-item">
+            <div class="d-flex justify-content-between">
+              <div class="sidebar-item-title">Crimson Meridian</div>
+              <span class="sidebar-item-score" style="color:#22A06B;">92%</span>
+            </div>
+            <div class="sidebar-item-meta">2024 · MPI</div>
+          </div>
+        </div>
+        <div class="content-area flex-grow-1 text-center text-muted">
+          <div class="small">Content detail (metadata, archive files, etc.) renders here</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Context — single level nav -->
+  <div class="preview-section">
+    <div class="preview-label">Dashboard Context — Single Level Navigation</div>
+    <div class="shell">
+      <div class="topbar">
+        <a class="logo" href="#">
+          <svg class="logo-mark" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#1B2A4A" d="M 108,80 L 180,175 L 200,195 L 200,165 L 140,80 Z"/>
+            <path fill="#1B2A4A" d="M 292,80 L 220,175 L 200,195 L 200,165 L 260,80 Z"/>
+            <path fill="#1B2A4A" d="M 108,320 L 180,225 L 200,205 L 200,235 L 140,320 Z"/>
+            <path fill="#1B2A4A" d="M 292,320 L 220,225 L 200,205 L 200,235 L 260,320 Z"/>
+            <polygon fill="#2E75B6" points="200,172 216,200 200,228 184,200"/>
+          </svg>
+          <span class="logo-text">MARKAZ</span>
+        </a>
+        <a class="nav-item active" href="#">Dashboard</a>
+        <a class="nav-item" href="#">Content</a>
+        <a class="nav-item" href="#">CRM</a>
+        <a class="nav-item" href="#">Avails</a>
+        <a class="nav-item" href="#">Releases</a>
+        <a class="nav-item" href="#">Screenings</a>
+        <div class="nav-search position-relative">
+          <span class="icon"><i class="bi bi-search"></i></span>
+          <input type="text" placeholder="Search...">
+        </div>
+        <div class="avatar-nav">BA</div>
+      </div>
+      <div class="content-area text-center text-muted">
+        <div class="small">Global dashboard content renders here</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
