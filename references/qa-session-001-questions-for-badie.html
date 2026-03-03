@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MPI Design System — Q&amp;A Session 001 — Questions for Badie</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f5f7fa; font-family: system-ui, -apple-system, sans-serif; }
+    .question-card { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 1.5rem; }
+    .question-header { background: #1e2a4a; color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px 8px 0 0; }
+    .question-header .badge { font-size: 0.7rem; vertical-align: middle; }
+    .question-body { padding: 1.25rem; }
+    .color-swatch {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 1rem; border-radius: 6px; border: 2px solid #dee2e6;
+      cursor: pointer; transition: border-color 0.15s;
+      min-width: 200px; margin: 0.25rem;
+    }
+    .color-swatch:hover, .color-swatch.selected { border-color: #2563eb; }
+    .color-swatch .dot {
+      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .color-swatch code { font-size: 0.85rem; }
+    .color-input-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .color-input-row:last-child { border-bottom: none; }
+    .color-input-row .dot {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .color-input-row label { min-width: 140px; font-weight: 500; }
+    .color-input-row input[type="color"] {
+      width: 40px; height: 32px; border: 1px solid #dee2e6;
+      border-radius: 4px; cursor: pointer; padding: 2px;
+    }
+    .color-input-row input[type="text"] { max-width: 120px; }
+    .nav-diagram {
+      background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px;
+      padding: 1rem; font-family: monospace; font-size: 0.85rem;
+      line-height: 1.6; white-space: pre; overflow-x: auto;
+    }
+    .option-card {
+      border: 2px solid #dee2e6; border-radius: 8px; padding: 1rem;
+      cursor: pointer; transition: all 0.15s; height: 100%;
+    }
+    .option-card:hover { border-color: #2563eb; background: #f0f6ff; }
+    .option-card.selected { border-color: #2563eb; background: #e8f0fe; }
+    .option-card input[type="radio"] { margin-right: 0.5rem; }
+    .avatar-circle {
+      width: 40px; height: 40px; border-radius: 50%; display: inline-flex;
+      align-items: center; justify-content: center; color: #fff;
+      font-weight: 600; font-size: 0.85rem;
+    }
+    .badge-example { display: inline-block; padding: 0.25rem 0.6rem; font-size: 0.75rem; font-weight: 600; margin: 0.15rem; }
+    .badge-pill { border-radius: 50rem; }
+    .badge-rect { border-radius: 4px; }
+    .tag-chip {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem;
+      background: #f0f0f0; margin: 0.15rem;
+    }
+    .tag-chip .tag-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .section-divider { border-top: 3px solid #1e2a4a; margin: 2.5rem 0 1.5rem; padding-top: 1rem; }
+    textarea.form-control { min-height: 60px; }
+    .print-btn { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100; }
+    @media print {
+      .print-btn { display: none; }
+      .question-card { break-inside: avoid; }
+      body { background: #fff; }
+    }
+    .engagement-badge {
+      display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .preview-row {
+      display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+      padding: 0.75rem; background: #f8f9fa; border-radius: 6px; margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4" style="max-width: 900px;">
+
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <h1 class="fw-bold" style="color: #1e2a4a;">MPI Design System</h1>
+      <h4 class="text-muted">Q&amp;A Session 001 — Questions for Badie</h4>
+      <p class="text-muted small">16 Figma designs reviewed (2 brand/app + 14 CRM) &middot; March 2, 2026</p>
+      <hr>
+      <p class="small">For each question, select an option or fill in the value. Use the text fields to provide exact hex codes where you have them.</p>
+    </div>
+
+    <!-- SECTION: COLORS -->
+    <h2 style="color: #1e2a4a;">Colors</h2>
+    <p class="text-muted mb-3">These are needed to populate the token files. Draft values are approximate from screenshots.</p>
+
+    <!-- Q1: Primary Blue -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q1.</strong> Primary Blue</span>
+        <span class="badge bg-danger">Must Answer</span>
+      </div>
+      <div class="question-body">
+        <p>This blue is used for active nav items, primary buttons ("Edit Metadata", "+ New Engagement", "Search"), and links throughout. What's the exact hex?</p>
+        <div class="preview-row">
+          <span style="color: #2563eb; font-weight: 600; text-decoration: underline;">Content</span>
+          <button class="btn btn-sm" style="background: #2563eb; color: #fff;">Edit Metadata</button>
+          <button class="btn btn-sm" style="background: #2563eb; color: #fff;">+ New Engagement</button>
+          <button class="btn btn-sm" style="background: #2563eb; color: #fff;">Search</button>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-3">
+          <label class="fw-bold">Our draft guess:</label>
+          <div class="color-swatch">
+            <div class="dot" style="background: #2563eb;"></div>
+            <code>#2563EB</code>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-3">
+          <label class="fw-bold">Your exact value:</label>
+          <input type="color" value="#2563eb" class="form-control form-control-color" style="width:50px;">
+          <input type="text" class="form-control" placeholder="#______" style="max-width: 120px;">
+          <span class="text-muted small">or confirm draft is correct</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q2: Brand Navy -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q2.</strong> Brand Navy</span>
+        <span class="badge bg-danger">Must Answer</span>
+      </div>
+      <div class="question-body">
+        <p>The deep navy used in the logo's dark background lockups and possibly as a dark text/heading color.</p>
+        <div class="preview-row">
+          <div style="background: #1e2a4a; color: #fff; padding: 0.75rem 1.5rem; border-radius: 6px; display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.5rem; font-weight: 300;">&#10005;</span>
+            <span style="font-weight: 600; letter-spacing: 0.15em;">MARKAZ</span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-3">
+          <label class="fw-bold">Our draft guess:</label>
+          <div class="color-swatch">
+            <div class="dot" style="background: #1e2a4a;"></div>
+            <code>#1E2A4A</code>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-3">
+          <label class="fw-bold">Your exact value:</label>
+          <input type="color" value="#1e2a4a" class="form-control form-control-color" style="width:50px;">
+          <input type="text" class="form-control" placeholder="#______" style="max-width: 120px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Q3: Brand Blue Accent -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q3.</strong> Brand Blue Accent</span>
+        <span class="badge bg-danger">Must Answer</span>
+      </div>
+      <div class="question-body">
+        <p>The brighter blue diamond at the center of the X mark in the Nexus logo.</p>
+        <div class="preview-row">
+          <div style="position: relative; font-size: 3rem; color: #1e2a4a; line-height: 1;">
+            &#10005;
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; background: #4a90d9; border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg);"></div>
+          </div>
+          <span class="text-muted">The blue diamond at the intersection</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-3">
+          <label class="fw-bold">Our draft guess:</label>
+          <div class="color-swatch">
+            <div class="dot" style="background: #4a90d9;"></div>
+            <code>#4A90D9</code>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-3">
+          <label class="fw-bold">Your exact value:</label>
+          <input type="color" value="#4a90d9" class="form-control form-control-color" style="width:50px;">
+          <input type="text" class="form-control" placeholder="#______" style="max-width: 120px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Q4: Danger Red -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q4.</strong> Danger / Red</span>
+        <span class="badge bg-warning text-dark">Confirm or Override</span>
+      </div>
+      <div class="question-body">
+        <p>Used for low-completion indicators (38%), overdue follow-ups, "Poor" data quality, "Cold" account health. Is this Bootstrap's default red, or a custom value?</p>
+        <div class="preview-row">
+          <span style="color: #dc3545; font-weight: 600;">38%</span>
+          <span style="color: #dc3545; font-weight: 500;">7d overdue</span>
+          <span class="badge" style="background: #dc3545; color: #fff;">Poor</span>
+          <span style="color: #dc3545;">&bull; Cold</span>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+          <div class="color-swatch">
+            <div class="dot" style="background: #dc3545;"></div>
+            <div><code>#DC3545</code><br><small class="text-muted">Bootstrap default</small></div>
+          </div>
+          <div class="color-swatch">
+            <div class="dot" style="background: #e53e3e;"></div>
+            <div><code>#E53E3E</code><br><small class="text-muted">Alternative</small></div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-3 mt-3">
+          <label class="fw-bold">Your value:</label>
+          <input type="color" value="#dc3545" class="form-control form-control-color" style="width:50px;">
+          <input type="text" class="form-control" placeholder="#______ or 'Bootstrap default'" style="max-width: 240px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- Q5: Tag Group Colors -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q5.</strong> Tag Group Color Palette</span>
+        <span class="badge bg-danger">Must Answer</span>
+      </div>
+      <div class="question-body">
+        <p>Tags in CRM are color-coded by group. Each group needs an exact color for its dot and chip background. Here's what we see — please confirm or correct each one.</p>
+
+        <div class="color-input-row">
+          <div class="dot" style="background: #d4772c;"></div>
+          <label>Buyers</label>
+          <div class="tag-chip"><span class="tag-dot" style="background: #d4772c;"></span> Buyer — Theatrical</div>
+          <input type="color" value="#d4772c" class="form-control form-control-color" style="width:40px;">
+          <input type="text" class="form-control form-control-sm" placeholder="#______" style="max-width: 100px;" value="#D4772C">
+        </div>
+
+        <div class="color-input-row">
+          <div class="dot" style="background: #3b82f6;"></div>
+          <label>Press</label>
+          <div class="tag-chip"><span class="tag-dot" style="background: #3b82f6;"></span> Press — Online Critic</div>
+          <input type="color" value="#3b82f6" class="form-control form-control-color" style="width:40px;">
+          <input type="text" class="form-control form-control-sm" placeholder="#______" style="max-width: 100px;" value="#3B82F6">
+        </div>
+
+        <div class="color-input-row">
+          <div class="dot" style="background: #06b6d4;"></div>
+          <label>Festivals</label>
+          <div class="tag-chip"><span class="tag-dot" style="background: #06b6d4;"></span> Festival — Programmer</div>
+          <input type="color" value="#06b6d4" class="form-control form-control-color" style="width:40px;">
+          <input type="text" class="form-control form-control-sm" placeholder="#______" style="max-width: 100px;" value="#06B6D4">
+        </div>
+
+        <div class="color-input-row">
+          <div class="dot" style="background: #22a06b;"></div>
+          <label>Sellers</label>
+          <div class="tag-chip"><span class="tag-dot" style="background: #22a06b;"></span> Seller — Sales Agent</div>
+          <input type="color" value="#22a06b" class="form-control form-control-color" style="width:40px;">
+          <input type="text" class="form-control form-control-sm" placeholder="#______" style="max-width: 100px;" value="#22A06B">
+        </div>
+
+        <div class="color-input-row">
+          <div class="dot" style="background: #8b5cf6;"></div>
+          <label>Institutional</label>
+          <div class="tag-chip"><span class="tag-dot" style="background: #8b5cf6;"></span> Institutional — University</div>
+          <input type="color" value="#8b5cf6" class="form-control form-control-color" style="width:40px;">
+          <input type="text" class="form-control form-control-sm" placeholder="#______" style="max-width: 100px;" value="#8B5CF6">
+        </div>
+
+        <div class="color-input-row">
+          <div class="dot" style="background: #6b7280;"></div>
+          <label>Organizations</label>
+          <div class="tag-chip"><span class="tag-dot" style="background: #6b7280;"></span> Organization</div>
+          <input type="color" value="#6b7280" class="form-control form-control-color" style="width:40px;">
+          <input type="text" class="form-control form-control-sm" placeholder="#______" style="max-width: 100px;" value="#6B7280">
+        </div>
+
+        <div class="color-input-row">
+          <div class="dot" style="background: #9ca3af;"></div>
+          <label>Internal</label>
+          <div class="tag-chip"><span class="tag-dot" style="background: #9ca3af;"></span> Internal</div>
+          <input type="color" value="#9ca3af" class="form-control form-control-color" style="width:40px;">
+          <input type="text" class="form-control form-control-sm" placeholder="#______" style="max-width: 100px;" value="#9CA3AF">
+        </div>
+
+        <div class="mt-3">
+          <label class="fw-bold">Any additional tag groups not listed?</label>
+          <textarea class="form-control mt-1" placeholder="e.g., 'Other' group uses #______"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q6: Engagement Type Colors -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q6.</strong> Engagement Type Colors</span>
+        <span class="badge bg-warning text-dark">Confirm or Override</span>
+      </div>
+      <div class="question-body">
+        <p>Each engagement type has a badge color. Are these the final assignments?</p>
+
+        <div class="d-flex flex-wrap gap-3 mb-3">
+          <div class="text-center">
+            <span class="engagement-badge" style="background: #dbeafe; color: #2563eb; border: 1px solid #bfdbfe;">EMAIL</span>
+            <div class="small text-muted mt-1">Blue</div>
+            <input type="text" class="form-control form-control-sm mt-1" style="max-width: 90px;" value="#2563EB">
+          </div>
+          <div class="text-center">
+            <span class="engagement-badge" style="background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa;">MEETING</span>
+            <div class="small text-muted mt-1">Orange</div>
+            <input type="text" class="form-control form-control-sm mt-1" style="max-width: 90px;" value="#D4772C">
+          </div>
+          <div class="text-center">
+            <span class="engagement-badge" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;">CALL</span>
+            <div class="small text-muted mt-1">Green</div>
+            <input type="text" class="form-control form-control-sm mt-1" style="max-width: 90px;" value="#22A06B">
+          </div>
+          <div class="text-center">
+            <span class="engagement-badge" style="background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb;">NOTE</span>
+            <div class="small text-muted mt-1">Gray</div>
+            <input type="text" class="form-control form-control-sm mt-1" style="max-width: 90px;" value="#6B7280">
+          </div>
+        </div>
+
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="q6" id="q6-confirm">
+          <label class="form-check-label" for="q6-confirm">Confirmed — these are correct</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="q6" id="q6-change">
+          <label class="form-check-label" for="q6-change">Change — updated values entered above</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION: NAVIGATION -->
+    <div class="section-divider"></div>
+    <h2 style="color: #1e2a4a;">Navigation</h2>
+    <p class="text-muted mb-3">How sections and sub-sections are structured.</p>
+
+    <!-- Q7: Section Mapping -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q7.</strong> Markaz Section Mapping</span>
+        <span class="badge bg-danger">Must Answer</span>
+      </div>
+      <div class="question-body">
+        <p>Markaz has <strong>7 internal sections</strong> but the Content design top bar shows only <strong>5 items</strong>. How do the missing sections (Rights, Websites, Assets, Releases) map?</p>
+
+        <div class="mb-3">
+          <strong>7 sections:</strong> Rights, CRM, Content, Websites, Assets, Releases, Screenings<br>
+          <strong>5 top bar items:</strong> Dashboard, Content, CRM, Avails, Screenings
+        </div>
+
+        <div class="nav-diagram">Level 1: [X MARKAZ]  Dashboard  Content  CRM  Avails  Screenings  [Search] [Avatar]
+                                     ?         ?       ?     ?=Rights?   ?
+
+Missing: Rights → Avails?
+         Websites → under Content?
+         Assets → under Content?
+         Releases → under Content?</div>
+
+        <div class="mt-3">
+          <label class="fw-bold">How do the 7 sections map to the top bar?</label>
+          <textarea class="form-control mt-1" rows="4" placeholder="e.g., 'Avails = Rights', 'Websites/Assets/Releases are sub-sections within Content', etc."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q8: CRM Sub-Nav -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q8.</strong> CRM Sub-Navigation Integration</span>
+        <span class="badge bg-danger">Must Answer</span>
+      </div>
+      <div class="question-body">
+        <p>When CRM lives inside Markaz, how does the CRM sub-nav (Dashboard, Contacts, Accounts, Engagements) integrate with the Markaz top bar?</p>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-6">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q8]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q8" value="two-bars"> <strong>Option A: Two bars stacked</strong>
+              <div class="nav-diagram mt-2" style="font-size: 0.75rem;">[MARKAZ] Dashboard Content <u>CRM</u> Avails Screenings
+─────────────────────────────────────
+<u>Dashboard</u> Contacts Accounts Engagements</div>
+              <small class="text-muted">Markaz nav stays, CRM nav appears below it</small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q8]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q8" value="replace"> <strong>Option B: Replace top items</strong>
+              <div class="nav-diagram mt-2" style="font-size: 0.75rem;">[MARKAZ] ← Back  Dashboard Contacts Accounts Engagements</div>
+              <small class="text-muted">CRM nav replaces main nav, with a "Back" link</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label class="fw-bold">Or describe a different approach:</label>
+          <textarea class="form-control mt-1" placeholder="e.g., 'The CRM nav items appear as a second horizontal bar...'"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION: COMPONENTS -->
+    <div class="section-divider"></div>
+    <h2 style="color: #1e2a4a;">Components</h2>
+    <p class="text-muted mb-3">Visual choices about component behavior and styling.</p>
+
+    <!-- Q9: Avatar Colors -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q9.</strong> Avatar Color Assignment</span>
+        <span class="badge bg-info text-dark">Design Decision</span>
+      </div>
+      <div class="question-body">
+        <p>Contact avatars use colored circle backgrounds. How are the colors assigned?</p>
+
+        <div class="preview-row">
+          <div class="avatar-circle" style="background: #1e3a5f;">SC</div>
+          <div class="avatar-circle" style="background: #e85d3a;">JP</div>
+          <div class="avatar-circle" style="background: #22a06b;">ML</div>
+          <div class="avatar-circle" style="background: #8b5cf6;">TH</div>
+          <div class="avatar-circle" style="background: #06b6d4;">AW</div>
+          <div class="avatar-circle" style="background: #dc3545;">DK</div>
+          <div class="avatar-circle" style="background: #d4772c;">NH</div>
+        </div>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-4">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q9]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q9" value="hash"> <strong>Deterministic</strong>
+              <p class="small text-muted mb-0">Color derived from name hash — same person always gets same color</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q9]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q9" value="sequential"> <strong>Sequential</strong>
+              <p class="small text-muted mb-0">Colors assigned from a fixed palette in order of creation</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q9]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q9" value="manual"> <strong>Manual / Don't care</strong>
+              <p class="small text-muted mb-0">Up to implementation — just needs to look varied</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q10: Badge Shape -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q10.</strong> Badge Shape</span>
+        <span class="badge bg-info text-dark">Design Decision</span>
+      </div>
+      <div class="question-body">
+        <p>Badges appear in two shapes across the designs. Which is the canonical style?</p>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-6">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q10]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q10" value="pill"> <strong>Option A: Pill (rounded)</strong>
+              <div class="mt-2">
+                <span class="badge-example badge-pill" style="background: #2563eb; color: #fff;">Feature Film</span>
+                <span class="badge-example badge-pill" style="background: #22a06b; color: #fff;">Active</span>
+                <span class="badge-example badge-pill" style="background: #d4772c; color: #fff;">MEETING</span>
+                <span class="badge-example badge-pill" style="background: #6b7280; color: #fff;">MED</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q10]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q10" value="rect"> <strong>Option B: Rounded rectangle</strong>
+              <div class="mt-2">
+                <span class="badge-example badge-rect" style="background: #2563eb; color: #fff;">Feature Film</span>
+                <span class="badge-example badge-rect" style="background: #22a06b; color: #fff;">Active</span>
+                <span class="badge-example badge-rect" style="background: #d4772c; color: #fff;">MEETING</span>
+                <span class="badge-example badge-rect" style="background: #6b7280; color: #fff;">MED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <label class="fw-bold">Or a mix?</label>
+          <textarea class="form-control mt-1" placeholder="e.g., 'Pill for status badges, rectangle for type badges'"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q11: Contact Detail Tabs -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q11.</strong> Contact Detail — Right Panel Content</span>
+        <span class="badge bg-info text-dark">Design Decision</span>
+      </div>
+      <div class="question-body">
+        <p>Screen 01 shows <strong>engagement timeline</strong> on the right. Screen 14 shows <strong>data completeness checklist</strong> on the right. Are these tabs on the same contact detail page, or different views?</p>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-6">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q11]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q11" value="tabs"> <strong>Tabs on same page</strong>
+              <div class="nav-diagram mt-2" style="font-size: 0.75rem;">[Engagements] [Data Quality]
+─────────────────────────────
+(selected tab content here)</div>
+              <small class="text-muted">User switches between engagement timeline and data quality</small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q11]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q11" value="separate"> <strong>Separate views / pages</strong>
+              <small class="text-muted d-block mt-2">Accessed from different navigation paths (e.g., contact detail vs. data quality report)</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q12: Data Quality Thresholds -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q12.</strong> Data Quality Grade Thresholds</span>
+        <span class="badge bg-info text-dark">Design Decision</span>
+      </div>
+      <div class="question-body">
+        <p>The data quality system uses 4 grades with colored indicators. At what percentages do grades change?</p>
+
+        <div class="preview-row">
+          <span style="color: #22a06b; font-weight: 600;">&#9679; Excellent</span>
+          <span style="color: #2563eb; font-weight: 600;">&#9679; Good</span>
+          <span style="color: #d4772c; font-weight: 600;">&#9679; Fair</span>
+          <span style="color: #dc3545; font-weight: 600;">&#9679; Poor</span>
+        </div>
+
+        <p class="mt-2 mb-1"><strong>Our guess based on the designs:</strong></p>
+        <table class="table table-sm table-bordered" style="max-width: 400px;">
+          <thead class="table-light">
+            <tr><th>Grade</th><th>Range (guess)</th><th>Your value</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span style="color: #22a06b;">&#9679;</span> Excellent</td>
+              <td>80% — 100%</td>
+              <td><input type="text" class="form-control form-control-sm" placeholder="__% — 100%"></td>
+            </tr>
+            <tr>
+              <td><span style="color: #2563eb;">&#9679;</span> Good</td>
+              <td>60% — 79%</td>
+              <td><input type="text" class="form-control form-control-sm" placeholder="__% — __%"></td>
+            </tr>
+            <tr>
+              <td><span style="color: #d4772c;">&#9679;</span> Fair</td>
+              <td>40% — 59%</td>
+              <td><input type="text" class="form-control form-control-sm" placeholder="__% — __%"></td>
+            </tr>
+            <tr>
+              <td><span style="color: #dc3545;">&#9679;</span> Poor</td>
+              <td>0% — 39%</td>
+              <td><input type="text" class="form-control form-control-sm" placeholder="0% — __%"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Q13: Card/List Toggle -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q13.</strong> Card / List View Toggle</span>
+        <span class="badge bg-info text-dark">Design Decision</span>
+      </div>
+      <div class="question-body">
+        <p>Screen 06 (search results) shows a list/card toggle. Is this available on all list pages, or just the contacts search?</p>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-4">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q13]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q13" value="all"> <strong>All list pages</strong>
+              <p class="small text-muted mb-0">Contacts, Accounts, Engagements — all get the toggle</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q13]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q13" value="contacts"> <strong>Contacts only</strong>
+              <p class="small text-muted mb-0">Only the contacts list/search has the card view option</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q13]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q13" value="future"> <strong>Decide later</strong>
+              <p class="small text-muted mb-0">Build it for contacts, extend to other pages if needed</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q14: Sidebar Browser -->
+    <div class="question-card">
+      <div class="question-header d-flex justify-content-between align-items-center">
+        <span><strong>Q14.</strong> Sidebar Browser Pattern</span>
+        <span class="badge bg-info text-dark">Design Decision</span>
+      </div>
+      <div class="question-body">
+        <p>The Markaz Content design has a left sidebar browser (title list with search + filters). CRM uses a similar sidebar for search filters (Screens 05, 06, 10). Is this a universal pattern across all Markaz sections?</p>
+
+        <div class="row g-3 mt-2">
+          <div class="col-md-4">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q14]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q14" value="universal"> <strong>Universal</strong>
+              <p class="small text-muted mb-0">Every section has a left sidebar for browsing/filtering</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q14]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q14" value="specific"> <strong>Section-specific</strong>
+              <p class="small text-muted mb-0">Only Content (title browser) and CRM search use sidebars</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="option-card" onclick="this.querySelector('input').checked=true; document.querySelectorAll('[name=q14]').forEach(r => r.closest('.option-card').classList.remove('selected')); this.classList.add('selected');">
+              <input type="radio" name="q14" value="decide"> <strong>Decide per-section</strong>
+              <p class="small text-muted mb-0">Each section gets the sidebar if it makes sense for its content</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="section-divider"></div>
+    <div class="question-card">
+      <div class="question-header">
+        <strong>Additional Notes</strong>
+      </div>
+      <div class="question-body">
+        <p>Anything else you want to add or correct about the designs?</p>
+        <textarea class="form-control" rows="5" placeholder="Free-form notes..."></textarea>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-muted small mt-4 mb-5">
+      <p>Generated from Q&amp;A Session 001 &middot; MPI Design System &middot; March 2, 2026</p>
+      <p>Print this page or screenshot your answers to share.</p>
+    </div>
+
+    <button class="btn btn-primary print-btn shadow-lg" onclick="window.print()">Print / Save PDF</button>
+
+  </div>
+</body>
+</html>
