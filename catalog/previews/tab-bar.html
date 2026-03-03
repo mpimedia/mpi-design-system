@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TabBar — MPI Design System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding: 32px; background: #fff; }
+    .preview-section { margin-bottom: 32px; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
+    .nav-tabs .nav-link { color: #6C757D; font-size: 14px; }
+    .nav-tabs .nav-link.active { color: #2E75B6; font-weight: 600; border-bottom-color: #2E75B6; }
+    .nav-tabs .nav-link:hover { color: #2E75B6; }
+    .badge { border-radius: 999px !important; }
+  </style>
+</head>
+<body>
+  <h4 class="mb-1">TabBar</h4>
+  <p class="text-muted small mb-4">Horizontal tab navigation with optional count badges. Used for switching content panels within a page.</p>
+
+  <div class="preview-section">
+    <div class="preview-label">Default Tabs</div>
+    <ul class="nav nav-tabs" style="max-width:500px;">
+      <li class="nav-item"><a class="nav-link active" href="#">Engagement Timeline</a></li>
+      <li class="nav-item"><a class="nav-link" href="#">Data Quality</a></li>
+    </ul>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">Tabs With Count Badges</div>
+    <ul class="nav nav-tabs" style="max-width:600px;">
+      <li class="nav-item"><a class="nav-link active" href="#">Contacts <span class="badge" style="background:#2E75B6; font-size:11px;">248</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="#">Accounts <span class="badge bg-secondary" style="font-size:11px;">56</span></a></li>
+      <li class="nav-item"><a class="nav-link" href="#">Engagements <span class="badge bg-secondary" style="font-size:11px;">1,024</span></a></li>
+    </ul>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">Three Tabs — Middle Active</div>
+    <ul class="nav nav-tabs" style="max-width:500px;">
+      <li class="nav-item"><a class="nav-link" href="#">Overview</a></li>
+      <li class="nav-item"><a class="nav-link active" href="#">Details</a></li>
+      <li class="nav-item"><a class="nav-link" href="#">History</a></li>
+    </ul>
+  </div>
+
+  <div class="preview-section">
+    <div class="preview-label">In Context — Contact Detail Right Panel</div>
+    <div class="border rounded" style="max-width:500px;">
+      <ul class="nav nav-tabs px-3 pt-2">
+        <li class="nav-item"><a class="nav-link active" href="#">Engagement Timeline</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Data Quality</a></li>
+      </ul>
+      <div class="p-3">
+        <div class="d-flex align-items-start gap-2 mb-3 pb-3 border-bottom">
+          <div style="width:8px;height:8px;border-radius:50%;background:#2E75B6;margin-top:6px;flex-shrink:0;"></div>
+          <div>
+            <div class="small"><strong>Email sent</strong> — Follow-up RE: MIPCOM screening</div>
+            <div class="text-muted" style="font-size:12px;">Mar 1, 2026</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-start gap-2 mb-3 pb-3 border-bottom">
+          <div style="width:8px;height:8px;border-radius:50%;background:#8B5CF6;margin-top:6px;flex-shrink:0;"></div>
+          <div>
+            <div class="small"><strong>Meeting</strong> — Lunch at Cannes</div>
+            <div class="text-muted" style="font-size:12px;">Feb 28, 2026</div>
+          </div>
+        </div>
+        <div class="d-flex align-items-start gap-2">
+          <div style="width:8px;height:8px;border-radius:50%;background:#16A34A;margin-top:6px;flex-shrink:0;"></div>
+          <div>
+            <div class="small"><strong>Call</strong> — Intro call with VP Acquisitions</div>
+            <div class="text-muted" style="font-size:12px;">Feb 25, 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
