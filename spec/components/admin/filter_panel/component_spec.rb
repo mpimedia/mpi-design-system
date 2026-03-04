@@ -75,6 +75,33 @@ RSpec.describe Admin::FilterPanel::Component, type: :component do
     expect(page).to have_css("span[style*='color: #6C757D']", text: "28")
   end
 
+  it "renders zero count values" do
+    sections_with_zero = [
+      {
+        title: "Status",
+        field_name: "status[]",
+        options: [ { label: "Archived", value: "archived", count: 0 } ]
+      }
+    ]
+    render_inline(described_class.new(sections: sections_with_zero))
+
+    expect(page).to have_css("span[style*='color: #6C757D']", text: "0")
+  end
+
+  it "hides count when not provided" do
+    sections_no_count = [
+      {
+        title: "Date",
+        field_name: "date[]",
+        options: [ { label: "Last 7 days", value: "7d" } ]
+      }
+    ]
+    render_inline(described_class.new(sections: sections_no_count))
+
+    expect(page).to have_text("Last 7 days")
+    expect(page).not_to have_css("span[style*='font-size: 11px']")
+  end
+
   it "renders collapsed sections without show class" do
     render_inline(described_class.new(sections: sections))
 
@@ -94,7 +121,7 @@ RSpec.describe Admin::FilterPanel::Component, type: :component do
     expect(page).to have_css("button[aria-expanded='false']", text: "Engagement Type")
   end
 
-  it "renders form with action URL" do
+  it "renders form with GET method and action URL" do
     render_inline(described_class.new(sections: sections, form_action: "/search"))
 
     expect(page).to have_css("form[action='/search'][method='get']")
@@ -106,11 +133,16 @@ RSpec.describe Admin::FilterPanel::Component, type: :component do
     expect(page).to have_css("hr[style*='border-top: 1px solid #DEE2E6']")
   end
 
-  it "renders chevron icons on section headers" do
+  it "renders chevron-down icons on all section headers" do
     render_inline(described_class.new(sections: sections))
 
-    expect(page).to have_css("i.bi.bi-chevron-down")
-    expect(page).to have_css("i.bi.bi-chevron-right")
+    expect(page).to have_css("i.bi.bi-chevron-down", count: 2)
+  end
+
+  it "rotates chevron for collapsed sections" do
+    render_inline(described_class.new(sections: sections))
+
+    expect(page).to have_css("i.bi.bi-chevron-down[style*='rotate(-90deg)']")
   end
 
   it "renders empty panel without errors" do

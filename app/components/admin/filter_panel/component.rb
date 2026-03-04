@@ -9,11 +9,9 @@ module Admin
       #   - collapsed [Boolean] Whether the section starts collapsed (default: false)
       #   - field_name [String] Form field name for the section (e.g., "tag_group[]")
       # @param form_action [String] URL the filter form submits to
-      # @param form_method [String] HTTP method (default: "get")
-      def initialize(sections:, form_action: "#", form_method: "get")
+      def initialize(sections:, form_action: "#")
         @sections = sections || []
         @form_action = form_action
-        @form_method = form_method
       end
 
       private
@@ -82,6 +80,14 @@ module Admin
 
       def divider_styles
         "border: none; border-top: 1px solid #DEE2E6; margin: 0;"
+      end
+
+      def chevron_styles
+        "font-size: 12px; color: #6C757D; transition: transform 0.2s ease;"
+      end
+
+      def chevron_collapsed_styles
+        "font-size: 12px; color: #6C757D; transition: transform 0.2s ease; transform: rotate(-90deg);"
       end
 
       def section_id(index)
