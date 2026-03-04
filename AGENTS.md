@@ -109,6 +109,12 @@ import { registerMpiControllers } from "mpi_design_system"
 registerMpiControllers(application)
 ```
 
+> **Note:** The bare `"mpi_design_system"` import requires an esbuild alias in the consuming app's `esbuild.config.js`:
+> ```js
+> alias: { 'mpi_design_system': path.resolve(__dirname, 'path/to/mpi_design_system/app/javascript/mpi_design_system') }
+> ```
+> See this repo's `esbuild.config.js` for a working example.
+
 ### Design Tokens
 
 SCSS tokens at `app/assets/stylesheets/mpi_design_system/_tokens.scss` override Bootstrap defaults before import.

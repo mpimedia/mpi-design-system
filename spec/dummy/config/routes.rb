@@ -7,7 +7,6 @@ Rails.application.routes.draw do
 
   if Rails.env.development?
     mount Lookbook::Engine, at: "/lookbook"
+    root to: redirect("/lookbook")
   end
-
-  root to: redirect("/lookbook")
 end
