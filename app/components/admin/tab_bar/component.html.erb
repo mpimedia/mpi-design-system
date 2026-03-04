@@ -1,0 +1,20 @@
+<div role="tablist" style="<%= container_styles %>">
+  <% @tabs.each do |tab| %>
+    <% if tab[:disabled] %>
+      <span role="tab"
+            aria-selected="false"
+            aria-disabled="true"
+            tabindex="-1"
+            style="<%= tab_styles(tab) %>">
+        <%= tab_label(tab) %>
+      </span>
+    <% else %>
+      <a href="<%= tab[:href] %>"
+         role="tab"
+         aria-selected="<%= tab[:active] ? 'true' : 'false' %>"
+         style="<%= tab_styles(tab) %>">
+        <%= tab_label(tab) %>
+      </a>
+    <% end %>
+  <% end %>
+</div>

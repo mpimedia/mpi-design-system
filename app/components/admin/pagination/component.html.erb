@@ -1,0 +1,40 @@
+<nav aria-label="Pagination" style="border-top: 1px solid #DEE2E6; padding-top: 12px;">
+  <div class="d-flex align-items-center justify-content-between">
+    <span style="<%= results_text_styles %>"><%= results_text %></span>
+
+    <div class="d-flex align-items-center gap-1">
+      <% if show_prev? %>
+        <a href="<%= page_url(@current_page - 1) %>"
+           style="<%= page_btn_styles %>"
+           aria-label="Previous page"
+           data-turbo-frame="<%= @turbo_frame %>">
+          &larr;
+        </a>
+      <% end %>
+
+      <% pages.each do |page_num| %>
+        <% if page_num == @current_page %>
+          <span style="<%= page_btn_styles(active: true) %>" aria-current="page" aria-label="Page <%= page_num %>">
+            <%= page_num %>
+          </span>
+        <% else %>
+          <a href="<%= page_url(page_num) %>"
+             style="<%= page_btn_styles %>"
+             aria-label="Page <%= page_num %>"
+             data-turbo-frame="<%= @turbo_frame %>">
+            <%= page_num %>
+          </a>
+        <% end %>
+      <% end %>
+
+      <% if show_next? %>
+        <a href="<%= page_url(@current_page + 1) %>"
+           style="<%= page_btn_styles %>"
+           aria-label="Next page"
+           data-turbo-frame="<%= @turbo_frame %>">
+          &rarr;
+        </a>
+      <% end %>
+    </div>
+  </div>
+</nav>

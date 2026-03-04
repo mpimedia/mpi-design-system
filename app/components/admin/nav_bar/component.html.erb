@@ -1,0 +1,41 @@
+<nav aria-label="Main navigation">
+  <div style="<%= topbar_styles %>" class="d-flex align-items-center justify-content-between px-3">
+    <div class="d-flex align-items-center gap-3">
+      <a href="/dashboard" class="d-flex align-items-center gap-2" style="<%= logo_text_styles %>">
+        <%= nexus_svg %>
+        <span>MARKAZ</span>
+      </a>
+
+      <div class="d-flex align-items-center">
+        <% SECTIONS.each do |section| %>
+          <a href="<%= section[:href] %>"
+             style="<%= nav_item_styles(@current_section == section[:key]) %>"
+             <% if @current_section == section[:key] %>aria-current="page"<% end %>>
+            <%= section[:label] %>
+          </a>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+      <% if @search_url %>
+        <%= render Admin::SearchBar::Component.new(url: @search_url, placeholder: "Search...", size: :md) %>
+      <% end %>
+      <%= render Admin::AvatarCircle::Component.new(name: @user_name, size: :sm) %>
+    </div>
+  </div>
+</nav>
+
+<% if show_subnav? %>
+  <nav aria-label="Section navigation">
+    <div style="<%= subnav_styles %>" class="d-flex align-items-center px-3">
+      <% subsections.each do |sub| %>
+        <a href="<%= sub[:href] %>"
+           style="<%= subnav_item_styles(@current_subsection == sub[:key]) %>"
+           <% if @current_subsection == sub[:key] %>aria-current="page"<% end %>>
+          <%= sub[:label] %>
+        </a>
+      <% end %>
+    </div>
+  </nav>
+<% end %>

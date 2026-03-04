@@ -1,0 +1,39 @@
+<div style="<%= container_styles %>">
+  <% if @icon %>
+    <div class="mb-3">
+      <i class="bi <%= @icon %>" style="<%= icon_styles %>" aria-hidden="true"></i>
+    </div>
+  <% end %>
+
+  <h3 style="<%= heading_styles %>" class="mb-2"><%= @heading %></h3>
+
+  <% if @description %>
+    <p style="<%= description_styles %>" class="mb-3"><%= @description %></p>
+  <% end %>
+
+  <% if show_action? %>
+    <div class="mb-3">
+      <%= render Admin::ActionButton::Component.new(
+        label: @action_label,
+        href: @action_url,
+        icon: @action_icon,
+        size: :sm
+      ) %>
+    </div>
+  <% end %>
+
+  <% if show_shortcuts? %>
+    <div class="row g-3 mt-3 justify-content-center" style="max-width: 600px; margin: 0 auto;" aria-label="Quick access shortcuts">
+      <% @shortcuts.each do |shortcut| %>
+        <div class="col-6">
+          <a href="<%= shortcut[:href] %>" style="<%= shortcut_card_styles %>" class="shortcut-card">
+            <div style="<%= shortcut_title_styles %>"><%= shortcut[:title] %></div>
+            <% if shortcut[:description] %>
+              <div style="<%= shortcut_desc_styles %>"><%= shortcut[:description] %></div>
+            <% end %>
+          </a>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

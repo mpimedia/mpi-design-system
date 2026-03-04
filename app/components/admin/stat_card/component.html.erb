@@ -1,0 +1,12 @@
+<div style="<%= card_styles %>"<%= " role=\"alert\"".html_safe if @alert %>>
+  <div style="<%= label_styles %>"><%= @label %></div>
+  <div style="<%= value_styles %>"><%= @value %></div>
+  <% if show_trend? %>
+    <div style="<%= trend_styles %>">
+      <% if trend_icon %>
+        <i class="bi <%= trend_icon %>" aria-hidden="true"></i>
+      <% end %>
+      <%= @trend_text %>
+    </div>
+  <% end %>
+</div>
