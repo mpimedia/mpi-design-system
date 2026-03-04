@@ -1,0 +1,18 @@
+<%= render Admin::EngagementDetailView::Component.new(engagement_type: :meeting) do |view| %>
+  <% view.with_breadcrumb do %>
+    <%= render Admin::BreadcrumbNav::Component.new(
+      back_path: "#",
+      back_label: "Engagements",
+      current_title: "Meeting: Q1 Planning Session"
+    ) %>
+  <% end %>
+
+  <% view.with_main_content do %>
+    <h5 style="color: #1B2A4A; margin-bottom: 16px;">Q1 Planning Session</h5>
+    <p style="color: #6C757D; font-size: 14px;">
+      Discussed distribution strategy for upcoming releases.
+      Key decisions: prioritize European markets, schedule follow-up
+      with Berlin and Cannes contacts.
+    </p>
+  <% end %>
+<% end %>
