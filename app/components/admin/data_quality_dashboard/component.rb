@@ -23,7 +23,7 @@ module Admin
                      gaps: [], priority_fixes: [])
         @overall_score = overall_score.clamp(0, 100)
         @overall_tier = TIERS.include?(overall_tier) ? overall_tier : :poor
-        @grade_distribution = grade_distribution
+        @grade_distribution = grade_distribution || {}
         @total_contacts = total_contacts
         @gaps = gaps || []
         @priority_fixes = priority_fixes || []
@@ -157,7 +157,8 @@ module Admin
       end
 
       def mini_ring_offset(score)
-        mini_ring_circumference * (1 - score / 100.0)
+        clamped = score.clamp(0, 100)
+        mini_ring_circumference * (1 - clamped / 100.0)
       end
     end
   end

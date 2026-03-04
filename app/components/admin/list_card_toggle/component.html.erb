@@ -1,15 +1,15 @@
 <div class="d-flex align-items-center justify-content-between">
   <div style="<%= result_count_styles %>">
-    <%= raw highlighted_result_text %>
+    <%= highlighted_result_text %>
   </div>
   <div class="d-flex align-items-center gap-2">
     <div style="<%= toggle_group_styles %>">
-      <a href="<%= @list_url %>" style="<%= toggle_button_styles(:list) %><%= toggle_divider_styles unless list_active? && !card_active? %>"
-        title="List view" aria-pressed="<%= list_active? %>"<% if list_active? %> aria-current="true"<% end %>>
+      <a href="<%= @list_url %>" style="<%= list_button_styles %>"
+        title="List view" aria-pressed="<%= list_active? %>">
         <i class="bi bi-list-ul" aria-hidden="true"></i>
       </a>
       <a href="<%= @card_url %>" style="<%= toggle_button_styles(:card) %>"
-        title="Card view" aria-pressed="<%= card_active? %>"<% if card_active? %> aria-current="true"<% end %>>
+        title="Card view" aria-pressed="<%= card_active? %>">
         <i class="bi bi-grid-3x2-gap" aria-hidden="true"></i>
       </a>
     </div>

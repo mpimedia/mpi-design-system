@@ -4,8 +4,6 @@ module Admin
   module ContactCard
     class Component < ViewComponent::Base
       # @param name [String] Contact full name
-      # @param initials [String] Two-letter initials for avatar
-      # @param avatar_color [String] Hex color for avatar background
       # @param company [String] Company/organization name
       # @param tags [Array<Hash>] Each: { label: String, color: String, bg_color: String }
       # @param last_engaged [String] Relative time (e.g., "2 days ago")

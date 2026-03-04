@@ -46,7 +46,13 @@ RSpec.describe Admin::ListCardToggle::Component, type: :component do
     render_inline(described_class.new(**default_params.merge(active_view: :card)))
 
     expect(page).to have_css("a[title='Card view'][aria-pressed='true'][style*='background: #2E75B6']")
-    expect(page).to have_css("a[title='List view'][aria-pressed='false'][style*='background: #fff']")
+    expect(page).to have_css("a[title='List view'][aria-pressed='false']")
+  end
+
+  it "renders list button with divider border" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_css("a[title='List view'][style*='border-right: 1px solid #DEE2E6']")
   end
 
   it "renders toggle icons" do

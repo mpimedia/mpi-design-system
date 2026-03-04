@@ -63,8 +63,9 @@ module Admin
         ].join("; ")
       end
 
-      def toggle_divider_styles
-        "border-right: 1px solid #DEE2E6;"
+      def list_button_styles
+        base = toggle_button_styles(:list)
+        "#{base}; border-right: 1px solid #DEE2E6"
       end
 
       def sort_select_styles
@@ -78,16 +79,14 @@ module Admin
         ].join("; ")
       end
 
-      def result_text
-        "#{@result_count} #{@result_label}"
-      end
-
       def highlighted_result_text
-        return result_text if @search_query.blank?
+        escaped_count = ERB::Util.html_escape(@result_count.to_s)
+        escaped_label = ERB::Util.html_escape(@result_label)
+        base = "#{escaped_count} #{escaped_label}"
+        return base.html_safe if @search_query.blank?
 
-        text = result_text
         escaped_query = ERB::Util.html_escape(@search_query)
-        "#{text} for <span style=\"#{highlight_styles}\">#{escaped_query}</span>"
+        "#{base} for <span style=\"#{highlight_styles}\">#{escaped_query}</span>".html_safe
       end
 
       def list_active?

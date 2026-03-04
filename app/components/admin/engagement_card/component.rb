@@ -19,7 +19,7 @@ module Admin
       # @param contacts [Array<Hash>] Each: { name: String, path: String }
       # @param account_name [String] Linked account name
       # @param account_path [String] URL to account detail
-      # @param tags [Array<Hash>] Each: { group: Symbol, role: String, color: String }
+      # @param tags [Array<Hash>] Each: { group: Symbol, role: String }
       # @param linked_titles [Array<Hash>] Each: { name: String, path: String }
       # @param creator_name [String] Internal user who logged the engagement
       def initialize(engagement_type:, time: nil, subject: nil, excerpt: nil, contacts: [],

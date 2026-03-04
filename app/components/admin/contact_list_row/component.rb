@@ -7,11 +7,11 @@ module Admin
 
       TAG_DOT_COLORS = Admin::TagChip::Component::GROUPS.transform_values { |v| v[:color] }.freeze
 
+      STATUSES = %i[active inactive].freeze
+
       # @param name [String] Contact full name
-      # @param initials [String] Two-character initials
-      # @param avatar_color [String] Hex color for avatar background
       # @param title [String] Job title
-      # @param tags [Array<Hash>] Each: { group: Symbol, role: String, color: String }
+      # @param tags [Array<Hash>] Each: { group: Symbol, role: String }
       # @param last_engagement [String] Relative time string (e.g., "2 days ago")
       # @param account_name [String] Linked account name
       # @param account_path [String] URL to account detail
@@ -28,7 +28,7 @@ module Admin
         @account_path = account_path
         @variant = VARIANTS.include?(variant) ? variant : :default
         @match_text = match_text
-        @status = status
+        @status = STATUSES.include?(status) ? status : nil
       end
 
       private
