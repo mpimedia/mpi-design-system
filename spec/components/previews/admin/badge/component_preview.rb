@@ -52,7 +52,7 @@ class Admin::Badge::ComponentPreview < ApplicationComponentPreview
   def tag_groups
     render_with_template(
       locals: {
-        badges: %i[buyers press festivals sellers institutional organizations internal].map do |group|
+        badges: Admin::TagChip::Component::GROUPS.keys.map do |group|
           { label: group.to_s.capitalize, variant: :tag_group, tag_group: group }
         end
       }

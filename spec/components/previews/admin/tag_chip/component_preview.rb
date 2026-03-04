@@ -10,7 +10,7 @@ class Admin::TagChip::ComponentPreview < ApplicationComponentPreview
   def all_groups
     render_with_template(
       locals: {
-        tags: %i[buyers press festivals sellers institutional organizations internal].map do |group|
+        tags: Admin::TagChip::Component::GROUPS.keys.map do |group|
           { label: group.to_s.capitalize, group: group }
         end
       }

@@ -27,8 +27,8 @@ class Admin::DataTable::ComponentPreview < ApplicationComponentPreview
         { key: :match, label: "Match" }
       ],
       rows: [
-        { name: "Jane Cooper", title: "VP of Acquisitions", match: "Email: jane@example.com", tags: [ { group: :buyers } ] },
-        { name: "Robert Fox", title: "Festival Director", match: "Company: Fox Films", tags: [ { group: :festivals } ] }
+        { name: "Jane Cooper", title: "VP of Acquisitions", match: "Email: jane@example.com", tags: [ { group: :buyers, label: "Buyers" } ] },
+        { name: "Robert Fox", title: "Festival Director", match: "Company: Fox Films", tags: [ { group: :festivals, label: "Festivals" } ] }
       ]
     )
   end
@@ -48,10 +48,10 @@ class Admin::DataTable::ComponentPreview < ApplicationComponentPreview
 
   def sample_contacts
     [
-      { name: "Jane Cooper", title: "VP of Acquisitions", tags: [ { group: :buyers, role: "Lead" } ], last_engagement: "2 days ago", account_name: "Acme Films", account_path: "#" },
-      { name: "Robert Fox", title: "Festival Director", tags: [ { group: :festivals, role: "Director" } ], last_engagement: "1 week ago", account_name: "Berlin Film Fest", account_path: "#" },
-      { name: "Emily Chen", title: "Press Manager", tags: [ { group: :press, role: "Contact" } ], last_engagement: "3 days ago", account_name: "Film Weekly", account_path: "#" },
-      { name: "Marcus Johnson", title: "Sales Rep", tags: [ { group: :sellers, role: "Rep" } ], last_engagement: "Yesterday", account_name: "Global Distribution", account_path: "#" }
+      { name: "Jane Cooper", title: "VP of Acquisitions", tags: [ { group: :buyers, label: "Lead" } ], last_engagement: "2 days ago", account: "Acme Films", account_href: "#" },
+      { name: "Robert Fox", title: "Festival Director", tags: [ { group: :festivals, label: "Director" } ], last_engagement: "1 week ago", account: "Berlin Film Fest", account_href: "#" },
+      { name: "Emily Chen", title: "Press Manager", tags: [ { group: :press, label: "Contact" } ], last_engagement: "3 days ago", account: "Film Weekly", account_href: "#" },
+      { name: "Marcus Johnson", title: "Sales Rep", tags: [ { group: :sellers, label: "Rep" } ], last_engagement: "Yesterday", account: "Global Distribution", account_href: "#" }
     ]
   end
 end
