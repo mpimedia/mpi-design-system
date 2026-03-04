@@ -6,9 +6,9 @@ module Admin
       # @param messages [Array<Hash>] Each message hash:
       #   - sender [String] Sender name
       #   - timestamp [String] Display timestamp (e.g., "Feb 21, 2025 10:42 AM")
-      #   - body [String] Message body text (HTML-safe)
+      #   - body [String] Message body text (sanitized HTML: links, bold, italic, lists, line breaks)
       #   - attachments [Array<Hash>] Each: { name: String, size: String, type: String }
-      #   - staff_notes [String] Internal staff note (rendered in amber highlight)
+      #   - staff_notes [String] Internal staff note (sanitized HTML, rendered in amber highlight)
       #   - read [Boolean] Whether the message has been read (default: true)
       # @param subject [String] Email thread subject line
       def initialize(messages:, subject: nil)

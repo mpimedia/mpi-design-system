@@ -18,7 +18,7 @@ RSpec.describe Admin::AccountListRow::Component, type: :component do
   it "renders avatar with account name initials" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).to have_css("span.rounded-circle", text: "SC")
+    expect(page).to have_css("span.rounded-circle[aria-label='Sony Pictures Classics']", text: "SC")
   end
 
   it "renders account name as a link when path is provided" do
@@ -49,7 +49,7 @@ RSpec.describe Admin::AccountListRow::Component, type: :component do
   it "renders contact avatar stack" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).to have_css("span.rounded-circle", text: "SC")
+    expect(page).to have_css("span.rounded-circle[aria-label='Sony Pictures Classics']", text: "SC")
     expect(page).to have_css("span.rounded-circle", text: "JP")
     expect(page).to have_css("span.rounded-circle", text: "ML")
   end

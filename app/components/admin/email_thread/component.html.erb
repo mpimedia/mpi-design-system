@@ -19,13 +19,13 @@
       </div>
 
       <% if message[:body].present? %>
-        <div style="<%= body_styles %>"><%= message[:body] %></div>
+        <div style="<%= body_styles %>"><%= sanitize(message[:body], tags: %w[a b strong i em u br p ul ol li], attributes: %w[href title]) %></div>
       <% end %>
 
       <% if message[:staff_notes].present? %>
         <div style="<%= staff_note_styles %>">
           <div style="<%= staff_note_label_styles %>">Staff Note</div>
-          <%= message[:staff_notes] %>
+          <%= sanitize(message[:staff_notes], tags: %w[a b strong i em u br p ul ol li], attributes: %w[href title]) %>
         </div>
       <% end %>
 
