@@ -58,7 +58,7 @@ module Admin
         @selected_group_bg = selected_group_bg
         @total_count = total_count
         @current_page = current_page
-        @per_page = per_page
+        @per_page = [per_page.to_i, 1].max
         @sort_by = sort_by || sort_options.first&.last
         @view_mode = view_mode == :card ? :card : :list
         @search_query = search_query

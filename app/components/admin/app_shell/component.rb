@@ -6,30 +6,17 @@ module Admin
       renders_one :sidebar
       renders_one :body
 
-      SEARCH_PLACEHOLDERS = {
-        dashboard: "Search...",
-        content: "Search titles...",
-        crm: "Search contacts...",
-        rights_avails: "Search rights...",
-        releases: "Search releases...",
-        screenings: "Search screenings..."
-      }.freeze
-
       # @param current_section [Symbol] :dashboard, :content, :crm, :rights_avails, :releases, :screenings
       # @param current_subsection [Symbol] Section-specific (e.g., :contacts, :accounts for CRM)
       # @param user_name [String] Current user name (for avatar)
-      # @param user_initials [String] Two-character initials (for avatar)
       # @param search_url [String] Global search action URL
-      # @param search_placeholder [String] Contextual placeholder text (auto-set from section if nil)
       # @param show_sidebar [Boolean] Whether to show the content sidebar (default: false)
       def initialize(current_section: :dashboard, current_subsection: nil, user_name: nil,
-                     user_initials: nil, search_url: nil, search_placeholder: nil, show_sidebar: false)
+                     search_url: nil, show_sidebar: false)
         @current_section = current_section
         @current_subsection = current_subsection
         @user_name = user_name
-        @user_initials = user_initials
         @search_url = search_url
-        @search_placeholder = search_placeholder || SEARCH_PLACEHOLDERS[@current_section] || "Search..."
         @show_sidebar = show_sidebar
       end
 

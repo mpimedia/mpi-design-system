@@ -86,7 +86,34 @@ RSpec.describe Admin::ListView::Component, type: :component do
       selected_group_bg: "#FEF3EC"
     ))
 
-    expect(page).to have_css("a[aria-pressed='true'][style*='color: #C05621']", text: "Theatrical")
+    expect(page).to have_css("button[aria-pressed='true'][style*='color: #C05621']", text: "Theatrical")
+  end
+
+  it "renders sub-group pills as links when href is provided" do
+    sub_groups = [{ name: "Theatrical", selected: false, href: "/contacts?sub=theatrical" }]
+    render_inline(described_class.new(
+      entity_type: :contacts, total_count: 10,
+      sub_groups: sub_groups
+    ))
+
+    expect(page).to have_css("a[href='/contacts?sub=theatrical']", text: "Theatrical")
+  end
+
+  it "renders sub-group pills as buttons when no href" do
+    sub_groups = [{ name: "Theatrical", selected: false }]
+    render_inline(described_class.new(
+      entity_type: :contacts, total_count: 10,
+      sub_groups: sub_groups
+    ))
+
+    expect(page).to have_css("button[type='button']", text: "Theatrical")
+    expect(page).not_to have_css("a", text: "Theatrical")
+  end
+
+  it "clamps per_page to minimum of 1" do
+    render_inline(described_class.new(entity_type: :contacts, total_count: 10, per_page: 0))
+
+    expect(page).to have_text("10 contacts")
   end
 
   it "renders table content slot in list mode" do

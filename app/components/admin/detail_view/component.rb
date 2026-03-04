@@ -13,33 +13,6 @@ module Admin
         @variant = VARIANTS.include?(variant) ? variant : :contact
       end
 
-      private
-
-      def container_styles
-        "display: flex; gap: 24px;"
-      end
-
-      def profile_panel_styles
-        [
-          "width: 33.333%",
-          "min-width: 0"
-        ].join("; ")
-      end
-
-      def activity_panel_styles
-        [
-          "width: 66.666%",
-          "min-width: 0"
-        ].join("; ")
-      end
-
-      def contact?
-        @variant == :contact
-      end
-
-      def account?
-        @variant == :account
-      end
     end
   end
 end

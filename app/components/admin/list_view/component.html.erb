@@ -14,10 +14,17 @@
       <div style="<%= subgroup_bar_styles %>" role="toolbar" aria-label="Sub-group filters">
         <span style="<%= subgroup_label_styles %>">Sub-groups</span>
         <% @sub_groups.each do |sub| %>
-          <a href="#" style="<%= subgroup_pill_styles(sub[:selected]) %>"
-            <% if sub[:selected] %>aria-pressed="true"<% end %>>
-            <%= sub[:name] %>
-          </a>
+          <% if sub[:href].present? %>
+            <a href="<%= sub[:href] %>" style="<%= subgroup_pill_styles(sub[:selected]) %>"
+              <% if sub[:selected] %>aria-pressed="true"<% end %>>
+              <%= sub[:name] %>
+            </a>
+          <% else %>
+            <button type="button" style="<%= subgroup_pill_styles(sub[:selected]) %>"
+              <% if sub[:selected] %>aria-pressed="true"<% end %>>
+              <%= sub[:name] %>
+            </button>
+          <% end %>
         <% end %>
       </div>
     </div>
