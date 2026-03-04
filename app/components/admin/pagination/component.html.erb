@@ -7,7 +7,7 @@
         <a href="<%= page_url(@current_page - 1) %>"
            style="<%= page_btn_styles %>"
            aria-label="Previous page"
-           data-turbo-frame="<%= @turbo_frame %>">
+           <% if @turbo_frame %>data-turbo-frame="<%= @turbo_frame %>"<% end %>>
           &larr;
         </a>
       <% end %>
@@ -21,7 +21,7 @@
           <a href="<%= page_url(page_num) %>"
              style="<%= page_btn_styles %>"
              aria-label="Page <%= page_num %>"
-             data-turbo-frame="<%= @turbo_frame %>">
+             <% if @turbo_frame %>data-turbo-frame="<%= @turbo_frame %>"<% end %>>
             <%= page_num %>
           </a>
         <% end %>
@@ -31,7 +31,7 @@
         <a href="<%= page_url(@current_page + 1) %>"
            style="<%= page_btn_styles %>"
            aria-label="Next page"
-           data-turbo-frame="<%= @turbo_frame %>">
+           <% if @turbo_frame %>data-turbo-frame="<%= @turbo_frame %>"<% end %>>
           &rarr;
         </a>
       <% end %>

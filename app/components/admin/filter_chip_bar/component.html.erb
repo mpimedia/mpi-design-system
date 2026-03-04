@@ -6,12 +6,11 @@
         <% if chip[:href] %>
           <a href="<%= chip[:href] %>"
              style="<%= group_chip_styles(chip) %>"
-             <% if chip[:selected] %>aria-pressed="true"<% end %>>
+             <% if chip[:selected] %>aria-current="page"<% end %>>
             <%= chip_label(chip) %>
           </a>
         <% else %>
-          <span style="<%= group_chip_styles(chip) %>"
-                <% if chip[:selected] %>aria-pressed="true"<% end %>>
+          <span style="<%= group_chip_styles(chip) %>">
             <%= chip_label(chip) %>
           </span>
         <% end %>

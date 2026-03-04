@@ -72,6 +72,25 @@ RSpec.describe Admin::Pagination::Component, type: :component do
     expect(page).to have_text("Showing 1\u20136 of 6 results")
   end
 
+  it "handles zero results" do
+    render_inline(described_class.new(current_page: 1, total_pages: 1, total_count: 0, url_builder: url_builder))
+
+    expect(page).to have_text("Showing 0 results")
+  end
+
+  it "clamps current_page to valid range" do
+    render_inline(described_class.new(current_page: 99, total_pages: 3, total_count: 75, url_builder: url_builder))
+
+    expect(page).to have_css("span[aria-current='page']", text: "3")
+    expect(page).not_to have_css("[aria-label='Next page']")
+  end
+
+  it "does not render empty turbo frame attribute when not provided" do
+    render_inline(described_class.new(current_page: 1, total_pages: 3, total_count: 75, url_builder: url_builder))
+
+    expect(page).not_to have_css("[data-turbo-frame='']")
+  end
+
   it "includes turbo frame data attribute when provided" do
     render_inline(described_class.new(
       current_page: 1, total_pages: 3, total_count: 75,

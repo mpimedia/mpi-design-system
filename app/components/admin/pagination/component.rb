@@ -10,8 +10,8 @@ module Admin
       # @param url_builder [Proc] Lambda that builds page URLs: ->(page) { "?page=#{page}" }
       # @param turbo_frame [String] Turbo Frame target for page loads
       def initialize(current_page:, total_pages:, total_count:, per_page: 25, url_builder: nil, turbo_frame: nil)
-        @current_page = current_page
         @total_pages = [total_pages, 1].max
+        @current_page = [[current_page, 1].max, @total_pages].min
         @total_count = total_count
         @per_page = per_page
         @url_builder = url_builder || ->(page) { "?page=#{page}" }
@@ -21,6 +21,10 @@ module Admin
       private
 
       def results_text
+        if @total_count == 0
+          return "Showing 0 results"
+        end
+
         start_record = ((@current_page - 1) * @per_page) + 1
         end_record = [@current_page * @per_page, @total_count].min
         "Showing #{start_record}\u2013#{end_record} of #{@total_count} results"

@@ -33,7 +33,7 @@ RSpec.describe Admin::FilterChipBar::Component, type: :component do
       render_inline(described_class.new(groups: selected_groups))
 
       expect(page).to have_css("a[style*='border: 1px solid #E8733A'][style*='background: #FEF3EC']")
-      expect(page).to have_css("a[aria-pressed='true']")
+      expect(page).to have_css("a[aria-current='page']")
     end
 
     it "renders unselected chips with default styling" do

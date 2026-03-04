@@ -65,6 +65,20 @@ RSpec.describe Admin::DataTable::Component, type: :component do
     expect(page).to have_css("a[style*='color: #2E75B6'][href='/accounts/1']", text: "Sony Pictures")
   end
 
+  it "renders account as plain text when account_href is missing" do
+    rows_no_href = [{ name: "Test User", account: "Acme Corp" }]
+    render_inline(described_class.new(columns: columns, rows: rows_no_href))
+
+    expect(page).to have_css("span", text: "Acme Corp")
+    expect(page).not_to have_css("a", text: "Acme Corp")
+  end
+
+  it "includes scope=col on header cells" do
+    render_inline(described_class.new(columns: columns, rows: rows))
+
+    expect(page).to have_css("th[scope='col']", count: 4)
+  end
+
   it "renders sort indicator on sorted column" do
     render_inline(described_class.new(columns: columns, rows: rows, sort_by: :name, sort_dir: :asc))
 

@@ -2,7 +2,7 @@
   <thead>
     <tr>
       <% @columns.each do |col| %>
-        <th style="<%= header_styles %>"<% if aria_sort(col) %> aria-sort="<%= aria_sort(col) %>"<% end %>>
+        <th scope="col" style="<%= header_styles %>"<% if aria_sort(col) %> aria-sort="<%= aria_sort(col) %>"<% end %>>
           <%= col[:label] %><%= sort_indicator(col) %>
         </th>
       <% end %>
@@ -26,7 +26,7 @@
                     <% end %>
                   </div>
                   <% if row[:title] %>
-                    <div style="<%= title_styles %>"><%= row[:title].html_safe %></div>
+                    <div style="<%= title_styles %>"><%= sanitize(row[:title], tags: %w[strong em b i a span], attributes: %w[href title class]) %></div>
                   <% end %>
                 </div>
               </div>
@@ -43,7 +43,11 @@
               <% end %>
             <% when :account %>
               <% if row[:account] %>
-                <a href="<%= row[:account_href] || '#' %>" style="<%= account_link_styles %>"><%= row[:account] %></a>
+                <% if row[:account_href].present? %>
+                  <a href="<%= row[:account_href] %>" style="<%= account_link_styles %>"><%= row[:account] %></a>
+                <% else %>
+                  <span style="<%= account_link_styles %>"><%= row[:account] %></span>
+                <% end %>
               <% end %>
             <% when :status %>
               <% if row[:status] %>
@@ -53,7 +57,7 @@
                 </span>
               <% end %>
             <% else %>
-              <span style="<%= meta_text_styles %>"><%= row[col[:key]].is_a?(String) ? row[col[:key]].html_safe : row[col[:key]] %></span>
+              <span style="<%= meta_text_styles %>"><%= row[col[:key]].is_a?(String) ? sanitize(row[col[:key]], tags: %w[strong em b i code br a], attributes: %w[href title]) : row[col[:key]] %></span>
             <% end %>
           </td>
         <% end %>

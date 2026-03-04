@@ -87,10 +87,6 @@ module Admin
         end
       end
 
-      def count_styles
-        "font-size: 12px; color: #6C757D; margin-left: 4px;"
-      end
-
       def tab_label(tab)
         if tab[:count]
           "#{tab[:label]} (#{tab[:count]})"

@@ -5,15 +5,7 @@ module Admin
     class Component < ViewComponent::Base
       VARIANTS = %i[contacts search_results].freeze
 
-      TAG_DOT_COLORS = {
-        buyers: "#E8733A",
-        press: "#2DA67E",
-        festivals: "#2E75B6",
-        sellers: "#8B5CF6",
-        institutional: "#D97706",
-        organizations: "#6366F1",
-        internal: "#64748B"
-      }.freeze
+      TAG_DOT_COLORS = Admin::TagChip::Component::GROUPS.transform_values { |v| v[:color] }.freeze
 
       STATUS_COLORS = {
         active: "#22A06B",

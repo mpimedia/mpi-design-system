@@ -3,15 +3,7 @@
 module Admin
   module FilterChipBar
     class Component < ViewComponent::Base
-      GROUPS = {
-        buyers: { color: "#E8733A", bg: "#FEF3EC" },
-        press: { color: "#2DA67E", bg: "#ECF8F4" },
-        festivals: { color: "#2E75B6", bg: "#EBF3FB" },
-        sellers: { color: "#8B5CF6", bg: "#F3EFFE" },
-        institutional: { color: "#D97706", bg: "#FEF9EC" },
-        organizations: { color: "#6366F1", bg: "#EEEFFE" },
-        internal: { color: "#64748B", bg: "#F1F5F9" }
-      }.freeze
+      GROUPS = Admin::TagChip::Component::GROUPS
 
       # @param groups [Array<Hash>] Group chip data:
       #   [{ label: "All", count: 2307 },
