@@ -1,0 +1,11 @@
+<span class="d-inline-flex align-items-center gap-1 fw-semibold" style="<%= chip_styles %>">
+  <%= @label %>
+  <% if @removable %>
+    <button type="button"
+            style="<%= remove_button_styles %>"
+            aria-label="Remove <%= @label %>"
+            <% if @remove_url %>data-turbo-method="delete" data-turbo-confirm="Remove this tag?"<% end %>>
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
+  <% end %>
+</span>

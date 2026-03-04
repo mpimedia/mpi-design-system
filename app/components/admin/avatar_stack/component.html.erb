@@ -1,0 +1,16 @@
+<div class="d-inline-flex align-items-center" aria-label="<%= stack_label %>" role="group">
+  <% visible_names.each_with_index do |name, i| %>
+    <div style="<%= "margin-left: -8px;" if i > 0 %> position: relative; z-index: <%= visible_names.length - i %>;">
+      <%= render Admin::AvatarCircle::Component.new(name: name, size: @size) %>
+    </div>
+  <% end %>
+  <% if overflow? %>
+    <div style="margin-left: -8px; position: relative; z-index: 0;">
+      <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-semibold"
+            style="width: <%= dimension %>px; height: <%= dimension %>px; font-size: 11px; background-color: #64748B; color: #fff; border: 2px solid #fff; line-height: 1;"
+            aria-hidden="true">
+        +<%= overflow_count %>
+      </span>
+    </div>
+  <% end %>
+</div>
