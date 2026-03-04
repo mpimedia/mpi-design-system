@@ -125,7 +125,7 @@ module Admin
       end
 
       def grouped_engagements
-        @engagements.group_by { |e| e[:date_group] || e[:date] }
+        @grouped_engagements ||= @engagements.group_by { |e| e[:date_group] || e[:date] }
       end
 
       def format_date(engagement)

@@ -14,17 +14,15 @@
 
   <%# Metrics Row %>
   <% if @metrics.present? %>
-    <div class="d-flex gap-2 mb-2" style="<%= metrics_styles %>">
-      <% if @metrics[:contacts] %>
-        <span><%= @metrics[:contacts] %> CONTACTS</span>
-      <% end %>
-      <% if @metrics[:engagements] %>
-        <span>/ <%= @metrics[:engagements] %> ENGAGEMENTS</span>
-      <% end %>
-      <% if @metrics[:titles] %>
-        <span>/ <%= @metrics[:titles] %> TITLES</span>
-      <% end %>
-    </div>
+    <% metric_fragments = [] %>
+    <% metric_fragments << "#{@metrics[:contacts]} CONTACTS" if @metrics[:contacts] %>
+    <% metric_fragments << "#{@metrics[:engagements]} ENGAGEMENTS" if @metrics[:engagements] %>
+    <% metric_fragments << "#{@metrics[:titles]} TITLES" if @metrics[:titles] %>
+    <% if metric_fragments.any? %>
+      <div class="d-flex gap-2 mb-2" style="<%= metrics_styles %>">
+        <span><%= metric_fragments.join(' / ') %></span>
+      </div>
+    <% end %>
   <% end %>
 
   <%# Associated Contacts Section %>

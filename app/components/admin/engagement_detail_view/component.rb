@@ -16,6 +16,13 @@ module Admin
         note: "#E8913A"
       }.freeze
 
+      TYPE_ICONS = {
+        email: "bi-envelope",
+        meeting: "bi-calendar",
+        call: "bi-telephone",
+        note: "bi-sticky"
+      }.freeze
+
       # @param engagement_type [Symbol] :email, :meeting, :call, :note (used for styling context)
       # @param title [String] Engagement title/subject
       # @param date [String] Date string
@@ -51,6 +58,10 @@ module Admin
 
       def type_color
         TYPE_COLORS[@engagement_type]
+      end
+
+      def type_icon_class
+        TYPE_ICONS[@engagement_type] || "bi-envelope"
       end
 
       def type_badge_styles
