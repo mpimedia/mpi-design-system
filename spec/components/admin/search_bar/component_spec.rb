@@ -53,4 +53,24 @@ RSpec.describe Admin::SearchBar::Component, type: :component do
 
     expect(page).to have_css("form[action='/contacts/search']")
   end
+
+  it "renders export button when show_export is true" do
+    render_inline(described_class.new(show_export: true, export_url: "/contacts/export"))
+
+    expect(page).to have_css("a.btn.btn-outline-secondary", text: "Export")
+    expect(page).to have_css("a[href='/contacts/export']")
+    expect(page).to have_css("i.bi.bi-download")
+  end
+
+  it "does not render export button by default" do
+    render_inline(described_class.new)
+
+    expect(page).not_to have_css("a", text: "Export")
+  end
+
+  it "renders export button with correct href" do
+    render_inline(described_class.new(show_export: true, export_url: "/reports/download"))
+
+    expect(page).to have_css("a[href='/reports/download']", text: "Export")
+  end
 end

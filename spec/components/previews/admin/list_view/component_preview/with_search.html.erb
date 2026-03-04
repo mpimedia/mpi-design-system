@@ -1,13 +1,20 @@
 <%= render Admin::ListView::Component.new(
   entity_type: :contacts,
   groups: [
-    { label: "All", count: 12, group: nil, selected: true }
+    { label: "All", count: 156, group: nil, selected: true },
+    { label: "Buyers", count: 42, group: :buyers, selected: false },
+    { label: "Press", count: 28, group: :press, selected: false }
   ],
-  total_count: 12,
+  total_count: 2,
   current_page: 1,
   per_page: 25,
-  search_query: "Cooper",
+  search_query: "investors",
   view_mode: :list,
+  active_filters: [
+    { category: "Keyword", value: "investors", remove_url: "#" },
+    { category: "Group", value: "Buyers", remove_url: "#" }
+  ],
+  clear_all_url: "#",
   list_url: "#list",
   card_url: "#card"
 ) do |view| %>
@@ -15,11 +22,16 @@
     <%= render Admin::DataTable::Component.new(
       columns: [
         { key: :name, label: "Name", sortable: true },
-        { key: :title, label: "Title" }
+        { key: :account, label: "Account", sortable: true },
+        { key: :tags, label: "Tags" },
+        { key: :last_engagement, label: "Last Engagement", sortable: true }
       ],
       rows: [
-        { name: "Jane Cooper", title: "VP of Acquisitions", tags: [{ group: :buyers, label: "Lead" }] }
-      ]
+        { name: "Jane Cooper", account: "Acme Films", tags: [{ group: :buyers, label: "Buyer — Theatrical" }], last_engagement: "2 days ago" },
+        { name: "Marcus Johnson", account: "Global Distribution", tags: [{ group: :sellers, label: "Seller — Worldwide" }], last_engagement: "Yesterday" }
+      ],
+      sort_by: :name,
+      sort_dir: :asc
     ) %>
   <% end %>
 <% end %>

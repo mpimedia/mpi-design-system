@@ -5,15 +5,18 @@ module Admin
     class Component < ViewComponent::Base
       # @param name [String] Contact full name
       # @param company [String] Company/organization name
-      # @param tags [Array<Hash>] Each: { label: String, color: String, bg_color: String }
+      # @param tags [Array<Hash>] Each: { label: String, group: Symbol } or { label: String, color: String, bg_color: String }
       # @param last_engaged [String] Relative time (e.g., "2 days ago")
+      # @param engagement_count [Integer] Number of engagements
       # @param owner_name [String] Internal owner display name
       # @param path [String] URL to contact detail page
-      def initialize(name:, company: nil, tags: [], last_engaged: nil, owner_name: nil, path: "#")
+      def initialize(name:, company: nil, tags: [], last_engaged: nil, engagement_count: nil,
+                     owner_name: nil, path: "#")
         @name = name
         @company = company
         @tags = tags || []
         @last_engaged = last_engaged
+        @engagement_count = engagement_count
         @owner_name = owner_name
         @path = path
       end
@@ -42,19 +45,50 @@ module Admin
       end
 
       def tag_pill_styles(tag)
+        color = resolve_color(tag)
+        bg = resolve_bg(tag)
         [
-          "display: inline-block",
+          "display: inline-flex",
+          "align-items: center",
+          "gap: 4px",
           "padding: 2px 8px",
           "border-radius: 999px",
           "font-size: 11px",
           "font-weight: 500",
-          "color: #{tag[:color]}",
-          "background-color: #{tag[:bg_color]}"
+          "color: #{color}",
+          "background-color: #{bg}"
+        ].join("; ")
+      end
+
+      def tag_dot_styles(tag)
+        color = resolve_color(tag)
+        [
+          "width: 6px",
+          "height: 6px",
+          "border-radius: 50%",
+          "background-color: #{color}",
+          "flex-shrink: 0"
         ].join("; ")
       end
 
       def meta_styles
         "font-size: 11px; color: #ADB5BD;"
+      end
+
+      def resolve_color(tag)
+        if tag[:group] && Admin::TagChip::Component::GROUPS[tag[:group]]
+          Admin::TagChip::Component::GROUPS[tag[:group]][:color]
+        else
+          tag[:color] || "#64748B"
+        end
+      end
+
+      def resolve_bg(tag)
+        if tag[:group] && Admin::TagChip::Component::GROUPS[tag[:group]]
+          Admin::TagChip::Component::GROUPS[tag[:group]][:bg]
+        else
+          tag[:bg_color] || "#F1F5F9"
+        end
       end
     end
   end

@@ -3,15 +3,16 @@
 class Admin::EngagementDetailView::ComponentPreview < ApplicationComponentPreview
   # @label Default (Email)
   def default
-    render_with_template(
-      template: "admin/engagement_detail_view/component_preview/default"
-    )
+    render_with_template
   end
 
-  # @label Main Content Only
-  def main_only
-    render_with_template(
-      template: "admin/engagement_detail_view/component_preview/main_only"
-    )
+  # @label With Header and Tabs
+  def with_header_and_tabs
+    render_with_template
+  end
+
+  # @label Meeting
+  def meeting
+    render_with_template
   end
 end

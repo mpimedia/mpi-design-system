@@ -8,8 +8,8 @@ class Admin::ContactDetailPanel::ComponentPreview < ApplicationComponentPreview
       title: "VP of Acquisitions",
       company: "Acme Films",
       tags: [
-        { label: "Buyers", group: :buyers },
-        { label: "Festivals", group: :festivals }
+        { label: "Buyer — Theatrical", group: :buyers },
+        { label: "Fest — Acquisitions", group: :festivals }
       ],
       email: "jane.cooper@acmefilms.com",
       phone: "+1 (555) 010-0100",
@@ -39,7 +39,7 @@ class Admin::ContactDetailPanel::ComponentPreview < ApplicationComponentPreview
       title: "Press Manager",
       company: "Film Weekly",
       tags: [
-        { label: "Press", group: :press, remove_url: "#" }
+        { label: "Press — Film Critic", group: :press, remove_url: "#" }
       ],
       add_tag_path: "#",
       email: "emily@filmweekly.com",
