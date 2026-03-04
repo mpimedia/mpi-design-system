@@ -3,8 +3,8 @@ require_relative "lib/mpi_design_system/version"
 Gem::Specification.new do |spec|
   spec.name        = "mpi_design_system"
   spec.version     = MpiDesignSystem::VERSION
-  spec.authors     = ["Randy Burgess"]
-  spec.email       = ["wrburgess@gmail.com"]
+  spec.authors     = [ "Randy Burgess" ]
+  spec.email       = [ "wrburgess@gmail.com" ]
   spec.homepage    = "https://github.com/mpimedia/mpi-design-system"
   spec.summary     = "Shared ViewComponent library for MPI Media applications"
   spec.description = "Rails engine providing shared UI components, layouts, and design tokens for MPI Media's application suite (Markaz, SFA, Garden, Harvest, Markaz CRM)."

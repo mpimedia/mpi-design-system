@@ -36,7 +36,7 @@ module Admin
       private
 
       def css_classes
-        classes = ["badge", "rounded-pill"]
+        classes = [ "badge", "rounded-pill" ]
         classes << size_class unless @size == :md
         classes.concat(variant_classes)
         classes.join(" ")
@@ -46,9 +46,9 @@ module Admin
         case @variant
         when :filled
           text_class = @color == :warning ? "text-dark" : "text-white"
-          ["bg-#{@color}", text_class]
+          [ "bg-#{@color}", text_class ]
         when :outline
-          ["border", "border-#{@color}", "text-#{@color}", "bg-transparent"]
+          [ "border", "border-#{@color}", "text-#{@color}", "bg-transparent" ]
         when :tag_group
           [] # Handled by inline styles
         end

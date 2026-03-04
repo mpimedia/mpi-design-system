@@ -15,7 +15,7 @@ RSpec.describe Admin::EngagementCard::Component, type: :component do
       ],
       account_name: "Sony Pictures",
       account_path: "/accounts/1",
-      tags: [{ group: :buyers, role: "Buyer — Theatrical" }],
+      tags: [ { group: :buyers, role: "Buyer — Theatrical" } ],
       creator_name: "M. Johnson"
     }
   end
@@ -83,7 +83,7 @@ RSpec.describe Admin::EngagementCard::Component, type: :component do
   end
 
   it "renders contact chips as plain spans when no path" do
-    contacts = [{ name: "Test User" }]
+    contacts = [ { name: "Test User" } ]
     render_inline(described_class.new(**default_params.merge(contacts: contacts)))
 
     expect(page).to have_css("span[style*='background: #F5F7FA']", text: "Test User")
@@ -116,7 +116,7 @@ RSpec.describe Admin::EngagementCard::Component, type: :component do
   end
 
   it "renders linked titles when provided" do
-    titles = [{ name: "The Film", path: "/titles/1" }]
+    titles = [ { name: "The Film", path: "/titles/1" } ]
     render_inline(described_class.new(**default_params.merge(linked_titles: titles)))
 
     expect(page).to have_css("a[href='/titles/1'][style*='color: #2E75B6']", text: "The Film")

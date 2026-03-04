@@ -12,7 +12,6 @@ module Admin
       def initialize(variant: :contact)
         @variant = VARIANTS.include?(variant) ? variant : :contact
       end
-
     end
   end
 end

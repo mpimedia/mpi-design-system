@@ -19,7 +19,7 @@ module Admin
       end
 
       def overflow_count
-        [@names.length - @max, 0].max
+        [ @names.length - @max, 0 ].max
       end
 
       def overflow?

@@ -5,11 +5,11 @@ require "spec_helper"
 RSpec.describe Admin::ListCardToggle::Component, type: :component do
   let(:sort_options) do
     [
-      ["Last Engaged", "last_engaged"],
-      ["Name A–Z", "name_asc"],
-      ["Name Z–A", "name_desc"],
-      ["Date Added (newest)", "date_desc"],
-      ["Date Added (oldest)", "date_asc"]
+      [ "Last Engaged", "last_engaged" ],
+      [ "Name A–Z", "name_asc" ],
+      [ "Name Z–A", "name_desc" ],
+      [ "Date Added (newest)", "date_desc" ],
+      [ "Date Added (oldest)", "date_asc" ]
     ]
   end
 

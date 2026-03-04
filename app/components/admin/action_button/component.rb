@@ -61,7 +61,7 @@ module Admin
       end
 
       def css_classes
-        classes = ["btn", btn_color_class]
+        classes = [ "btn", btn_color_class ]
         classes << "btn-#{@size}" unless @size == :md
         classes.join(" ")
       end

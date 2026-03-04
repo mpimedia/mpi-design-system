@@ -58,9 +58,9 @@ module Admin
           "border-bottom: 2px solid #{active ? '#2E75B6' : 'transparent'}"
         ]
         if active
-          styles.concat(["color: #2E75B6", "font-weight: 600"])
+          styles.concat([ "color: #2E75B6", "font-weight: 600" ])
         else
-          styles.concat(["color: #6C757D", "font-weight: 500"])
+          styles.concat([ "color: #6C757D", "font-weight: 500" ])
         end
         styles.join("; ")
       end
@@ -73,9 +73,9 @@ module Admin
           "border-bottom: 2px solid #{active ? '#2E75B6' : 'transparent'}"
         ]
         if active
-          styles.concat(["color: #2E75B6", "font-weight: 600"])
+          styles.concat([ "color: #2E75B6", "font-weight: 600" ])
         else
-          styles.concat(["color: #6C757D", "font-weight: 500"])
+          styles.concat([ "color: #6C757D", "font-weight: 500" ])
         end
         styles.join("; ")
       end

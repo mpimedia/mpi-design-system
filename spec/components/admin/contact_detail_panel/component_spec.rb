@@ -179,7 +179,7 @@ RSpec.describe Admin::ContactDetailPanel::Component, type: :component do
     it "does not render + Add tag link" do
       render_inline(described_class.new(
         name: "Jane Doe",
-        tags: [{ label: "VIP", group: :buyers }]
+        tags: [ { label: "VIP", group: :buyers } ]
       ))
 
       expect(page).not_to have_text("+ Add tag")

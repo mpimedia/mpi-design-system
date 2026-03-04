@@ -1,0 +1,21 @@
+{
+  "name": "mpi-design-system",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@hotwired/stimulus": "3.2.2",
+    "@hotwired/turbo-rails": "8.0.23",
+    "@popperjs/core": "2.11.8",
+    "bootstrap": "5.3.8",
+    "bootstrap-icons": "1.13.1",
+    "esbuild": "0.27.3",
+    "sass": "1.97.3"
+  },
+  "scripts": {
+    "build": "node esbuild.config.js",
+    "build:css": "sass ./spec/dummy/app/assets/stylesheets/application.scss:./spec/dummy/app/assets/builds/application.css --no-source-map --load-path=node_modules --load-path=app/assets/stylesheets --style=compressed",
+    "watch": "node esbuild.config.js --watch",
+    "watch:css": "sass --watch ./spec/dummy/app/assets/stylesheets/application.scss:./spec/dummy/app/assets/builds/application.css --no-source-map --load-path=node_modules --load-path=app/assets/stylesheets"
+  },
+  "packageManager": "yarn@4.12.0"
+}

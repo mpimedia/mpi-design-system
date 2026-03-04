@@ -69,9 +69,9 @@ module Admin
         ]
 
         if active
-          styles.concat(["background: #2E75B6", "color: #fff", "border: 1px solid #2E75B6"])
+          styles.concat([ "background: #2E75B6", "color: #fff", "border: 1px solid #2E75B6" ])
         else
-          styles.concat(["background: #fff", "color: #{tab_color(false, disabled)}", "border: 1px solid #DEE2E6"])
+          styles.concat([ "background: #fff", "color: #{tab_color(false, disabled)}", "border: 1px solid #DEE2E6" ])
         end
 
         styles.join("; ")

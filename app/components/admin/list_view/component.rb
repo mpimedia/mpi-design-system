@@ -9,24 +9,24 @@ module Admin
       ENTITY_TYPES = %i[contacts accounts engagements].freeze
       SORT_OPTIONS = {
         contacts: [
-          ["Last Engaged", "last_engaged"],
-          ["Name A\u2013Z", "name_asc"],
-          ["Name Z\u2013A", "name_desc"],
-          ["Date Added", "date_added"],
-          ["Account", "account"],
-          ["Engagement Count", "engagement_count"]
+          [ "Last Engaged", "last_engaged" ],
+          [ "Name A\u2013Z", "name_asc" ],
+          [ "Name Z\u2013A", "name_desc" ],
+          [ "Date Added", "date_added" ],
+          [ "Account", "account" ],
+          [ "Engagement Count", "engagement_count" ]
         ],
         accounts: [
-          ["Last Engaged", "last_engaged"],
-          ["Name A\u2013Z", "name_asc"],
-          ["Name Z\u2013A", "name_desc"],
-          ["Contacts", "contacts_count"],
-          ["Health", "health"]
+          [ "Last Engaged", "last_engaged" ],
+          [ "Name A\u2013Z", "name_asc" ],
+          [ "Name Z\u2013A", "name_desc" ],
+          [ "Contacts", "contacts_count" ],
+          [ "Health", "health" ]
         ],
         engagements: [
-          ["Most Recent", "most_recent"],
-          ["Type", "type"],
-          ["Contact", "contact"]
+          [ "Most Recent", "most_recent" ],
+          [ "Type", "type" ],
+          [ "Contact", "contact" ]
         ]
       }.freeze
 
@@ -58,7 +58,7 @@ module Admin
         @selected_group_bg = selected_group_bg
         @total_count = total_count
         @current_page = current_page
-        @per_page = [per_page.to_i, 1].max
+        @per_page = [ per_page.to_i, 1 ].max
         @sort_by = sort_by || sort_options.first&.last
         @view_mode = view_mode == :card ? :card : :list
         @search_query = search_query

@@ -10,8 +10,8 @@ module Admin
       # @param url_builder [Proc] Lambda that builds page URLs: ->(page) { "?page=#{page}" }
       # @param turbo_frame [String] Turbo Frame target for page loads
       def initialize(current_page:, total_pages:, total_count:, per_page: 25, url_builder: nil, turbo_frame: nil)
-        @total_pages = [total_pages, 1].max
-        @current_page = [[current_page, 1].max, @total_pages].min
+        @total_pages = [ total_pages, 1 ].max
+        @current_page = [ [ current_page, 1 ].max, @total_pages ].min
         @total_count = total_count
         @per_page = per_page
         @url_builder = url_builder || ->(page) { "?page=#{page}" }
@@ -26,7 +26,7 @@ module Admin
         end
 
         start_record = ((@current_page - 1) * @per_page) + 1
-        end_record = [@current_page * @per_page, @total_count].min
+        end_record = [ @current_page * @per_page, @total_count ].min
         "Showing #{start_record}\u2013#{end_record} of #{@total_count} results"
       end
 
@@ -47,9 +47,9 @@ module Admin
           "text-decoration: none"
         ]
         if active
-          styles.concat(["background: #2E75B6", "color: #fff", "border: 1px solid #2E75B6"])
+          styles.concat([ "background: #2E75B6", "color: #fff", "border: 1px solid #2E75B6" ])
         else
-          styles.concat(["background: #fff", "color: #1B2A4A", "border: 1px solid #DEE2E6"])
+          styles.concat([ "background: #fff", "color: #1B2A4A", "border: 1px solid #DEE2E6" ])
         end
         styles.join("; ")
       end

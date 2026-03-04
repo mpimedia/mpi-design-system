@@ -55,10 +55,10 @@ module Admin
 
       def trend_styles
         color = case @trend_sentiment
-                when :positive then "#22A06B"
-                when :negative then "#DC3545"
-                else "#6C757D"
-                end
+        when :positive then "#22A06B"
+        when :negative then "#DC3545"
+        else "#6C757D"
+        end
         [
           "font-size: 12px",
           "font-weight: 500",

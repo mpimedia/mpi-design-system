@@ -7,7 +7,7 @@ RSpec.describe Admin::ContactListRow::Component, type: :component do
     {
       name: "John Smith",
       title: "Theatrical Buyer",
-      tags: [{ group: :buyers, role: "Buyer — Theatrical" }],
+      tags: [ { group: :buyers, role: "Buyer — Theatrical" } ],
       last_engagement: "2 days ago",
       account_name: "Sony Pictures",
       account_path: "/accounts/1"
@@ -80,7 +80,7 @@ RSpec.describe Admin::ContactListRow::Component, type: :component do
       {
         name: "Jane Doe",
         title: "Festival Director",
-        tags: [{ group: :festivals, role: "Festival — Director" }],
+        tags: [ { group: :festivals, role: "Festival — Director" } ],
         variant: :search_result,
         match_text: "Title contains <strong>director</strong>",
         last_engagement: "1 week ago",
