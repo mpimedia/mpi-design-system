@@ -1,0 +1,60 @@
+{
+  "mpi_projects": {
+    "avails": {
+      "name": "Avails Server",
+      "description": "Central data repository for MPI Media",
+      "github_url": "https://github.com/mpimedia/avails_server",
+      "github_org": "mpimedia",
+      "github_repo": "avails_server",
+      "role": "data_repository"
+    },
+    "sfa": {
+      "name": "SFA Film Library",
+      "description": "Video clip hosting and search engine",
+      "github_url": "https://github.com/mpimedia/wpa_film_library",
+      "github_org": "mpimedia",
+      "github_repo": "wpa_film_library",
+      "role": "media_library"
+    },
+    "garden": {
+      "name": "Garden",
+      "description": "Static site generator for MPI sites",
+      "github_url": "https://github.com/mpimedia/garden",
+      "github_org": "mpimedia",
+      "github_repo": "garden",
+      "role": "site_generator"
+    },
+    "harvest": {
+      "name": "Harvest",
+      "description": "Public-facing transaction and ecommerce platform",
+      "github_url": "https://github.com/mpimedia/harvest",
+      "github_org": "mpimedia",
+      "github_repo": "harvest",
+      "role": "ecommerce"
+    },
+    "optimus": {
+      "name": "Optimus",
+      "description": "Rails application template and pattern source",
+      "github_url": "https://github.com/mpimedia/optimus",
+      "github_org": "mpimedia",
+      "github_repo": "optimus",
+      "role": "template"
+    },
+    "markaz_crm": {
+      "name": "Markaz CRM",
+      "description": "Customer relationship management for MPI Media",
+      "github_url": "https://github.com/mpimedia/markaz-crm",
+      "github_org": "mpimedia",
+      "github_repo": "markaz-crm",
+      "role": "crm"
+    },
+    "mpi_design_system": {
+      "name": "MPI Design System",
+      "description": "Shared ViewComponent library and design tokens for MPI Media applications",
+      "github_url": "https://github.com/mpimedia/mpi-design-system",
+      "github_org": "mpimedia",
+      "github_repo": "mpi-design-system",
+      "role": "design_system"
+    }
+  }
+}

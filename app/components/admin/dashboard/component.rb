@@ -55,10 +55,10 @@ module Admin
 
       def greeting_text
         prefix = case @greeting_time
-                 when :morning then "Good morning"
-                 when :afternoon then "Good afternoon"
-                 when :evening then "Good evening"
-                 end
+        when :morning then "Good morning"
+        when :afternoon then "Good afternoon"
+        when :evening then "Good evening"
+        end
         "#{prefix}, #{@user_name}"
       end
 

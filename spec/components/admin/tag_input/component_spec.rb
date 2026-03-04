@@ -101,7 +101,7 @@ RSpec.describe Admin::TagInput::Component, type: :component do
   it "renders selected tag chips with correct colors" do
     render_inline(described_class.new(
       available_tags: available_tags,
-      selected_tags: [{ label: "VIP", group: :buyers }]
+      selected_tags: [ { label: "VIP", group: :buyers } ]
     ))
 
     expect(page).to have_css("span[style*='color: #E8733A']", text: "VIP")

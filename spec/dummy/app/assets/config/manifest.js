@@ -1,2 +1,1 @@
-//= link_tree ../images
-//= link_directory ../stylesheets .css
+// Propshaft manifest — auto-discovers assets, no directives needed

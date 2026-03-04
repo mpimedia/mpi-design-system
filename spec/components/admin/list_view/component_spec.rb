@@ -78,7 +78,7 @@ RSpec.describe Admin::ListView::Component, type: :component do
   end
 
   it "highlights selected sub-group pill with group color" do
-    sub_groups = [{ name: "Theatrical", selected: true }]
+    sub_groups = [ { name: "Theatrical", selected: true } ]
     render_inline(described_class.new(
       entity_type: :contacts, total_count: 10,
       sub_groups: sub_groups,
@@ -90,7 +90,7 @@ RSpec.describe Admin::ListView::Component, type: :component do
   end
 
   it "renders sub-group pills as links when href is provided" do
-    sub_groups = [{ name: "Theatrical", selected: false, href: "/contacts?sub=theatrical" }]
+    sub_groups = [ { name: "Theatrical", selected: false, href: "/contacts?sub=theatrical" } ]
     render_inline(described_class.new(
       entity_type: :contacts, total_count: 10,
       sub_groups: sub_groups
@@ -100,7 +100,7 @@ RSpec.describe Admin::ListView::Component, type: :component do
   end
 
   it "renders sub-group pills as buttons when no href" do
-    sub_groups = [{ name: "Theatrical", selected: false }]
+    sub_groups = [ { name: "Theatrical", selected: false } ]
     render_inline(described_class.new(
       entity_type: :contacts, total_count: 10,
       sub_groups: sub_groups
@@ -152,7 +152,7 @@ RSpec.describe Admin::ListView::Component, type: :component do
   end
 
   it "renders sub-group label text" do
-    sub_groups = [{ name: "All", selected: true }]
+    sub_groups = [ { name: "All", selected: true } ]
     render_inline(described_class.new(entity_type: :contacts, total_count: 10, sub_groups: sub_groups))
 
     expect(page).to have_css("span[style*='text-transform: uppercase']", text: "Sub-groups")

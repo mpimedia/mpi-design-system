@@ -80,7 +80,7 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
   it "renders activity icons with correct type colors" do
     params = default_params.merge(
-      activities: [{ type: :email, description: "Email", timestamp: "now" }]
+      activities: [ { type: :email, description: "Email", timestamp: "now" } ]
     )
     render_inline(described_class.new(**params))
 
@@ -90,7 +90,7 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
   it "renders meeting activity icon" do
     params = default_params.merge(
-      activities: [{ type: :meeting, description: "Meeting", timestamp: "now" }]
+      activities: [ { type: :meeting, description: "Meeting", timestamp: "now" } ]
     )
     render_inline(described_class.new(**params))
 
@@ -100,7 +100,7 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
   it "renders activity timestamps" do
     params = default_params.merge(
-      activities: [{ type: :email, description: "Test", timestamp: "3 hours ago" }]
+      activities: [ { type: :email, description: "Test", timestamp: "3 hours ago" } ]
     )
     render_inline(described_class.new(**params))
 
@@ -125,7 +125,7 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
   it "renders quick action buttons as outlined style" do
     params = default_params.merge(
-      quick_action_buttons: [{ label: "Add new Contact", path: "/contacts/new" }]
+      quick_action_buttons: [ { label: "Add new Contact", path: "/contacts/new" } ]
     )
     render_inline(described_class.new(**params))
 
@@ -173,7 +173,7 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
   it "renders 'View all' link for follow-up queue" do
     params = default_params.merge(
-      followups: [{ name: "Test", description: "Test", status: :overdue, status_label: "Overdue", avatar_name: "Test" }],
+      followups: [ { name: "Test", description: "Test", status: :overdue, status_label: "Overdue", avatar_name: "Test" } ],
       followup_count: 12,
       followup_path: "/followups"
     )
@@ -185,7 +185,7 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
   it "renders follow-up avatars" do
     params = default_params.merge(
-      followups: [{ name: "Sarah Connor", description: "Follow-up", status: :overdue, status_label: "Overdue", avatar_name: "Sarah Connor" }]
+      followups: [ { name: "Sarah Connor", description: "Follow-up", status: :overdue, status_label: "Overdue", avatar_name: "Sarah Connor" } ]
     )
     render_inline(described_class.new(**params))
 
@@ -208,7 +208,7 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
   it "renders group chart bar segments with colors" do
     params = default_params.merge(
-      group_data: [{ label: "Buyers", count: 120, color: "#C05621", percentage: 35.0 }]
+      group_data: [ { label: "Buyers", count: 120, color: "#C05621", percentage: 35.0 } ]
     )
     render_inline(described_class.new(**params))
 
@@ -217,7 +217,7 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
   it "renders group chart legend with dots and counts" do
     params = default_params.merge(
-      group_data: [{ label: "Buyers", count: 120, color: "#C05621", percentage: 35.0 }]
+      group_data: [ { label: "Buyers", count: 120, color: "#C05621", percentage: 35.0 } ]
     )
     render_inline(described_class.new(**params))
 

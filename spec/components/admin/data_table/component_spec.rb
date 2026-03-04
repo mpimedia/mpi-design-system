@@ -18,7 +18,7 @@ RSpec.describe Admin::DataTable::Component, type: :component do
         name: "John Smith",
         title: "Theatrical Buyer",
         name_href: "/contacts/1",
-        tags: [{ label: "Buyer — Theatrical", group: :buyers }],
+        tags: [ { label: "Buyer — Theatrical", group: :buyers } ],
         last_engagement: "2 days ago",
         account: "Sony Pictures",
         account_href: "/accounts/1"
@@ -66,7 +66,7 @@ RSpec.describe Admin::DataTable::Component, type: :component do
   end
 
   it "renders account as plain text when account_href is missing" do
-    rows_no_href = [{ name: "Test User", account: "Acme Corp" }]
+    rows_no_href = [ { name: "Test User", account: "Acme Corp" } ]
     render_inline(described_class.new(columns: columns, rows: rows_no_href))
 
     expect(page).to have_css("span", text: "Acme Corp")
@@ -114,7 +114,7 @@ RSpec.describe Admin::DataTable::Component, type: :component do
     search_rows = [
       {
         name: "Jane Doe",
-        tags: [{ label: "Press — Critic", group: :press }],
+        tags: [ { label: "Press — Critic", group: :press } ],
         match_found_in: "Title contains <strong>investor</strong>",
         status: "Active",
         status_key: :active

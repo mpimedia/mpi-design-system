@@ -52,7 +52,7 @@ RSpec.describe Admin::EmptyState::Component, type: :component do
   end
 
   it "shortcut cards are links with text-decoration none" do
-    shortcuts = [{ title: "Recent", description: "Last 7 days", href: "/recent" }]
+    shortcuts = [ { title: "Recent", description: "Last 7 days", href: "/recent" } ]
     render_inline(described_class.new(heading: "Search", shortcuts: shortcuts))
 
     expect(page).to have_css("a[style*='text-decoration: none'][href='/recent']")

@@ -112,7 +112,7 @@ module Admin
       end
 
       def format_date(engagement)
-        parts = [engagement[:date]]
+        parts = [ engagement[:date] ]
         parts << ". #{engagement[:time]}" if engagement[:time].present?
         parts << " #{engagement[:timezone]}" if engagement[:timezone].present?
         parts.join

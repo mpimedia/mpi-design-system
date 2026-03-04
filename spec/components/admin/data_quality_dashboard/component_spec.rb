@@ -18,7 +18,7 @@ RSpec.describe Admin::DataQualityDashboard::Component, type: :component do
         {
           name: "John Smith",
           organization: "Sony Pictures",
-          missing_fields: ["Email", "Phone"],
+          missing_fields: [ "Email", "Phone" ],
           score: 25,
           last_active: "2 days ago"
         }

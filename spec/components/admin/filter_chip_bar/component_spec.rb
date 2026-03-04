@@ -92,13 +92,13 @@ RSpec.describe Admin::FilterChipBar::Component, type: :component do
   end
 
   it "does not render groups section when groups are empty" do
-    render_inline(described_class.new(active_filters: [{ category: "Keyword", value: "test" }]))
+    render_inline(described_class.new(active_filters: [ { category: "Keyword", value: "test" } ]))
 
     expect(page).not_to have_text("Groups:")
   end
 
   it "does not render active section when active_filters are empty" do
-    render_inline(described_class.new(groups: [{ label: "All", count: 100 }]))
+    render_inline(described_class.new(groups: [ { label: "All", count: 100 } ]))
 
     expect(page).not_to have_text("Active:")
   end
