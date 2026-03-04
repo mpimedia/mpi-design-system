@@ -111,7 +111,7 @@ module Admin
       end
 
       def has_contact_info?
-        @email || @phone || @account || @location || @added_date || @owner
+        @email.present? || @phone.present? || @account.present? || @location.present? || @added_date.present? || @owner.present?
       end
     end
   end

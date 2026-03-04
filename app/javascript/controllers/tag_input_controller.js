@@ -1,10 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
 
+const GROUP_COLORS = {
+  buyers: { color: "#E8733A", bg: "#FEF3EC" },
+  press: { color: "#2DA67E", bg: "#ECF8F4" },
+  festivals: { color: "#2E75B6", bg: "#EBF3FB" },
+  sellers: { color: "#8B5CF6", bg: "#F3EFFE" },
+  institutional: { color: "#D97706", bg: "#FEF9EC" },
+  organizations: { color: "#6366F1", bg: "#EEEFFE" },
+  internal: { color: "#64748B", bg: "#F1F5F9" }
+}
+
 export default class extends Controller {
   static targets = ["input", "dropdown", "selectedTags", "wrapper", "tag"]
   static values = {
     availableTags: Array,
-    selectedTags: Array,
     fieldName: String
   }
 
@@ -131,23 +140,14 @@ export default class extends Controller {
     }
 
     this.activeIndex = -1
-    const groupColors = {
-      buyers: { color: "#E8733A", bg: "#FEF3EC" },
-      press: { color: "#2DA67E", bg: "#ECF8F4" },
-      festivals: { color: "#2E75B6", bg: "#EBF3FB" },
-      sellers: { color: "#8B5CF6", bg: "#F3EFFE" },
-      institutional: { color: "#D97706", bg: "#FEF9EC" },
-      organizations: { color: "#6366F1", bg: "#EEEFFE" },
-      internal: { color: "#64748B", bg: "#F1F5F9" }
-    }
 
     this.dropdownTarget.innerHTML = matches.map(tag => {
-      const colors = groupColors[tag.group] || groupColors.internal
+      const colors = GROUP_COLORS[tag.group] || GROUP_COLORS.internal
       return `<div role="option"
                    style="padding: 8px 12px; cursor: pointer; font-size: 13px; color: #1B2A4A;"
                    data-tag-label="${this.escapeHtml(tag.label)}"
                    data-tag-group="${this.escapeHtml(tag.group)}"
-                   data-action="click->tag-input#onDropdownItemClick mouseenter->tag-input#onDropdownItemHover">
+                   data-action="click->tag-input#onDropdownItemClick mouseover->tag-input#onDropdownItemHover">
         <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${colors.color}; margin-right: 8px;"></span>
         ${this.escapeHtml(tag.label)}
       </div>`
@@ -178,17 +178,7 @@ export default class extends Controller {
   }
 
   addTagChip(label, group) {
-    const groupColors = {
-      buyers: { color: "#E8733A", bg: "#FEF3EC" },
-      press: { color: "#2DA67E", bg: "#ECF8F4" },
-      festivals: { color: "#2E75B6", bg: "#EBF3FB" },
-      sellers: { color: "#8B5CF6", bg: "#F3EFFE" },
-      institutional: { color: "#D97706", bg: "#FEF9EC" },
-      organizations: { color: "#6366F1", bg: "#EEEFFE" },
-      internal: { color: "#64748B", bg: "#F1F5F9" }
-    }
-
-    const colors = groupColors[group] || groupColors.internal
+    const colors = GROUP_COLORS[group] || GROUP_COLORS.internal
 
     const chip = document.createElement("span")
     chip.className = "d-inline-flex align-items-center gap-1 fw-semibold"

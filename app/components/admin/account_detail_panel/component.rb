@@ -5,7 +5,7 @@ module Admin
     class Component < ViewComponent::Base
       # @param name [String] Account name
       # @param account_type [String] Account type label (e.g., "Distributor", "Studio")
-      # @param account_type_color [Symbol] Badge color :primary, :success, :warning, :secondary (default: :primary)
+      # @param account_type_color [Symbol] Badge color :primary, :success, :danger, :warning, :secondary (default: :primary)
       # @param contacts [Array<Hash>] Each: { name: String, title: String, path: String }
       # @param email [String] Account email
       # @param phone [String] Account phone
@@ -95,7 +95,7 @@ module Admin
       end
 
       def has_contact_info?
-        @email || @phone || @location || @created_date || @owner
+        @email.present? || @phone.present? || @location.present? || @created_date.present? || @owner.present?
       end
     end
   end

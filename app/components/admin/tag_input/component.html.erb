@@ -1,13 +1,12 @@
 <div style="position: relative;"
      data-controller="tag-input"
      data-tag-input-available-tags-value="<%= available_tags_json %>"
-     data-tag-input-selected-tags-value="<%= selected_tags_json %>"
      data-tag-input-field-name-value="<%= @name %>"
      aria-label="Tag selection">
 
   <%# Wrapper styled like an input field %>
   <div style="<%= wrapper_styles %>" data-tag-input-target="wrapper">
-    <%# Selected tags rendered as TagChip components %>
+    <%# Selected tags rendered as styled chips matching TagChip appearance %>
     <div class="d-flex flex-wrap gap-1 mb-1" data-tag-input-target="selectedTags">
       <% @selected_tags.each do |tag| %>
         <span class="d-inline-flex align-items-center gap-1 fw-semibold"

@@ -53,25 +53,8 @@ module Admin
         ].join("; ")
       end
 
-      def dropdown_item_styles
-        [
-          "padding: 8px 12px",
-          "cursor: pointer",
-          "font-size: 13px",
-          "color: #1B2A4A"
-        ].join("; ")
-      end
-
-      def dropdown_item_active_styles
-        "background: #F5F7FA;"
-      end
-
       def available_tags_json
         @available_tags.map { |t| { label: t[:label], group: t[:group].to_s } }.to_json
-      end
-
-      def selected_tags_json
-        @selected_tags.map { |t| { label: t[:label], group: t[:group].to_s } }.to_json
       end
 
       def tag_color(group_sym)
