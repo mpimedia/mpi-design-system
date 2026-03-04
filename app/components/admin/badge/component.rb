@@ -45,7 +45,8 @@ module Admin
       def variant_classes
         case @variant
         when :filled
-          ["bg-#{@color}", "text-white"]
+          text_class = @color == :warning ? "text-dark" : "text-white"
+          ["bg-#{@color}", text_class]
         when :outline
           ["border", "border-#{@color}", "text-#{@color}", "bg-transparent"]
         when :tag_group
@@ -55,7 +56,7 @@ module Admin
 
       def size_class
         case @size
-        when :sm then "fs-7"
+        when :sm then "fs-6"
         when :lg then "fs-6 px-3 py-1"
         end
       end

@@ -39,4 +39,10 @@ RSpec.describe Admin::Badge::Component, type: :component do
 
     expect(page).to have_css("span.badge.bg-primary")
   end
+
+  it "uses dark text on warning background for accessibility" do
+    render_inline(described_class.new(label: "Pending", color: :warning))
+
+    expect(page).to have_css("span.badge.bg-warning.text-dark", text: "Pending")
+  end
 end
