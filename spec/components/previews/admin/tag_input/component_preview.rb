@@ -5,45 +5,46 @@ class Admin::TagInput::ComponentPreview < ApplicationComponentPreview
   def default
     render Admin::TagInput::Component.new(
       available_tags: [
-        { label: "Buyers — Lead", group: :buyers },
-        { label: "Buyers — Reviewer", group: :buyers },
-        { label: "Press — Journalist", group: :press },
-        { label: "Press — Editor", group: :press },
-        { label: "Festivals — Director", group: :festivals },
-        { label: "Festivals — Programmer", group: :festivals },
-        { label: "Sellers — Agent", group: :sellers },
-        { label: "Institutional — Academic", group: :institutional },
-        { label: "Organizations — Non-Profit", group: :organizations },
+        { label: "Buyer — Theatrical", group: :buyers },
+        { label: "Buyer — Digital", group: :buyers },
+        { label: "Press — Film Critic", group: :press },
+        { label: "Press — Trade Publication", group: :press },
+        { label: "Fest — Acquisitions", group: :festivals },
+        { label: "Fest — MIPCOM 2025", group: :festivals },
+        { label: "Seller — Worldwide", group: :sellers },
         { label: "Internal — Staff", group: :internal }
       ]
     )
   end
 
-  # @label With Pre-Selected Tags
+  # @label With Selected Tags
   def with_selected
     render Admin::TagInput::Component.new(
       available_tags: [
-        { label: "Buyers — Lead", group: :buyers },
-        { label: "Press — Journalist", group: :press },
-        { label: "Festivals — Director", group: :festivals },
-        { label: "Sellers — Agent", group: :sellers }
+        { label: "Buyer — Theatrical", group: :buyers },
+        { label: "Buyer — Digital", group: :buyers },
+        { label: "Press — Film Critic", group: :press },
+        { label: "Press — Trade Publication", group: :press },
+        { label: "Fest — Acquisitions", group: :festivals },
+        { label: "Fest — MIPCOM 2025", group: :festivals }
       ],
       selected_tags: [
-        { label: "Buyers — Lead", group: :buyers },
-        { label: "Festivals — Director", group: :festivals }
+        { label: "Buyer — Theatrical", group: :buyers },
+        { label: "Fest — Acquisitions", group: :festivals },
+        { label: "Press — Film Critic", group: :press }
       ]
     )
   end
 
-  # @label Custom Field Name
+  # @label Custom Field
   def custom_field
     render Admin::TagInput::Component.new(
       available_tags: [
-        { label: "Buyers — Lead", group: :buyers },
-        { label: "Press — Journalist", group: :press }
+        { label: "Buyer — Theatrical", group: :buyers },
+        { label: "Press — Film Critic", group: :press }
       ],
-      name: "contact[tag_list][]",
-      placeholder: "Search tags..."
+      name: "contact[tags][]",
+      placeholder: "Search and add tags..."
     )
   end
 end

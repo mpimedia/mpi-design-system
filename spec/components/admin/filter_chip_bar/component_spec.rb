@@ -102,4 +102,21 @@ RSpec.describe Admin::FilterChipBar::Component, type: :component do
 
     expect(page).not_to have_text("Active:")
   end
+
+  it "renders reset all link when reset_all_url is provided" do
+    groups = [
+      { label: "All", count: 100 },
+      { label: "Buyers", count: 50, group: :buyers, selected: true, href: "#" }
+    ]
+    render_inline(described_class.new(groups: groups, reset_all_url: "/contacts"))
+
+    expect(page).to have_css("a[href='/contacts'][aria-label='Reset all filters']", text: "Reset all")
+  end
+
+  it "does not render reset all link when reset_all_url is nil" do
+    groups = [ { label: "All", count: 100 } ]
+    render_inline(described_class.new(groups: groups))
+
+    expect(page).not_to have_text("Reset all")
+  end
 end

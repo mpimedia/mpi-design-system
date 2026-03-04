@@ -11,10 +11,12 @@ module Admin
       # @param active_filters [Array<Hash>] Active filter pill data:
       #   [{ category: "Keyword", value: "investors", remove_url: "/contacts?remove=keyword" }]
       # @param clear_all_url [String] URL to clear all active filters
-      def initialize(groups: [], active_filters: [], clear_all_url: nil)
+      # @param reset_all_url [String] URL to reset all filters (shown in header)
+      def initialize(groups: [], active_filters: [], clear_all_url: nil, reset_all_url: nil)
         @groups = groups || []
         @active_filters = active_filters || []
         @clear_all_url = clear_all_url
+        @reset_all_url = reset_all_url
       end
 
       private
@@ -90,6 +92,10 @@ module Admin
 
       def clear_all_styles
         "font-size: 13px; color: #6C757D; text-decoration: none;"
+      end
+
+      def reset_all_styles
+        "font-size: 12px; color: #6C757D; text-decoration: none;"
       end
 
       def chip_label(chip)

@@ -41,6 +41,7 @@ module Admin
       # @param sort_by [String] Current sort field
       # @param view_mode [Symbol] :list (default) or :card
       # @param search_query [String] Optional search keyword
+      # @param search_summary [String] Rich result summary (e.g., "23 contacts match **investors** in Buyers")
       # @param list_url [String] URL for list view toggle
       # @param card_url [String] URL for card view toggle
       # @param active_filters [Array<Hash>] Active filter pills
@@ -49,6 +50,7 @@ module Admin
                      selected_group_color: nil, selected_group_bg: nil,
                      total_count: 0, current_page: 1, per_page: 25,
                      sort_by: nil, view_mode: :list, search_query: nil,
+                     search_summary: nil,
                      list_url: "#", card_url: "#",
                      active_filters: [], clear_all_url: nil)
         @entity_type = ENTITY_TYPES.include?(entity_type) ? entity_type : :contacts
@@ -62,6 +64,7 @@ module Admin
         @sort_by = sort_by || sort_options.first&.last
         @view_mode = view_mode == :card ? :card : :list
         @search_query = search_query
+        @search_summary = search_summary
         @list_url = list_url
         @card_url = card_url
         @active_filters = active_filters || []
@@ -94,6 +97,10 @@ module Admin
 
       def card_view?
         @view_mode == :card
+      end
+
+      def show_search_summary?
+        @search_summary.present?
       end
 
       def subgroup_bar_styles
@@ -143,6 +150,10 @@ module Admin
         end
 
         styles.join("; ")
+      end
+
+      def search_summary_styles
+        "font-size: 13px; color: #6C757D; margin-bottom: 12px;"
       end
 
       def section_spacing_styles

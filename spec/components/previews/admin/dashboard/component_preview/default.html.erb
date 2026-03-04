@@ -1,43 +1,45 @@
 <%= render Admin::Dashboard::Component.new(
-  user_name: "Jane",
+  user_name: "Badie",
   greeting_time: :morning,
-  current_date: "Monday, January 15, 2025",
+  current_date: "Tuesday, Feb 25",
   activities: [
-    { type: :email, description: "sent a follow-up email", timestamp: "10:42 AM", contact_name: "Robert Fox", contact_path: "#" },
-    { type: :meeting, description: "logged a meeting", timestamp: "2:00 PM", contact_name: "Emily Chen", contact_path: "#", account_name: "Film Weekly", account_path: "#" },
-    { type: :call, description: "made a sales call", timestamp: "9:15 AM", contact_name: "Marcus Johnson", contact_path: "#" },
-    { type: :note, description: "added a note", timestamp: "4:30 PM", contact_name: "Lisa Park", contact_path: "#" }
+    { type: :email, description: "Email logged with", contact_name: "Sarah Chen", contact_path: "#", account_name: "Sony Pictures", account_path: "#", timestamp: "2 hours ago" },
+    { type: :meeting, description: "Meeting scheduled with", contact_name: "Marcus Johnson", contact_path: "#", account_name: "Berlin Film Fest", account_path: "#", timestamp: "4 hours ago" },
+    { type: :new_contact, description: "New contact added:", contact_name: "Emily Fox", contact_path: "#", timestamp: "6 hours ago" },
+    { type: :note, description: "Note added for", contact_name: "Robert Kim", contact_path: "#", timestamp: "Yesterday" }
   ],
   followups: [
-    { name: "Jane Cooper", description: "Follow up on screening schedule", status: :overdue, status_label: "Overdue", avatar_name: "Jane Cooper" },
-    { name: "Robert Fox", description: "Send contract draft", status: :due_today, status_label: "Due Today", avatar_name: "Robert Fox" },
-    { name: "Emily Chen", description: "Schedule Q2 review", status: :upcoming, status_label: "Tomorrow", avatar_name: "Emily Chen" }
+    { name: "Sarah Chen", description: "Re: Spring Lineup distribution rights", status: :overdue, status_label: "7d overdue", avatar_name: "Sarah Chen" },
+    { name: "Marcus Johnson", description: "Follow up on MIPCOM meeting", status: :due_today, status_label: "Due today", avatar_name: "Marcus Johnson" },
+    { name: "Emily Fox", description: "Send acquisition proposal", status: :due_tomorrow, status_label: "Due tomorrow", avatar_name: "Emily Fox" },
+    { name: "Robert Kim", description: "Check on screening schedule", status: :future, status_label: "In 3 days", avatar_name: "Robert Kim" }
   ],
-  followup_count: 3,
-  followup_path: "#",
+  followup_count: 12,
+  followup_path: "/followups",
   quick_action_buttons: [
-    { label: "Add Contact", path: "#", icon: "bi-person-plus" },
-    { label: "Log Engagement", path: "#", icon: "bi-chat-dots" },
+    { label: "Add new Contact", path: "#", icon: "bi-plus-lg" },
+    { label: "Add new Account", path: "#", icon: "bi-plus-lg" },
+    { label: "Add new Engagement", path: "#", icon: "bi-plus-lg" },
     { label: "Import Contacts", path: "#", icon: "bi-upload" }
   ],
   group_data: [
-    { label: "Buyers", count: 42, color: "#E8733A", percentage: 27 },
-    { label: "Press", count: 28, color: "#2DA67E", percentage: 18 },
-    { label: "Festivals", count: 35, color: "#2E75B6", percentage: 22 },
-    { label: "Sellers", count: 22, color: "#8B5CF6", percentage: 14 },
-    { label: "Other", count: 29, color: "#64748B", percentage: 19 }
+    { label: "Buyers", count: 120, color: "#E8733A", percentage: 35.0 },
+    { label: "Press", count: 85, color: "#2DA67E", percentage: 25.0 },
+    { label: "Festivals", count: 67, color: "#2E75B6", percentage: 19.5 },
+    { label: "Sellers", count: 45, color: "#8B5CF6", percentage: 13.0 },
+    { label: "Other", count: 25, color: "#64748B", percentage: 7.5 }
   ]
 ) do |dashboard| %>
   <% dashboard.with_stat_card do %>
-    <%= render Admin::StatCard::Component.new(label: "Total Contacts", value: "2,307", trend_text: "34 this month", trend_direction: :up, trend_sentiment: :positive) %>
+    <%= render Admin::StatCard::Component.new(label: "Total Contacts", value: "2,307", trend: "+12%", trend_direction: :up) %>
   <% end %>
   <% dashboard.with_stat_card do %>
-    <%= render Admin::StatCard::Component.new(label: "Active Accounts", value: "156", trend_text: "12 new", trend_direction: :up, trend_sentiment: :positive) %>
+    <%= render Admin::StatCard::Component.new(label: "Engagements This Week", value: "47", trend: "+8%", trend_direction: :up) %>
   <% end %>
   <% dashboard.with_stat_card do %>
-    <%= render Admin::StatCard::Component.new(label: "Engagements", value: "89", trend_text: "This week", trend_direction: :neutral, trend_sentiment: :neutral) %>
+    <%= render Admin::StatCard::Component.new(label: "Avg. Data Quality", value: "72%", trend: "+3%", trend_direction: :up) %>
   <% end %>
   <% dashboard.with_stat_card do %>
-    <%= render Admin::StatCard::Component.new(label: "Data Quality", value: "82%", trend_text: "3% improvement", trend_direction: :up, trend_sentiment: :positive) %>
+    <%= render Admin::StatCard::Component.new(label: "Follow-ups Due", value: "12", trend: "-2", trend_direction: :down) %>
   <% end %>
 <% end %>

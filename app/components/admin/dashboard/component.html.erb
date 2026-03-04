@@ -38,6 +38,20 @@
               <div class="flex-grow-1">
                 <div style="<%= activity_text_styles %>">
                   <%= activity[:description] %>
+                  <% if activity[:contact_name].present? %>
+                    <% if activity[:contact_path].present? %>
+                      <a href="<%= activity[:contact_path] %>" style="<%= activity_link_styles %>"><%= activity[:contact_name] %></a>
+                    <% else %>
+                      <strong><%= activity[:contact_name] %></strong>
+                    <% end %>
+                  <% end %>
+                  <% if activity[:account_name].present? %>
+                    <% if activity[:account_path].present? %>
+                      — <a href="<%= activity[:account_path] %>" style="<%= activity_link_styles %>"><%= activity[:account_name] %></a>
+                    <% else %>
+                      — <%= activity[:account_name] %>
+                    <% end %>
+                  <% end %>
                 </div>
                 <div style="<%= activity_time_styles %>"><%= activity[:timestamp] %></div>
               </div>
@@ -106,6 +120,7 @@
             <div class="d-flex align-items-center gap-2 mb-3">
               <%= render Admin::AvatarCircle::Component.new(name: followup[:avatar_name] || followup[:name], size: :sm) %>
               <div class="flex-grow-1">
+                <div style="<%= followup_name_styles %>"><%= followup[:name] %></div>
                 <div style="<%= followup_desc_styles %>"><%= followup[:description] %></div>
               </div>
               <div style="<%= followup_status_styles(followup[:status]) %>"><%= followup[:status_label] %></div>

@@ -43,4 +43,21 @@
        role="listbox"
        aria-label="Tag suggestions">
   </div>
+
+  <%# Auto-Derived Groups %>
+  <% if show_derived_groups? %>
+    <div class="mt-2">
+      <div style="<%= section_heading_styles %>">Auto-Derived Groups</div>
+      <div class="d-flex flex-wrap gap-1">
+        <% derived_groups.each do |group_sym| %>
+          <span style="<%= derived_group_styles(group_sym) %>"><%= derived_group_label(group_sym) %></span>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Keyboard hint %>
+  <div style="<%= keyboard_hint_styles %>">
+    ↑↓ to navigate · Enter to select · Esc to close
+  </div>
 </div>
