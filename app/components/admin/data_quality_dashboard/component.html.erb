@@ -1,0 +1,76 @@
+<div>
+  <div class="row g-3 mb-3">
+    <div class="col-lg-4">
+      <div style="<%= panel_styles %>">
+        <div style="<%= heading_styles %>">Overall Data Quality</div>
+        <div class="d-flex align-items-center gap-3">
+          <svg width="120" height="120" viewBox="0 0 120 120" aria-label="Data quality score: <%= @overall_score %>%">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="#F0F0F0" stroke-width="8"/>
+            <circle cx="60" cy="60" r="52" fill="none" stroke="<%= ring_color %>" stroke-width="8"
+              stroke-dasharray="<%= ring_circumference %>" stroke-dashoffset="<%= ring_offset %>"
+              stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            <text x="60" y="55" text-anchor="middle" style="<%= score_text_styles %>"><%= @overall_score %>%</text>
+            <text x="60" y="72" text-anchor="middle" style="font-size: 11px; fill: #6C757D;"><%= tier_config[:label] %></text>
+          </svg>
+          <div class="flex-grow-1">
+            <% %i[excellent good fair poor].each do |tier| %>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span style="font-size: 11px; color: #6C757D; width: 64px;"><%= bar_label(tier) %></span>
+                <div class="flex-grow-1" style="background: #F0F0F0; height: 8px; border-radius: 4px;">
+                  <div style="<%= bar_styles(tier, bar_count(tier)) %>"></div>
+                </div>
+                <span style="font-size: 11px; color: #6C757D; width: 32px; text-align: right;"><%= bar_count(tier) %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div style="<%= panel_styles %>">
+        <div style="<%= heading_styles %>">Top Data Gaps</div>
+        <div class="row g-3">
+          <% @gaps.each do |gap| %>
+            <div class="col-md-4">
+              <div style="<%= gap_card_styles %>">
+                <div style="<%= gap_count_styles %>"><%= gap[:count] %></div>
+                <div style="<%= gap_label_styles %>"><%= gap[:label] %></div>
+                <div style="<%= gap_percentage_styles %>"><%= gap[:percentage] %>%</div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% if @priority_fixes.any? %>
+    <div style="<%= panel_styles %>">
+      <div style="<%= heading_styles %>">Priority Fixes</div>
+      <% @priority_fixes.each do |fix| %>
+        <div style="<%= fix_row_styles %>">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <%= render Admin::AvatarCircle::Component.new(name: fix[:name], size: :sm) %>
+              <div>
+                <div style="<%= fix_name_styles %>"><%= fix[:name] %></div>
+                <% if fix[:organization].present? %>
+                  <div style="<%= fix_org_styles %>"><%= fix[:organization] %></div>
+                <% end %>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+              <div style="<%= fix_missing_styles %>"><%= fix[:missing_fields].join(", ") %></div>
+              <svg width="32" height="32" viewBox="0 0 32 32" aria-label="Score: <%= fix[:score] %>%">
+                <circle cx="16" cy="16" r="12" fill="none" stroke="#F0F0F0" stroke-width="3"/>
+                <circle cx="16" cy="16" r="12" fill="none" stroke="<%= mini_ring_color(fix[:score]) %>" stroke-width="3"
+                  stroke-dasharray="<%= mini_ring_circumference %>" stroke-dashoffset="<%= mini_ring_offset(fix[:score]) %>"
+                  stroke-linecap="round" transform="rotate(-90 16 16)"/>
+              </svg>
+              <span style="<%= fix_recency_styles %>"><%= fix[:last_active] %></span>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

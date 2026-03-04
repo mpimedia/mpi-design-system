@@ -1,0 +1,24 @@
+<a href="<%= @path %>" style="<%= card_styles %>" class="contact-card">
+  <div class="d-flex align-items-center gap-2 mb-2">
+    <%= render Admin::AvatarCircle::Component.new(name: @name, size: :md) %>
+    <div>
+      <div style="<%= name_styles %>"><%= @name %></div>
+      <% if @company.present? %>
+        <div style="<%= company_styles %>"><%= @company %></div>
+      <% end %>
+    </div>
+  </div>
+  <% if @tags.any? %>
+    <div class="d-flex flex-wrap gap-1 mb-2">
+      <% @tags.each do |tag| %>
+        <span style="<%= tag_pill_styles(tag) %>"><%= tag[:label] %></span>
+      <% end %>
+    </div>
+  <% end %>
+  <div class="d-flex justify-content-between" style="<%= meta_styles %>">
+    <span><%= @last_engaged %></span>
+    <% if @owner_name.present? %>
+      <span>Owner: <%= @owner_name %></span>
+    <% end %>
+  </div>
+</a>

@@ -1,0 +1,44 @@
+<div style="<%= panel_styles %>">
+  <div class="d-flex align-items-start gap-3 mb-3">
+    <svg width="48" height="48" viewBox="0 0 48 48" aria-label="Data completeness: <%= @score %>%">
+      <circle cx="24" cy="24" r="20" fill="none" stroke="#F0F0F0" stroke-width="4"/>
+      <circle cx="24" cy="24" r="20" fill="none" stroke="<%= ring_color %>" stroke-width="4"
+        stroke-dasharray="<%= ring_circumference %>" stroke-dashoffset="<%= ring_offset %>"
+        stroke-linecap="round" transform="rotate(-90 24 24)"/>
+      <text x="24" y="27" text-anchor="middle" style="font-size: 11px; font-weight: 700; fill: #1B2A4A;"><%= @score %>%</text>
+    </svg>
+    <div>
+      <div style="<%= title_styles %>">Data Completeness</div>
+      <div style="<%= subtitle_styles %>"><%= @fields_complete %> of <%= @fields_total %> fields complete</div>
+      <span style="<%= grade_badge_styles %>" class="mt-1"><%= tier_config[:label] %></span>
+    </div>
+  </div>
+  <% @fields.each do |field| %>
+    <div style="<%= field_row_styles(field[:complete]) %>">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <% if field[:complete] %>
+            <i class="bi bi-check-circle-fill" style="<%= check_icon_styles %>" aria-hidden="true"></i>
+            <span class="visually-hidden">Complete:</span>
+          <% else %>
+            <i class="bi bi-x-circle-fill" style="<%= x_icon_styles %>" aria-hidden="true"></i>
+            <span class="visually-hidden">Missing:</span>
+          <% end %>
+          <span style="<%= field_name_styles(field[:complete]) %>"><%= field[:name] %></span>
+          <% if field[:priority] %>
+            <span style="<%= priority_badge_styles(field[:priority]) %>"><%= priority_label(field[:priority]) %></span>
+          <% end %>
+        </div>
+        <% if field[:complete] && field[:value].present? %>
+          <span style="<%= field_value_styles %>"><%= field[:value] %></span>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+  <div class="mt-3">
+    <div class="progress" style="height: 6px;" aria-label="Field completion: <%= @fields_complete %> of <%= @fields_total %>">
+      <div class="progress-bar" role="progressbar" style="width: <%= progress_percentage %>%; background-color: <%= progress_color %>;"
+        aria-valuenow="<%= @fields_complete %>" aria-valuemin="0" aria-valuemax="<%= @fields_total %>"></div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+<tr>
+  <td style="<%= cell_styles %>">
+    <div class="d-flex align-items-center gap-2">
+      <%= render Admin::AvatarCircle::Component.new(name: @name, size: :md) %>
+      <div>
+        <div style="<%= name_styles %>"><%= @name %></div>
+        <% if @title.present? %>
+          <div style="<%= title_styles %>"><%= sanitize(@title, tags: %w[strong em b i], attributes: %w[]) %></div>
+        <% end %>
+      </div>
+    </div>
+  </td>
+  <td style="<%= cell_styles %>">
+    <% if @tags.any? %>
+      <div class="d-flex flex-wrap gap-2">
+        <% @tags.each do |tag| %>
+          <span class="d-inline-flex align-items-center gap-1">
+            <span style="<%= tag_dot_style(tag[:group]) %>" aria-hidden="true"></span>
+            <span style="<%= tag_text_styles %>"><%= tag[:role] %></span>
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+  </td>
+  <% if search_result? %>
+    <td style="<%= cell_styles %>">
+      <% if @match_text.present? %>
+        <span style="<%= meta_text_styles %>"><%= sanitize(@match_text, tags: %w[strong], attributes: %w[]) %></span>
+      <% end %>
+    </td>
+    <td style="<%= cell_styles %>">
+      <span style="<%= meta_text_styles %>"><%= @last_engagement %></span>
+    </td>
+    <td style="<%= cell_styles %>">
+      <% if @status %>
+        <span class="d-inline-flex align-items-center gap-1">
+          <span style="<%= status_dot_style %>" aria-hidden="true"></span>
+          <span style="<%= status_text_styles %>"><%= @status.to_s.capitalize %></span>
+        </span>
+      <% end %>
+    </td>
+  <% else %>
+    <td style="<%= cell_styles %>">
+      <span style="<%= meta_text_styles %>"><%= @last_engagement %></span>
+    </td>
+    <td style="<%= cell_styles %>">
+      <% if @account_name.present? %>
+        <% if @account_path.present? %>
+          <a href="<%= @account_path %>" style="<%= account_link_styles %>"><%= @account_name %></a>
+        <% else %>
+          <span style="<%= account_link_styles %>"><%= @account_name %></span>
+        <% end %>
+      <% end %>
+    </td>
+  <% end %>
+</tr>
