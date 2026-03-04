@@ -1,0 +1,47 @@
+<div class="email-thread">
+  <% if @subject.present? %>
+    <div style="<%= subject_styles %>"><%= @subject %></div>
+  <% end %>
+
+  <% @messages.each do |message| %>
+    <article style="<%= message_card_styles(message_read?(message)) %>">
+      <div class="d-flex align-items-center gap-2">
+        <%= render Admin::AvatarCircle::Component.new(name: message[:sender], size: :sm) %>
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center gap-2">
+            <span style="<%= sender_styles %>"><%= message[:sender] %></span>
+            <% unless message_read?(message) %>
+              <span style="<%= unread_dot_styles %>" aria-label="Unread" title="Unread"></span>
+            <% end %>
+          </div>
+          <div style="<%= timestamp_styles %>"><%= message[:timestamp] %></div>
+        </div>
+      </div>
+
+      <% if message[:body].present? %>
+        <div style="<%= body_styles %>"><%= message[:body] %></div>
+      <% end %>
+
+      <% if message[:staff_notes].present? %>
+        <div style="<%= staff_note_styles %>">
+          <div style="<%= staff_note_label_styles %>">Staff Note</div>
+          <%= message[:staff_notes] %>
+        </div>
+      <% end %>
+
+      <% if message[:attachments]&.any? %>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+          <% message[:attachments].each do |attachment| %>
+            <span style="<%= attachment_styles %>">
+              <i class="bi bi-<%= attachment_icon(attachment[:type]) %>" aria-hidden="true"></i>
+              <%= attachment[:name] %>
+              <% if attachment[:size].present? %>
+                <span style="<%= attachment_size_styles %>">(<%= attachment[:size] %>)</span>
+              <% end %>
+            </span>
+          <% end %>
+        </div>
+      <% end %>
+    </article>
+  <% end %>
+</div>

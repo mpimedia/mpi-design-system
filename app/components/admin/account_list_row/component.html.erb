@@ -1,0 +1,47 @@
+<tr>
+  <td style="<%= cell_styles %>">
+    <div class="d-flex align-items-center gap-2">
+      <%= render Admin::AvatarCircle::Component.new(name: @name, size: :md) %>
+      <div>
+        <% if @account_path.present? %>
+          <a href="<%= @account_path %>" style="<%= name_styles %>"><%= @name %></a>
+        <% else %>
+          <span style="<%= name_styles %>"><%= @name %></span>
+        <% end %>
+        <% if @type_label.present? %>
+          <span style="<%= type_badge_styles %>" class="ms-2"><%= @type_label %></span>
+        <% end %>
+      </div>
+    </div>
+  </td>
+  <td style="<%= cell_styles %>">
+    <% if @location.present? %>
+      <span style="<%= location_styles %>"><%= @location %></span>
+    <% end %>
+  </td>
+  <td style="<%= cell_styles %>">
+    <% if @contact_names.any? %>
+      <%= render Admin::AvatarStack::Component.new(names: @contact_names, max: 3, size: :sm) %>
+    <% end %>
+  </td>
+  <td style="<%= cell_styles %>">
+    <% if @tags.any? %>
+      <div class="d-flex flex-wrap gap-2">
+        <% @tags.each do |tag| %>
+          <span class="d-inline-flex align-items-center gap-1">
+            <span style="<%= tag_dot_style(tag[:group]) %>" aria-hidden="true"></span>
+            <span style="<%= tag_text_styles %>"><%= tag[:role] %></span>
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+  </td>
+  <td style="<%= cell_styles %>">
+    <% if @health %>
+      <span class="d-inline-flex align-items-center gap-1">
+        <span style="<%= health_dot_style %>" aria-hidden="true"></span>
+        <span style="<%= health_text_styles %>"><%= health_label %></span>
+      </span>
+    <% end %>
+  </td>
+</tr>
