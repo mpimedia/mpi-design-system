@@ -1,0 +1,20 @@
+<div style="<%= shell_styles %>" role="document">
+  <%= render Admin::NavBar::Component.new(
+    current_section: @current_section,
+    current_subsection: @current_subsection,
+    user_name: @user_name,
+    search_url: @search_url
+  ) %>
+
+  <div style="<%= content_wrapper_styles %>">
+    <% if show_sidebar? %>
+      <aside style="<%= sidebar_styles %>" role="complementary" aria-label="Content sidebar">
+        <%= sidebar %>
+      </aside>
+    <% end %>
+
+    <main style="<%= content_area_styles %>" role="main">
+      <%= body %>
+    </main>
+  </div>
+</div>
