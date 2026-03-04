@@ -1,0 +1,26 @@
+<div style="<%= container_styles %>">
+  <% if breadcrumb? %>
+    <div style="<%= breadcrumb_bar_styles %>">
+      <%= breadcrumb %>
+    </div>
+  <% end %>
+
+  <div style="<%= body_styles %>">
+    <div class="row g-4">
+      <div class="col-md-8">
+        <% if main_content? %>
+          <div style="<%= main_panel_styles %>">
+            <%= main_content %>
+          </div>
+        <% end %>
+      </div>
+      <div class="col-md-4">
+        <% if sidebar? %>
+          <div style="<%= sidebar_panel_styles %>">
+            <%= sidebar %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

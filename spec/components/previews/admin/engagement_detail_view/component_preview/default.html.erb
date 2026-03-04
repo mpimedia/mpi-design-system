@@ -1,0 +1,61 @@
+<%= render Admin::EngagementDetailView::Component.new(engagement_type: :email) do |view| %>
+  <% view.with_breadcrumb do %>
+    <%= render Admin::BreadcrumbNav::Component.new(
+      back_path: "#",
+      back_label: "Engagements",
+      current_title: "Email: Follow-up on screening request"
+    ) %>
+  <% end %>
+
+  <% view.with_main_content do %>
+    <%= render Admin::EmailThread::Component.new(
+      subject: "Re: Screening Request — Berlin Film Festival 2025",
+      messages: [
+        {
+          sender: "Sarah Chen",
+          timestamp: "Feb 21, 2025 10:42 AM",
+          body: "Hi James, I wanted to follow up on the screening request we discussed. Thursday evening works for us.",
+          read: true
+        },
+        {
+          sender: "James Park",
+          timestamp: "Feb 21, 2025 11:15 AM",
+          body: "Great! Can you send over the technical specs? We need to confirm DCP format.",
+          read: true,
+          attachments: [{ name: "venue_specs.pdf", size: "2.4 MB", type: "pdf" }]
+        },
+        {
+          sender: "Sarah Chen",
+          timestamp: "Feb 22, 2025 9:30 AM",
+          body: "Here are the specs. DCP is fine — flat and scope both supported.",
+          read: false,
+          staff_notes: "Follow up next week about German territory rights."
+        }
+      ]
+    ) %>
+  <% end %>
+
+  <% view.with_sidebar do %>
+    <h6 class="text-uppercase" style="font-size: 11px; letter-spacing: 0.06em; color: #6C757D; margin-bottom: 12px;">Linked Contacts</h6>
+    <div class="d-flex flex-column gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <%= render Admin::AvatarCircle::Component.new(name: "Sarah Chen", size: :sm) %>
+        <span style="font-size: 13px; color: #1B2A4A;">Sarah Chen</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <%= render Admin::AvatarCircle::Component.new(name: "James Park", size: :sm) %>
+        <span style="font-size: 13px; color: #1B2A4A;">James Park</span>
+      </div>
+    </div>
+
+    <h6 class="text-uppercase" style="font-size: 11px; letter-spacing: 0.06em; color: #6C757D; margin-bottom: 12px;">Linked Accounts</h6>
+    <div class="mb-3">
+      <span style="font-size: 13px; color: #2E75B6;">Sony Pictures Classics</span>
+    </div>
+
+    <h6 class="text-uppercase" style="font-size: 11px; letter-spacing: 0.06em; color: #6C757D; margin-bottom: 12px;">Linked Titles</h6>
+    <div>
+      <span style="font-size: 13px; color: #2E75B6;">The Last Wave</span>
+    </div>
+  <% end %>
+<% end %>
