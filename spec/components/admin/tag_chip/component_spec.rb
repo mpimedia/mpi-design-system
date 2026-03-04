@@ -16,6 +16,18 @@ RSpec.describe Admin::TagChip::Component, type: :component do
     expect(page).to have_css("span[style*='#2DA67E']", text: "Press")
   end
 
+  it "renders a colored dot indicator before the label" do
+    render_inline(described_class.new(label: "Buyers", group: :buyers))
+
+    expect(page).to have_css("span[style*='background-color: #E8733A'][style*='border-radius: 50%']")
+  end
+
+  it "renders dot with correct color for each group" do
+    render_inline(described_class.new(label: "Festivals", group: :festivals))
+
+    expect(page).to have_css("span[style*='background-color: #2E75B6'][style*='border-radius: 50%']")
+  end
+
   it "renders a removable chip with close button (no URL)" do
     render_inline(described_class.new(label: "MIPCOM 2025", group: :buyers, removable: true))
 

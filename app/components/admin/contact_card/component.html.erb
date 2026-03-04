@@ -11,14 +11,26 @@
   <% if @tags.any? %>
     <div class="d-flex flex-wrap gap-1 mb-2">
       <% @tags.each do |tag| %>
-        <span style="<%= tag_pill_styles(tag) %>"><%= tag[:label] %></span>
+        <span style="<%= tag_pill_styles(tag) %>">
+          <span style="<%= tag_dot_styles(tag) %>" aria-hidden="true"></span>
+          <%= tag[:label] %>
+        </span>
       <% end %>
     </div>
   <% end %>
   <div class="d-flex justify-content-between" style="<%= meta_styles %>">
-    <span><%= @last_engaged %></span>
-    <% if @owner_name.present? %>
-      <span>Owner: <%= @owner_name %></span>
+    <% if @last_engaged.present? %>
+      <span>Last engaged: <%= @last_engaged %></span>
+    <% else %>
+      <span></span>
     <% end %>
+    <div class="d-flex gap-2">
+      <% if @engagement_count %>
+        <span><%= @engagement_count %> engagements</span>
+      <% end %>
+      <% if @owner_name.present? %>
+        <span>Owner: <%= @owner_name %></span>
+      <% end %>
+    </div>
   </div>
 </a>

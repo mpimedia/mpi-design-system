@@ -13,14 +13,14 @@
 ) do |view| %>
   <% view.with_card_content do %>
     <div class="row g-3">
-      <div class="col-md-3">
-        <%= render Admin::ContactCard::Component.new(name: "Jane Cooper", company: "Acme Films", tags: [{ label: "Buyers", color: "#E8733A", bg_color: "#FEF3EC" }], last_engaged: "2 days ago", path: "#") %>
+      <div class="col-md-4">
+        <%= render Admin::ContactCard::Component.new(name: "Jane Cooper", company: "Acme Films", tags: [{ label: "Buyer — Theatrical", group: :buyers }], last_engaged: "2 days ago", engagement_count: 14, path: "#") %>
       </div>
-      <div class="col-md-3">
-        <%= render Admin::ContactCard::Component.new(name: "Robert Fox", company: "Berlin Film Fest", tags: [{ label: "Festivals", color: "#2E75B6", bg_color: "#EBF3FB" }], last_engaged: "1 week ago", path: "#") %>
+      <div class="col-md-4">
+        <%= render Admin::ContactCard::Component.new(name: "Robert Fox", company: "Berlin Film Fest", tags: [{ label: "Fest — Acquisitions", group: :festivals }], last_engaged: "1 week ago", engagement_count: 8, path: "#") %>
       </div>
-      <div class="col-md-3">
-        <%= render Admin::ContactCard::Component.new(name: "Emily Chen", company: "Film Weekly", tags: [{ label: "Press", color: "#2DA67E", bg_color: "#ECF8F4" }], last_engaged: "3 days ago", path: "#") %>
+      <div class="col-md-4">
+        <%= render Admin::ContactCard::Component.new(name: "Emily Chen", company: "Film Weekly", tags: [{ label: "Press — Film Critic", group: :press }], last_engaged: "3 days ago", engagement_count: 22, path: "#") %>
       </div>
     </div>
   <% end %>

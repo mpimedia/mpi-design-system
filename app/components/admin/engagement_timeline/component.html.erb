@@ -13,24 +13,30 @@
       <% end %>
     </div>
   <% else %>
-    <% @engagements.each_with_index do |engagement, index| %>
-      <div style="<%= index == @engagements.length - 1 ? last_entry_styles : entry_styles %>">
-        <div class="d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center">
-            <span style="<%= type_badge_styles(engagement[:type]) %>"><%= type_label(engagement[:type]) %></span>
-            <span style="<%= date_styles %>"><%= format_date(engagement) %></span>
+    <% grouped_engagements.each do |group_label, entries| %>
+      <% if entries.first[:date_group].present? %>
+        <div style="<%= date_group_header_styles %>"><%= group_label %></div>
+      <% end %>
+      <% entries.each_with_index do |engagement, index| %>
+        <% is_last = (index == entries.length - 1) && (group_label == grouped_engagements.keys.last) %>
+        <div style="<%= is_last ? last_entry_styles : entry_styles %>">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <span style="<%= type_badge_styles(engagement[:type]) %>"><%= type_label(engagement[:type]) %></span>
+              <span style="<%= date_styles %>"><%= format_date(engagement) %></span>
+            </div>
+            <% if full? && engagement[:creator_name].present? %>
+              <span style="<%= creator_styles %>">by <%= engagement[:creator_name] %></span>
+            <% end %>
           </div>
-          <% if full? && engagement[:creator_name].present? %>
-            <span style="<%= creator_styles %>">by <%= engagement[:creator_name] %></span>
+          <% if engagement[:subject].present? %>
+            <div style="<%= subject_styles %>"><%= engagement[:subject] %></div>
+          <% end %>
+          <% if full? && engagement[:excerpt].present? %>
+            <div style="<%= excerpt_styles %>"><%= engagement[:excerpt] %></div>
           <% end %>
         </div>
-        <% if engagement[:subject].present? %>
-          <div style="<%= subject_styles %>"><%= engagement[:subject] %></div>
-        <% end %>
-        <% if full? && engagement[:excerpt].present? %>
-          <div style="<%= excerpt_styles %>"><%= engagement[:excerpt] %></div>
-        <% end %>
-      </div>
+      <% end %>
     <% end %>
   <% end %>
 </div>

@@ -12,6 +12,13 @@ module Admin
         note: "#E8913A"
       }.freeze
 
+      TYPE_BG_COLORS = {
+        email: "#EBF3FB",
+        meeting: "#F3EFFE",
+        call: "#ECF8F4",
+        note: "#FEF3EC"
+      }.freeze
+
       # @param engagement_type [Symbol] :email, :meeting, :call, :note
       # @param time [String] Display time (e.g., "10:42 AM")
       # @param subject [String] Engagement subject line
@@ -52,6 +59,10 @@ module Admin
         TYPE_COLORS[@engagement_type]
       end
 
+      def type_bg_color
+        TYPE_BG_COLORS[@engagement_type]
+      end
+
       def type_badge_styles
         [
           "font-size: 10px",
@@ -61,7 +72,7 @@ module Admin
           "border-radius: 4px",
           "border: 1.5px solid #{type_color}",
           "color: #{type_color}",
-          "background: transparent",
+          "background: #{type_bg_color}",
           "padding: 2px 6px",
           "display: inline-block"
         ].join("; ")

@@ -1,4 +1,5 @@
 <span class="d-inline-flex align-items-center gap-1 fw-semibold" style="<%= chip_styles %>">
+  <span style="<%= dot_styles %>" aria-hidden="true"></span>
   <%= @label %>
   <% if @removable && @remove_url %>
     <%= link_to @remove_url, style: remove_button_styles, aria: { label: "Remove #{@label}" }, data: { turbo_method: "delete", turbo_confirm: "Remove this tag?" } do %>

@@ -18,14 +18,14 @@
     <%= render Admin::DataTable::Component.new(
       columns: [
         { key: :name, label: "Name", sortable: true },
-        { key: :title, label: "Title", sortable: true },
+        { key: :account, label: "Account", sortable: true },
         { key: :tags, label: "Tags" },
         { key: :last_engagement, label: "Last Engagement", sortable: true }
       ],
       rows: [
-        { name: "Jane Cooper", title: "VP of Acquisitions", tags: [{ group: :buyers, label: "Lead" }], last_engagement: "2 days ago" },
-        { name: "Robert Fox", title: "Festival Director", tags: [{ group: :festivals, label: "Director" }], last_engagement: "1 week ago" },
-        { name: "Emily Chen", title: "Press Manager", tags: [{ group: :press, label: "Contact" }], last_engagement: "3 days ago" }
+        { name: "Jane Cooper", account: "Acme Films", tags: [{ group: :buyers, label: "Buyer — Theatrical" }], last_engagement: "2 days ago" },
+        { name: "Robert Fox", account: "Berlin Film Fest", tags: [{ group: :festivals, label: "Fest — Acquisitions" }], last_engagement: "1 week ago" },
+        { name: "Emily Chen", account: "Film Weekly", tags: [{ group: :press, label: "Press — Film Critic" }, { group: :buyers, label: "Buyer — Digital" }], last_engagement: "3 days ago" }
       ],
       sort_by: :name,
       sort_dir: :asc

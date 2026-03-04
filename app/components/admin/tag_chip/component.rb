@@ -43,6 +43,16 @@ module Admin
         ].join("; ")
       end
 
+      def dot_styles
+        [
+          "width: 8px",
+          "height: 8px",
+          "border-radius: 50%",
+          "background-color: #{colors[:color]}",
+          "flex-shrink: 0"
+        ].join("; ")
+      end
+
       def remove_button_styles
         [
           "color: #{colors[:color]}",

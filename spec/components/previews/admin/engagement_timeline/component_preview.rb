@@ -9,6 +9,14 @@ class Admin::EngagementTimeline::ComponentPreview < ApplicationComponentPreview
     )
   end
 
+  # @label With Date Groups
+  def with_date_groups
+    render Admin::EngagementTimeline::Component.new(
+      engagements: grouped_engagements,
+      new_engagement_path: "#"
+    )
+  end
+
   # @label Compact
   def compact
     render Admin::EngagementTimeline::Component.new(
@@ -33,6 +41,15 @@ class Admin::EngagementTimeline::ComponentPreview < ApplicationComponentPreview
       { type: :meeting, date: "2025-01-14", time: "2:00 PM", timezone: "EST", subject: "Quarterly review with Berlin Film Fest", creator_name: "David Kim" },
       { type: :call, date: "2025-01-13", time: "9:15 AM", timezone: "EST", subject: "Sales pitch — Global Distribution", excerpt: "Discussed pricing tiers...", creator_name: "Tom Wilson" },
       { type: :note, date: "2025-01-12", time: "4:30 PM", timezone: "EST", subject: "Internal note on screening rights", creator_name: "Jane Cooper" }
+    ]
+  end
+
+  def grouped_engagements
+    [
+      { type: :email, date: "Feb 25, 2026", time: "10:42 AM", timezone: "CT", date_group: "TODAY — FEB 25", subject: "Follow-up on Berlin screening", excerpt: "Hi Jane, I wanted to follow up...", creator_name: "Sarah Williams" },
+      { type: :call, date: "Feb 25, 2026", time: "9:15 AM", timezone: "CT", date_group: "TODAY — FEB 25", subject: "Quick check-in call", creator_name: "Tom Wilson" },
+      { type: :meeting, date: "Feb 24, 2026", time: "2:00 PM", timezone: "CT", date_group: "YESTERDAY — FEB 24", subject: "Quarterly review", creator_name: "David Kim" },
+      { type: :note, date: "Feb 23, 2026", time: "4:30 PM", timezone: "CT", date_group: "FEB 23, 2026", subject: "Internal note", creator_name: "Jane Cooper" }
     ]
   end
 end

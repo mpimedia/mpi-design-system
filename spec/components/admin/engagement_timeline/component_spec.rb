@@ -26,6 +26,29 @@ RSpec.describe Admin::EngagementTimeline::Component, type: :component do
     ]
   end
 
+  let(:grouped_engagements) do
+    [
+      {
+        type: :email,
+        date: "Feb 25, 2026",
+        time: "3:42 PM",
+        timezone: "CT",
+        date_group: "TODAY — FEB 25",
+        subject: "Follow-up",
+        creator_name: "M. Johnson"
+      },
+      {
+        type: :meeting,
+        date: "Feb 24, 2026",
+        time: "10:00 AM",
+        timezone: "CT",
+        date_group: "YESTERDAY — FEB 24",
+        subject: "Q1 Planning",
+        creator_name: "A. Garcia"
+      }
+    ]
+  end
+
   it "renders panel with white background and rounded border" do
     render_inline(described_class.new(engagements: engagements))
 
@@ -85,6 +108,19 @@ RSpec.describe Admin::EngagementTimeline::Component, type: :component do
     render_inline(described_class.new(engagements: engagements))
 
     expect(page).to have_css("div[style*='border-bottom: 1px solid #F0F0F0']", minimum: 1)
+  end
+
+  it "renders date group headers when date_group is provided" do
+    render_inline(described_class.new(engagements: grouped_engagements))
+
+    expect(page).to have_css("div[style*='text-transform: uppercase']", text: "TODAY — FEB 25")
+    expect(page).to have_css("div[style*='text-transform: uppercase']", text: "YESTERDAY — FEB 24")
+  end
+
+  it "renders date group headers with muted style" do
+    render_inline(described_class.new(engagements: grouped_engagements))
+
+    expect(page).to have_css("div[style*='color: #6C757D'][style*='font-weight: 700']", text: /TODAY/)
   end
 
   context "compact variant" do

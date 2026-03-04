@@ -30,4 +30,16 @@ class Admin::SearchBar::ComponentPreview < ApplicationComponentPreview
       url: "#"
     )
   end
+
+  # @label With Search and Export Buttons
+  def with_search_and_export
+    render Admin::SearchBar::Component.new(
+      placeholder: "Search by name, company, email, or keyword...",
+      show_button: true,
+      show_export: true,
+      export_url: "#",
+      url: "#",
+      size: :lg
+    )
+  end
 end

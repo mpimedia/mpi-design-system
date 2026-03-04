@@ -69,7 +69,34 @@ RSpec.describe Admin::EngagementDetailView::Component, type: :component do
       view.with_main_content { "Content only".html_safe }
     end
 
-    expect(page).not_to have_css("div[style*='border-bottom: 1px solid #DEE2E6']")
+    expect(page).not_to have_css("div[style*='border-bottom: 1px solid #DEE2E6'][style*='padding: 0 24px']")
+  end
+
+  it "renders default header bar when title is provided" do
+    render_inline(described_class.new(title: "Follow-up Email", date: "Feb 25, 2026", status: "Sent"))
+
+    expect(page).to have_css("h4", text: "Follow-up Email")
+    expect(page).to have_css("span[style*='color: #2E75B6']", text: "EMAIL")
+    expect(page).to have_text("Feb 25, 2026")
+    expect(page).to have_text("Sent")
+  end
+
+  it "renders custom header bar slot" do
+    render_inline(described_class.new) do |view|
+      view.with_header_bar { "<div id='custom-header'>Custom Header</div>".html_safe }
+      view.with_main_content { "Content".html_safe }
+    end
+
+    expect(page).to have_css("#custom-header", text: "Custom Header")
+  end
+
+  it "renders tabs slot" do
+    render_inline(described_class.new) do |view|
+      view.with_tabs { "<nav id='tabs'>Content / Thread / Activity</nav>".html_safe }
+      view.with_main_content { "Content".html_safe }
+    end
+
+    expect(page).to have_css("#tabs", text: "Content / Thread / Activity")
   end
 
   it "defaults to email engagement type" do
@@ -124,14 +151,18 @@ RSpec.describe Admin::EngagementDetailView::Component, type: :component do
     expect(page).to have_text("Sarah Chen")
   end
 
-  it "renders all three slots simultaneously" do
+  it "renders all slots simultaneously" do
     render_inline(described_class.new) do |view|
       view.with_breadcrumb { "<nav>Back</nav>".html_safe }
+      view.with_header_bar { "<div>Header</div>".html_safe }
+      view.with_tabs { "<nav>Tabs</nav>".html_safe }
       view.with_main_content { "<div>Email body</div>".html_safe }
       view.with_sidebar { "<div>Contacts list</div>".html_safe }
     end
 
     expect(page).to have_text("Back")
+    expect(page).to have_text("Header")
+    expect(page).to have_text("Tabs")
     expect(page).to have_text("Email body")
     expect(page).to have_text("Contacts list")
   end
