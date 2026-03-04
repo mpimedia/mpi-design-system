@@ -1,0 +1,5 @@
+<div class="d-flex gap-2 flex-wrap">
+  <% badges.each do |badge| %>
+    <%= render Admin::Badge::Component.new(**badge) %>
+  <% end %>
+</div>

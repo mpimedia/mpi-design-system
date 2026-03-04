@@ -1,0 +1,7 @@
+<div class="row g-3">
+  <% contacts.each do |contact| %>
+    <div class="col-md-3">
+      <%= render Admin::ContactCard::Component.new(**contact) %>
+    </div>
+  <% end %>
+</div>

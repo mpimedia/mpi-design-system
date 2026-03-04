@@ -1,0 +1,5 @@
+<div class="d-flex gap-2 flex-wrap">
+  <% names.each do |name| %>
+    <%= render Admin::AvatarCircle::Component.new(name: name, size: :lg) %>
+  <% end %>
+</div>

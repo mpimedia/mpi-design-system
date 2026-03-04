@@ -1,0 +1,5 @@
+<div class="d-flex flex-column gap-3">
+  <% engagements.each do |engagement| %>
+    <%= render Admin::EngagementCard::Component.new(**engagement) %>
+  <% end %>
+</div>

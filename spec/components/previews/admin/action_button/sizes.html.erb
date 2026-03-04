@@ -1,0 +1,5 @@
+<div class="d-flex gap-2 align-items-center flex-wrap">
+  <% buttons.each do |button| %>
+    <%= render Admin::ActionButton::Component.new(**button) %>
+  <% end %>
+</div>

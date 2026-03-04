@@ -1,0 +1,27 @@
+<%= render Admin::ListView::Component.new(
+  entity_type: :contacts,
+  groups: [
+    { label: "All", count: 156, group: nil, selected: true },
+    { label: "Buyers", count: 42, group: :buyers, selected: false }
+  ],
+  total_count: 156,
+  current_page: 1,
+  per_page: 25,
+  view_mode: :card,
+  list_url: "#list",
+  card_url: "#card"
+) do |view| %>
+  <% view.with_card_content do %>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <%= render Admin::ContactCard::Component.new(name: "Jane Cooper", company: "Acme Films", tags: [{ label: "Buyers", color: "#E8733A", bg_color: "#FEF3EC" }], last_engaged: "2 days ago", path: "#") %>
+      </div>
+      <div class="col-md-3">
+        <%= render Admin::ContactCard::Component.new(name: "Robert Fox", company: "Berlin Film Fest", tags: [{ label: "Festivals", color: "#2E75B6", bg_color: "#EBF3FB" }], last_engaged: "1 week ago", path: "#") %>
+      </div>
+      <div class="col-md-3">
+        <%= render Admin::ContactCard::Component.new(name: "Emily Chen", company: "Film Weekly", tags: [{ label: "Press", color: "#2DA67E", bg_color: "#ECF8F4" }], last_engaged: "3 days ago", path: "#") %>
+      </div>
+    </div>
+  <% end %>
+<% end %>
