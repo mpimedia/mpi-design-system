@@ -1,0 +1,25 @@
+<%= render Admin::ListView::Component.new(
+  entity_type: :contacts,
+  groups: [
+    { label: "All", count: 12, group: nil, selected: true }
+  ],
+  total_count: 12,
+  current_page: 1,
+  per_page: 25,
+  search_query: "Cooper",
+  view_mode: :list,
+  list_url: "#list",
+  card_url: "#card"
+) do |view| %>
+  <% view.with_table_content do %>
+    <%= render Admin::DataTable::Component.new(
+      columns: [
+        { key: :name, label: "Name", sortable: true },
+        { key: :title, label: "Title" }
+      ],
+      rows: [
+        { name: "Jane Cooper", title: "VP of Acquisitions", tags: [{ group: :buyers, role: "Lead" }] }
+      ]
+    ) %>
+  <% end %>
+<% end %>

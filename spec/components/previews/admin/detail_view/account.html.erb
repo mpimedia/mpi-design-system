@@ -1,0 +1,27 @@
+<%= render Admin::DetailView::Component.new(variant: :account) do |view| %>
+  <% view.with_profile_panel do %>
+    <%= render Admin::AccountDetailPanel::Component.new(
+      name: "Acme Films",
+      account_type: "Distributor",
+      account_type_color: :primary,
+      contacts: [
+        { name: "Jane Cooper", title: "VP of Acquisitions", path: "#" },
+        { name: "Robert Fox", title: "Sales Director", path: "#" }
+      ],
+      email: "info@acmefilms.com",
+      phone: "+1 555-0200",
+      location: "Los Angeles, CA",
+      created_date: "Jan 10, 2025",
+      owner: { name: "Sarah Williams", path: "#" }
+    ) %>
+  <% end %>
+  <% view.with_activity_panel do %>
+    <%= render Admin::EngagementTimeline::Component.new(
+      variant: :compact,
+      engagements: [
+        { type: :call, date: "2025-01-13", time: "9:15 AM", timezone: "EST", subject: "Sales pitch", creator_name: "Tom Wilson" },
+        { type: :note, date: "2025-01-12", time: "4:30 PM", timezone: "EST", subject: "Internal note", creator_name: "Jane Cooper" }
+      ]
+    ) %>
+  <% end %>
+<% end %>

@@ -1,0 +1,5 @@
+<div class="d-flex gap-3 align-items-center">
+  <% avatars.each do |avatar| %>
+    <%= render Admin::AvatarCircle::Component.new(**avatar) %>
+  <% end %>
+</div>

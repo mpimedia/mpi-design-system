@@ -1,0 +1,13 @@
+<%= render Admin::AppShell::Component.new(
+  current_section: current_section,
+  user_name: user_name,
+  search_url: search_url,
+  show_sidebar: show_sidebar
+) do |shell| %>
+  <% shell.with_body do %>
+    <div class="p-4">
+      <h1 class="h3 mb-3" style="color: #1B2A4A;">Dashboard</h1>
+      <p class="text-muted">This is the main content area of the AppShell.</p>
+    </div>
+  <% end %>
+<% end %>

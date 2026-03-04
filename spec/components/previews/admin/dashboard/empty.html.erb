@@ -1,0 +1,16 @@
+<%= render Admin::Dashboard::Component.new(
+  user_name: "Jane",
+  greeting_time: :afternoon,
+  current_date: "Monday, January 15, 2025",
+  quick_action_buttons: [
+    { label: "Add Contact", path: "#", icon: "bi-person-plus" },
+    { label: "Import Contacts", path: "#", icon: "bi-upload" }
+  ]
+) do |dashboard| %>
+  <% dashboard.with_stat_card do %>
+    <%= render Admin::StatCard::Component.new(label: "Total Contacts", value: "0") %>
+  <% end %>
+  <% dashboard.with_stat_card do %>
+    <%= render Admin::StatCard::Component.new(label: "Active Accounts", value: "0") %>
+  <% end %>
+<% end %>

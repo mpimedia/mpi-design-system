@@ -1,0 +1,5 @@
+<div class="d-flex gap-2 flex-wrap">
+  <% tags.each do |tag| %>
+    <%= render Admin::TagChip::Component.new(**tag) %>
+  <% end %>
+</div>

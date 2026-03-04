@@ -1,0 +1,27 @@
+<%= render Admin::DetailView::Component.new(variant: :contact) do |view| %>
+  <% view.with_profile_panel do %>
+    <%= render Admin::ContactDetailPanel::Component.new(
+      name: "Jane Cooper",
+      title: "VP of Acquisitions",
+      company: "Acme Films",
+      tags: [
+        { label: "Buyers", group: :buyers },
+        { label: "Festivals", group: :festivals }
+      ],
+      email: "jane@acmefilms.com",
+      phone: "+1 555-0100",
+      location: "New York, NY",
+      added_date: "Jan 10, 2025",
+      owner: { name: "Sarah Williams", path: "#" }
+    ) %>
+  <% end %>
+  <% view.with_activity_panel do %>
+    <%= render Admin::EngagementTimeline::Component.new(
+      variant: :compact,
+      engagements: [
+        { type: :email, date: "2025-01-15", time: "10:42 AM", timezone: "EST", subject: "Follow-up on Berlin screening", creator_name: "Sarah Williams" },
+        { type: :meeting, date: "2025-01-14", time: "2:00 PM", timezone: "EST", subject: "Quarterly review", creator_name: "David Kim" }
+      ]
+    ) %>
+  <% end %>
+<% end %>
