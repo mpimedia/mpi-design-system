@@ -1,0 +1,10 @@
+<nav aria-label="Breadcrumb" style="<%= container_styles %>">
+  <a href="<%= @back_path %>" style="<%= back_link_styles %>" aria-label="Back to <%= @back_label %>">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+    </svg>
+    <%= @back_label %>
+  </a>
+  <span style="<%= separator_styles %>" aria-hidden="true">/</span>
+  <span style="<%= title_styles %>"><%= @current_title %></span>
+</nav>

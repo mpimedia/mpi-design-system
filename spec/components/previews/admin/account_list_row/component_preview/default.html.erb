@@ -1,0 +1,34 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Account</th>
+      <th>Location</th>
+      <th>Contacts</th>
+      <th>Tags</th>
+      <th>Health</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= render Admin::AccountListRow::Component.new(
+      name: "Sony Pictures Classics",
+      type_label: "Distributor",
+      location: "Los Angeles, CA",
+      contact_names: ["Sarah Chen", "James Park", "Maria Lopez", "Alex Wright", "Tom Harris"],
+      tags: [
+        { group: :buyers, role: "Buyer — Theatrical" },
+        { group: :festivals, role: "Festival — Screener" }
+      ],
+      health: :active,
+      account_path: "#"
+    ) %>
+    <%= render Admin::AccountListRow::Component.new(
+      name: "A24 Films",
+      type_label: "Studio",
+      location: "New York, NY",
+      contact_names: ["Nora Ramirez", "David Kim"],
+      tags: [{ group: :buyers, role: "Buyer — Digital" }],
+      health: :warm,
+      account_path: "#"
+    ) %>
+  </tbody>
+</table>

@@ -1,0 +1,22 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Account</th>
+      <th>Location</th>
+      <th>Contacts</th>
+      <th>Tags</th>
+      <th>Health</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= render Admin::AccountListRow::Component.new(
+      name: "Inactive Studios LLC",
+      type_label: "Production",
+      location: "Chicago, IL",
+      contact_names: ["Nathan Hayes"],
+      tags: [{ group: :sellers, role: "Seller — Sales Agent" }],
+      health: :cold,
+      account_path: "#"
+    ) %>
+  </tbody>
+</table>
