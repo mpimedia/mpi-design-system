@@ -24,5 +24,4 @@ Gem::Specification.new do |spec|
   spec.add_dependency "view_component", ">= 3.0"
   spec.add_dependency "stimulus-rails"
   spec.add_dependency "bootstrap", "~> 5.3"
-  spec.add_dependency "sassc-rails"
 end
