@@ -1,0 +1,49 @@
+// MPI Design System — Token Overrides
+// These override Bootstrap 5 defaults before Bootstrap is imported.
+
+// Brand colors
+$mpi-primary: #2E75B6;
+$mpi-brand-navy: #1B2A4A;
+$mpi-brand-accent: #4EA8DE;
+
+// Semantic colors → Bootstrap variable overrides
+$primary: $mpi-primary;
+$success: #22A06B;
+$warning: #D4772C;
+// $danger uses Bootstrap default (#DC3545)
+$info: $mpi-primary;
+
+// Neutral colors
+$mpi-text: $mpi-brand-navy;
+$mpi-text-muted: #6C757D;
+$mpi-border: #DEE2E6;
+$mpi-background: #F5F7FA;
+$mpi-surface: #FFFFFF;
+
+// Body overrides
+$body-color: $mpi-text;
+
+// Badge overrides
+$badge-border-radius: 999px;
+
+// Tag group colors (CRM)
+$mpi-tag-buyers: #E8733A;
+$mpi-tag-buyers-bg: #FEF3EC;
+$mpi-tag-press: #2DA67E;
+$mpi-tag-press-bg: #ECF8F4;
+$mpi-tag-festivals: #2E75B6;
+$mpi-tag-festivals-bg: #EBF3FB;
+$mpi-tag-sellers: #8B5CF6;
+$mpi-tag-sellers-bg: #F3EFFE;
+$mpi-tag-institutional: #D97706;
+$mpi-tag-institutional-bg: #FEF9EC;
+$mpi-tag-organizations: #6366F1;
+$mpi-tag-organizations-bg: #EEEFFE;
+$mpi-tag-internal: #64748B;
+$mpi-tag-internal-bg: #F1F5F9;
+
+// Engagement type colors (CRM)
+$mpi-engagement-email: #2E75B6;
+$mpi-engagement-meeting: #8B5CF6;
+$mpi-engagement-call: #16A34A;
+$mpi-engagement-note: #E8913A;
