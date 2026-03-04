@@ -1,0 +1,72 @@
+<article style="<%= card_styles %>">
+  <div class="d-flex justify-content-between">
+    <div class="flex-grow-1">
+      <div class="d-flex align-items-center">
+        <span style="<%= type_badge_styles %>"><%= type_label %></span>
+        <% if @time.present? %>
+          <span style="<%= time_styles %>"><%= @time %></span>
+        <% end %>
+        <% if @creator_name.present? %>
+          <span style="<%= creator_styles %>" class="ms-auto">by <%= @creator_name %></span>
+        <% end %>
+      </div>
+      <% if @subject.present? %>
+        <div style="<%= subject_styles %>"><%= @subject %></div>
+      <% end %>
+      <% if @excerpt.present? %>
+        <div style="<%= excerpt_styles %>"><%= @excerpt %></div>
+      <% end %>
+      <% if @contacts.any? %>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+          <% @contacts.each do |contact| %>
+            <% if contact[:path].present? %>
+              <a href="<%= contact[:path] %>" style="<%= contact_chip_styles %>">
+                <%= render Admin::AvatarCircle::Component.new(name: contact[:name], size: :sm) %>
+                <%= contact[:name] %>
+              </a>
+            <% else %>
+              <span style="<%= contact_chip_styles %>">
+                <%= render Admin::AvatarCircle::Component.new(name: contact[:name], size: :sm) %>
+                <%= contact[:name] %>
+              </span>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    <% if show_right_meta? %>
+      <div style="<%= right_meta_styles %>" class="ms-3">
+        <% if @account_name.present? %>
+          <div class="mb-1">
+            <% if @account_path.present? %>
+              <a href="<%= @account_path %>" style="<%= account_link_styles %>"><%= @account_name %></a>
+            <% else %>
+              <span style="<%= account_link_styles %>"><%= @account_name %></span>
+            <% end %>
+          </div>
+        <% end %>
+        <% if @tags.any? %>
+          <div class="mb-1">
+            <% @tags.each do |tag| %>
+              <span class="d-inline-flex align-items-center gap-1">
+                <span style="<%= tag_dot_style(tag) %>" aria-hidden="true"></span>
+                <span style="<%= tag_text_styles %>"><%= tag[:role] %></span>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+        <% if @linked_titles.any? %>
+          <div>
+            <% @linked_titles.each do |title| %>
+              <% if title[:path].present? %>
+                <a href="<%= title[:path] %>" style="<%= title_link_styles %>"><%= title[:name] %></a>
+              <% else %>
+                <span style="<%= title_link_styles %>"><%= title[:name] %></span>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</article>

@@ -1,0 +1,36 @@
+<div style="<%= panel_styles %>">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div style="<%= title_styles %>"><%= title_text %></div>
+    <% if @new_engagement_path.present? %>
+      <a href="<%= @new_engagement_path %>" style="<%= button_styles %>">+ New Engagement</a>
+    <% end %>
+  </div>
+  <% if @engagements.empty? %>
+    <div style="font-size: 13px; color: #6C757D; text-align: center; padding: 20px 0;">
+      No engagements yet.
+      <% if @new_engagement_path.present? %>
+        <a href="<%= @new_engagement_path %>" style="color: #2E75B6;">Create the first engagement</a>
+      <% end %>
+    </div>
+  <% else %>
+    <% @engagements.each_with_index do |engagement, index| %>
+      <div style="<%= index == @engagements.length - 1 ? last_entry_styles : entry_styles %>">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center">
+            <span style="<%= type_badge_styles(engagement[:type]) %>"><%= type_label(engagement[:type]) %></span>
+            <span style="<%= date_styles %>"><%= format_date(engagement) %></span>
+          </div>
+          <% if full? && engagement[:creator_name].present? %>
+            <span style="<%= creator_styles %>">by <%= engagement[:creator_name] %></span>
+          <% end %>
+        </div>
+        <% if engagement[:subject].present? %>
+          <div style="<%= subject_styles %>"><%= engagement[:subject] %></div>
+        <% end %>
+        <% if full? && engagement[:excerpt].present? %>
+          <div style="<%= excerpt_styles %>"><%= engagement[:excerpt] %></div>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+</div>
