@@ -1,0 +1,67 @@
+<table class="table table-hover mb-0">
+  <thead>
+    <tr>
+      <% @columns.each do |col| %>
+        <th scope="col" style="<%= header_styles %>"<% if aria_sort(col) %> aria-sort="<%= aria_sort(col) %>"<% end %>>
+          <%= col[:label] %><%= sort_indicator(col) %>
+        </th>
+      <% end %>
+    </tr>
+  </thead>
+  <tbody>
+    <% @rows.each do |row| %>
+      <tr>
+        <% @columns.each do |col| %>
+          <td style="<%= cell_styles %>">
+            <% case col[:key] %>
+            <% when :name %>
+              <div class="d-flex align-items-center gap-2">
+                <%= render Admin::AvatarCircle::Component.new(name: row[:name], size: :md) %>
+                <div>
+                  <div style="<%= name_styles %>">
+                    <% if row[:name_href] %>
+                      <a href="<%= row[:name_href] %>" style="color: inherit; text-decoration: none;"><%= row[:name] %></a>
+                    <% else %>
+                      <%= row[:name] %>
+                    <% end %>
+                  </div>
+                  <% if row[:title] %>
+                    <div style="<%= title_styles %>"><%= sanitize(row[:title], tags: %w[strong em b i a span], attributes: %w[href title class]) %></div>
+                  <% end %>
+                </div>
+              </div>
+            <% when :tags %>
+              <% if row[:tags] %>
+                <div class="d-flex flex-wrap gap-1">
+                  <% row[:tags].each do |tag| %>
+                    <span class="d-inline-flex align-items-center gap-1">
+                      <span style="<%= tag_dot_style(tag[:group]) %>"></span>
+                      <span style="<%= tag_text_styles %>"><%= tag[:label] %></span>
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+            <% when :account %>
+              <% if row[:account] %>
+                <% if row[:account_href].present? %>
+                  <a href="<%= row[:account_href] %>" style="<%= account_link_styles %>"><%= row[:account] %></a>
+                <% else %>
+                  <span style="<%= account_link_styles %>"><%= row[:account] %></span>
+                <% end %>
+              <% end %>
+            <% when :status %>
+              <% if row[:status] %>
+                <span class="d-inline-flex align-items-center gap-1">
+                  <span style="<%= status_dot_style(row[:status_key]) %>"></span>
+                  <span style="<%= meta_text_styles %>"><%= row[:status] %></span>
+                </span>
+              <% end %>
+            <% else %>
+              <span style="<%= meta_text_styles %>"><%= row[col[:key]].is_a?(String) ? sanitize(row[col[:key]], tags: %w[strong em b i code br a], attributes: %w[href title]) : row[col[:key]] %></span>
+            <% end %>
+          </td>
+        <% end %>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
