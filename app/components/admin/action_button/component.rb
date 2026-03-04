@@ -43,9 +43,20 @@ module Admin
 
       def tag_attributes
         attrs = { class: css_classes, data: turbo_data }
-        attrs[:disabled] = "disabled" if @disabled
         attrs[:aria] = { label: @label } if @icon_only
-        attrs[:aria] = (attrs[:aria] || {}).merge(disabled: true) if @disabled
+
+        if @disabled
+          if @href
+            attrs[:class] = "#{attrs[:class]} disabled"
+            attrs[:tabindex] = "-1"
+            attrs[:aria] = (attrs[:aria] || {}).merge(disabled: true)
+            attrs[:data] = {} # suppress turbo method on disabled links
+          else
+            attrs[:disabled] = "disabled"
+            attrs[:aria] = (attrs[:aria] || {}).merge(disabled: true)
+          end
+        end
+
         attrs
       end
 
@@ -71,7 +82,11 @@ module Admin
 
       def inner_content
         parts = []
-        parts << content_tag(:i, "", class: "#{@icon} #{'me-1' unless @icon_only}", aria: { hidden: true }) if @icon
+        if @icon
+          icon_classes = @icon.start_with?("bi ") ? @icon : "bi #{@icon}"
+          icon_classes = "#{icon_classes} me-1" unless @icon_only
+          parts << content_tag(:i, "", class: icon_classes, aria: { hidden: true })
+        end
         parts << @label unless @icon_only
         safe_join(parts)
       end

@@ -17,17 +17,17 @@ RSpec.describe Admin::SearchBar::Component, type: :component do
     expect(page).to have_css("input[placeholder='Search contacts...']")
   end
 
-  it "renders with a value and clear button" do
-    render_inline(described_class.new(value: "John"))
+  it "renders with a value and clear link" do
+    render_inline(described_class.new(value: "John", url: "/contacts"))
 
     expect(page).to have_css("input[value='John']")
-    expect(page).to have_css("button[aria-label='Clear search']")
+    expect(page).to have_css("a[aria-label='Clear search']")
   end
 
-  it "does not show clear button when empty" do
+  it "does not show clear link when empty" do
     render_inline(described_class.new)
 
-    expect(page).not_to have_css("button[aria-label='Clear search']")
+    expect(page).not_to have_css("a[aria-label='Clear search']")
   end
 
   it "renders with search button" do

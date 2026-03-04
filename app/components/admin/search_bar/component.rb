@@ -38,6 +38,10 @@ module Admin
       def has_value?
         @value.present?
       end
+
+      def clear_url
+        @url || "?"
+      end
     end
   end
 end

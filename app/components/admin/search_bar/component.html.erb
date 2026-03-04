@@ -1,4 +1,4 @@
-<form action="<%= @url %>" method="get" role="search" data-controller="<%= form_data[:controller] %>" <%= "data-turbo-frame=#{@turbo_frame}" if @turbo_frame %>>
+<%= content_tag(:form, action: @url, method: "get", role: "search", data: form_data) do %>
   <div class="input-group">
     <span class="input-group-text bg-white">
       <i class="bi bi-search" aria-hidden="true"></i>
@@ -11,12 +11,12 @@
            aria-label="Search"
            autocomplete="off">
     <% if has_value? %>
-      <button type="button" class="btn btn-outline-secondary" aria-label="Clear search">
+      <%= link_to clear_url, class: "btn btn-outline-secondary", aria: { label: "Clear search" } do %>
         <i class="bi bi-x-lg" aria-hidden="true"></i>
-      </button>
+      <% end %>
     <% end %>
     <% if @show_button %>
       <button type="submit" class="btn btn-primary">Search</button>
     <% end %>
   </div>
-</form>
+<% end %>

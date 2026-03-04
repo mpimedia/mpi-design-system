@@ -1,10 +1,13 @@
 <span class="d-inline-flex align-items-center gap-1 fw-semibold" style="<%= chip_styles %>">
   <%= @label %>
-  <% if @removable %>
+  <% if @removable && @remove_url %>
+    <%= link_to @remove_url, style: remove_button_styles, aria: { label: "Remove #{@label}" }, data: { turbo_method: "delete", turbo_confirm: "Remove this tag?" } do %>
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    <% end %>
+  <% elsif @removable %>
     <button type="button"
             style="<%= remove_button_styles %>"
-            aria-label="Remove <%= @label %>"
-            <% if @remove_url %>data-turbo-method="delete" data-turbo-confirm="Remove this tag?"<% end %>>
+            aria-label="Remove <%= @label %>">
       <i class="bi bi-x-lg" aria-hidden="true"></i>
     </button>
   <% end %>

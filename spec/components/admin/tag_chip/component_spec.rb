@@ -16,11 +16,18 @@ RSpec.describe Admin::TagChip::Component, type: :component do
     expect(page).to have_css("span[style*='#2DA67E']", text: "Press")
   end
 
-  it "renders a removable chip with close button" do
+  it "renders a removable chip with close button (no URL)" do
     render_inline(described_class.new(label: "MIPCOM 2025", group: :buyers, removable: true))
 
     expect(page).to have_css("button[aria-label='Remove MIPCOM 2025']")
     expect(page).to have_css("i.bi.bi-x-lg")
+  end
+
+  it "renders a removable chip as turbo link when remove_url provided" do
+    render_inline(described_class.new(label: "MIPCOM 2025", group: :buyers, removable: true, remove_url: "/tags/1"))
+
+    expect(page).to have_css("a[href='/tags/1'][aria-label='Remove MIPCOM 2025']")
+    expect(page).to have_css("a[data-turbo-method='delete']")
   end
 
   it "does not show remove button by default" do
