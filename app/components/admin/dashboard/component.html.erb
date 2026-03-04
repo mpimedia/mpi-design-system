@@ -1,0 +1,118 @@
+<div>
+  <%# Greeting %>
+  <div class="mb-4">
+    <h5 style="<%= greeting_styles %>"><%= greeting_text %></h5>
+    <% if subtitle_text %>
+      <div style="<%= subtitle_styles %>"><%= subtitle_text %></div>
+    <% end %>
+  </div>
+
+  <%# Stat cards row %>
+  <% if stat_cards? %>
+    <div class="row g-3 mb-4">
+      <% stat_cards.each do |card| %>
+        <div class="col-md-6 col-lg-3">
+          <%= card %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Two-column body %>
+  <div class="row g-4">
+    <%# Left column: Recent Activity + Contacts by Group %>
+    <div class="col-lg-8">
+      <%# Activity Feed %>
+      <% if activity_feed? %>
+        <%= activity_feed %>
+      <% elsif show_activities? %>
+        <div style="<%= widget_styles %>" class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div style="<%= widget_title_styles %>">Recent Activity</div>
+          </div>
+          <% @activities.each do |activity| %>
+            <div class="d-flex align-items-start gap-2 mb-3">
+              <div style="<%= activity_icon_styles(activity[:type]) %>">
+                <i class="bi <%= activity_icon_class(activity[:type]) %>" aria-hidden="true"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div style="<%= activity_text_styles %>">
+                  <%= activity[:description] %>
+                </div>
+                <div style="<%= activity_time_styles %>"><%= activity[:timestamp] %></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Contacts by Group chart %>
+      <% if group_chart? %>
+        <%= group_chart %>
+      <% elsif show_group_chart? %>
+        <div style="<%= widget_styles %>">
+          <div style="<%= widget_title_styles %>" class="mb-3">Contacts by Group</div>
+          <div style="<%= bar_container_styles %>" class="mb-3" role="img" aria-label="Contacts by group distribution">
+            <% @group_data.each do |group| %>
+              <div style="<%= bar_segment_styles(group) %>"></div>
+            <% end %>
+          </div>
+          <div class="d-flex flex-wrap gap-3">
+            <% @group_data.each do |group| %>
+              <div class="d-flex align-items-center gap-1">
+                <div style="<%= legend_dot_styles(group[:color]) %>"></div>
+                <span style="<%= legend_label_styles %>"><%= group[:label] %></span>
+                <span style="<%= legend_count_styles %>"><%= group[:count] %></span>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Right column: Quick Actions + Follow-up Queue %>
+    <div class="col-lg-4">
+      <%# Quick Actions %>
+      <% if quick_actions? %>
+        <%= quick_actions %>
+      <% elsif show_quick_actions? %>
+        <div style="<%= widget_styles %>" class="mb-4">
+          <div style="<%= widget_title_styles %>" class="mb-3">Quick Actions</div>
+          <div class="d-grid gap-2">
+            <% @quick_action_buttons.each do |action| %>
+              <a href="<%= action[:path] %>" style="<%= quick_action_styles %>">
+                <% if action[:icon] %>
+                  <i class="bi <%= action[:icon] %>" aria-hidden="true"></i>
+                <% end %>
+                <%= action[:label] %>
+              </a>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Follow-up Queue %>
+      <% if followup_queue? %>
+        <%= followup_queue %>
+      <% elsif show_followups? %>
+        <div style="<%= widget_styles %>">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div style="<%= widget_title_styles %>">Follow-up Queue</div>
+            <% if @followup_path %>
+              <a href="<%= @followup_path %>" style="<%= view_all_styles %>">View all <%= @followup_count %> &rarr;</a>
+            <% end %>
+          </div>
+          <% @followups.each do |followup| %>
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <%= render Admin::AvatarCircle::Component.new(name: followup[:avatar_name] || followup[:name], size: :sm) %>
+              <div class="flex-grow-1">
+                <div style="<%= followup_desc_styles %>"><%= followup[:description] %></div>
+              </div>
+              <div style="<%= followup_status_styles(followup[:status]) %>"><%= followup[:status_label] %></div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

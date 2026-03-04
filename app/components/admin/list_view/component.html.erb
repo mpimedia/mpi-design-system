@@ -1,0 +1,67 @@
+<div>
+  <%# Group filter chips %>
+  <div style="<%= section_spacing_styles %>">
+    <%= render Admin::FilterChipBar::Component.new(
+      groups: @groups,
+      active_filters: @active_filters,
+      clear_all_url: @clear_all_url
+    ) %>
+  </div>
+
+  <%# Sub-group filter bar (conditional) %>
+  <% if show_sub_groups? %>
+    <div style="<%= section_spacing_styles %>">
+      <div style="<%= subgroup_bar_styles %>" role="toolbar" aria-label="Sub-group filters">
+        <span style="<%= subgroup_label_styles %>">Sub-groups</span>
+        <% @sub_groups.each do |sub| %>
+          <% if sub[:href].present? %>
+            <a href="<%= sub[:href] %>" style="<%= subgroup_pill_styles(sub[:selected]) %>"
+              <% if sub[:selected] %>aria-pressed="true"<% end %>>
+              <%= sub[:name] %>
+            </a>
+          <% else %>
+            <button type="button" style="<%= subgroup_pill_styles(sub[:selected]) %>"
+              <% if sub[:selected] %>aria-pressed="true"<% end %>>
+              <%= sub[:name] %>
+            </button>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Result toolbar with list/card toggle %>
+  <div style="<%= section_spacing_styles %>">
+    <%= render Admin::ListCardToggle::Component.new(
+      result_count: @total_count,
+      result_label: result_label,
+      active_view: @view_mode,
+      sort_options: sort_options,
+      sort_by: @sort_by,
+      search_query: @search_query,
+      list_url: @list_url,
+      card_url: @card_url
+    ) %>
+  </div>
+
+  <%# Data table or card grid %>
+  <div style="<%= section_spacing_styles %>">
+    <% if list_view? && table_content? %>
+      <%= table_content %>
+    <% elsif card_view? && card_content? %>
+      <div class="row g-3">
+        <%= card_content %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Pagination %>
+  <% if total_pages > 1 %>
+    <%= render Admin::Pagination::Component.new(
+      current_page: @current_page,
+      total_pages: total_pages,
+      total_count: @total_count,
+      per_page: @per_page
+    ) %>
+  <% end %>
+</div>
