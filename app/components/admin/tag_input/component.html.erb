@@ -1,0 +1,47 @@
+<div style="position: relative;"
+     data-controller="tag-input"
+     data-tag-input-available-tags-value="<%= available_tags_json %>"
+     data-tag-input-selected-tags-value="<%= selected_tags_json %>"
+     data-tag-input-field-name-value="<%= @name %>"
+     aria-label="Tag selection">
+
+  <%# Wrapper styled like an input field %>
+  <div style="<%= wrapper_styles %>" data-tag-input-target="wrapper">
+    <%# Selected tags rendered as TagChip components %>
+    <div class="d-flex flex-wrap gap-1 mb-1" data-tag-input-target="selectedTags">
+      <% @selected_tags.each do |tag| %>
+        <span class="d-inline-flex align-items-center gap-1 fw-semibold"
+              style="color: <%= tag_color(tag[:group]) %>; background-color: <%= tag_bg(tag[:group]) %>; font-size: 13px; padding: 0.25em 0.75em; border-radius: 999px; line-height: 1.4;"
+              data-tag-input-target="tag"
+              data-tag-label="<%= tag[:label] %>"
+              data-tag-group="<%= tag[:group] %>">
+          <%= tag[:label] %>
+          <button type="button"
+                  style="color: <%= tag_color(tag[:group]) %>; opacity: 0.6; background: none; border: none; padding: 0; font-size: inherit; line-height: 1; cursor: pointer;"
+                  aria-label="Remove <%= tag[:label] %>"
+                  data-action="tag-input#removeTag">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </span>
+        <input type="hidden" name="<%= @name %>" value="<%= tag[:label] %>">
+      <% end %>
+    </div>
+
+    <%# Text input %>
+    <input type="text"
+           style="<%= input_styles %>"
+           class="w-100"
+           placeholder="<%= @placeholder %>"
+           autocomplete="off"
+           aria-label="Type to search tags"
+           data-tag-input-target="input"
+           data-action="input->tag-input#filter keydown->tag-input#onKeydown focus->tag-input#showDropdown">
+  </div>
+
+  <%# Dropdown suggestion list %>
+  <div style="<%= dropdown_styles %> display: none;"
+       data-tag-input-target="dropdown"
+       role="listbox"
+       aria-label="Tag suggestions">
+  </div>
+</div>
