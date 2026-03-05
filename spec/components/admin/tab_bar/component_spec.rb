@@ -7,7 +7,7 @@ RSpec.describe Admin::TabBar::Component, type: :component do
     [
       { label: "Metadata", href: "#metadata", active: true },
       { label: "Archive Files", href: "#files", count: 47 },
-      { label: "Outreach", href: "#press" }
+      { label: "Outreach", href: "#outreach" }
     ]
   end
 

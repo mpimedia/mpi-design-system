@@ -21,7 +21,7 @@ Color-coded tag chips for CRM contact and account classification. Each of the 7 
 | Group | Text Color | Background Color |
 |---|---|---|
 | Distribution | `#E8733A` | `#FEF3EC` |
-| Press | `#2DA67E` | `#ECF8F4` |
+| Outreach | `#2DA67E` | `#ECF8F4` |
 | Press/Festival | `#2E75B6` | `#EBF3FB` |
 | Vendors | `#8B5CF6` | `#F3EFFE` |
 | Finance | `#D97706` | `#FEF9EC` |

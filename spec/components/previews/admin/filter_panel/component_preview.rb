@@ -13,8 +13,8 @@ class Admin::FilterPanel::ComponentPreview < ApplicationComponentPreview
             { label: "Distribution", value: "distribution", count: 42, checked: false },
             { label: "Outreach", value: "outreach", count: 28, checked: true },
             { label: "Press/Festival", value: "press_festival", count: 15, checked: false },
-            { label: "Vendors", value: "sellers", count: 8, checked: false },
-            { label: "Institutional", value: "institutional", count: 4, checked: false }
+            { label: "Vendors", value: "vendors", count: 8, checked: false },
+            { label: "Finance", value: "finance", count: 4, checked: false }
           ]
         },
         {
