@@ -171,6 +171,6 @@ RSpec.describe Admin::ListView::Component, type: :component do
   it "does not render search summary when not provided" do
     render_inline(described_class.new(entity_type: :contacts, total_count: 10))
 
-    expect(page).not_to have_css("div[style*='font-style: italic']")
+    expect(page).not_to have_text("contacts match")
   end
 end

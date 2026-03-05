@@ -135,12 +135,12 @@ RSpec.describe Admin::DataQualityPanel::Component, type: :component do
     params[:fields].find { |f| f[:name] == "Phone" }[:add_url] = "/contacts/1/edit?field=phone"
     render_inline(described_class.new(**params))
 
-    expect(page).to have_css("a[href='/contacts/1/edit?field=phone']", text: "+ Add phone")
+    expect(page).to have_css("a[href='/contacts/1/edit?field=phone']", text: "+ Add Phone")
   end
 
   it "does not render add action link for missing fields without add_url" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).not_to have_css("a", text: "+ Add phone")
+    expect(page).not_to have_css("a", text: "+ Add Phone")
   end
 end

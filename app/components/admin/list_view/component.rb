@@ -41,7 +41,7 @@ module Admin
       # @param sort_by [String] Current sort field
       # @param view_mode [Symbol] :list (default) or :card
       # @param search_query [String] Optional search keyword
-      # @param search_summary [String] Rich result summary (e.g., "23 contacts match **investors** in Buyers")
+      # @param search_summary [String] Result summary text (e.g., "23 contacts match investors in Buyers")
       # @param list_url [String] URL for list view toggle
       # @param card_url [String] URL for card view toggle
       # @param active_filters [Array<Hash>] Active filter pills

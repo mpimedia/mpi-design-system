@@ -32,7 +32,7 @@
         <% if field[:complete] && field[:value].present? %>
           <span style="<%= field_value_styles %>"><%= field[:value] %></span>
         <% elsif !field[:complete] && field[:add_url].present? %>
-          <a href="<%= field[:add_url] %>" style="<%= add_action_styles %>">+ Add <%= field[:name].downcase %></a>
+          <a href="<%= field[:add_url] %>" style="<%= add_action_styles %>">+ Add <%= field[:add_label].presence || field[:name] %></a>
         <% end %>
       </div>
     </div>
