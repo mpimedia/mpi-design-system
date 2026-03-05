@@ -6,8 +6,8 @@ RSpec.describe Admin::ListView::Component, type: :component do
   let(:groups) do
     [
       { label: "All", count: 342 },
-      { label: "Buyers", count: 120, group: :buyers, selected: false },
-      { label: "Press", count: 85, group: :press, selected: false }
+      { label: "Distribution", count: 120, group: :distribution, selected: false },
+      { label: "Outreach", count: 85, group: :outreach, selected: false }
     ]
   end
 
@@ -15,8 +15,8 @@ RSpec.describe Admin::ListView::Component, type: :component do
     render_inline(described_class.new(entity_type: :contacts, groups: groups, total_count: 342))
 
     expect(page).to have_text("All 342")
-    expect(page).to have_text("Buyers 120")
-    expect(page).to have_text("Press 85")
+    expect(page).to have_text("Distribution 120")
+    expect(page).to have_text("Outreach 85")
   end
 
   it "renders the ListCardToggle with result count" do
@@ -156,5 +156,21 @@ RSpec.describe Admin::ListView::Component, type: :component do
     render_inline(described_class.new(entity_type: :contacts, total_count: 10, sub_groups: sub_groups))
 
     expect(page).to have_css("span[style*='text-transform: uppercase']", text: "Sub-groups")
+  end
+
+  it "renders search summary when provided" do
+    render_inline(described_class.new(
+      entity_type: :contacts,
+      total_count: 5,
+      search_summary: "5 contacts match investors in Distribution"
+    ))
+
+    expect(page).to have_text("5 contacts match investors in Distribution")
+  end
+
+  it "does not render search summary when not provided" do
+    render_inline(described_class.new(entity_type: :contacts, total_count: 10))
+
+    expect(page).not_to have_text("contacts match")
   end
 end

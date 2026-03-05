@@ -15,7 +15,7 @@ RSpec.describe Admin::DataQualityPanel::Component, type: :component do
         { name: "Email", complete: true, priority: :high, value: "john@sony.com" },
         { name: "Phone", complete: false, priority: :med },
         { name: "Title", complete: true, priority: :med, value: "VP of Acquisitions" },
-        { name: "Tags", complete: true, priority: :med, value: "Buyer — Theatrical" },
+        { name: "Tags", complete: true, priority: :med, value: "Acquisitions" },
         { name: "Account", complete: false, priority: :low },
         { name: "Engagement History", complete: false, priority: :low }
       ]
@@ -128,5 +128,19 @@ RSpec.describe Admin::DataQualityPanel::Component, type: :component do
     render_inline(described_class.new(**default_params.merge(score: -10)))
 
     expect(page).to have_css("text", text: "0%")
+  end
+
+  it "renders add action link for missing fields with add_url" do
+    params = default_params.deep_dup
+    params[:fields].find { |f| f[:name] == "Phone" }[:add_url] = "/contacts/1/edit?field=phone"
+    render_inline(described_class.new(**params))
+
+    expect(page).to have_css("a[href='/contacts/1/edit?field=phone']", text: "+ Add Phone")
+  end
+
+  it "does not render add action link for missing fields without add_url" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).not_to have_css("a", text: "+ Add Phone")
   end
 end

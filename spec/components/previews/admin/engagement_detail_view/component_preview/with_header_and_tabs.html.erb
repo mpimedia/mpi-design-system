@@ -1,0 +1,39 @@
+<%= render Admin::EngagementDetailView::Component.new(
+  engagement_type: :email,
+  title: "Re: Berlin screening schedule — Q2 distribution",
+  date: "Feb 25, 2026 · 10:42 AM CT",
+  status: "Sent"
+) do |view| %>
+  <% view.with_breadcrumb do %>
+    <%= render Admin::BreadcrumbNav::Component.new(
+      back_path: "#",
+      back_label: "Engagements",
+      current_title: "Email: Re: Berlin screening schedule"
+    ) %>
+  <% end %>
+  <% view.with_tabs do %>
+    <%= render Admin::TabBar::Component.new(
+      tabs: [
+        { label: "Content", active: true, href: "#" },
+        { label: "Thread", badge_count: 3, href: "#" },
+        { label: "Activity Log", href: "#" }
+      ]
+    ) %>
+  <% end %>
+  <% view.with_main_content do %>
+    <%= render Admin::EmailThread::Component.new(
+      subject: "Re: Berlin screening schedule — Q2 distribution",
+      messages: [
+        { sender: "Sarah Williams", timestamp: "Feb 25, 2026 10:42 AM", body: "Hi Jane,\n\nThank you for sending over the screening schedule. I've reviewed the Q2 distribution plan and have a few questions about the theatrical window.", read: true },
+        { sender: "Jane Cooper", timestamp: "Feb 25, 2026 9:15 AM", body: "Hi Sarah,\n\nPlease find attached the updated Berlin screening schedule for Q2. Let me know if you need any changes.", read: true }
+      ]
+    ) %>
+  <% end %>
+  <% view.with_sidebar do %>
+    <div style="font-size: 13px;">
+      <div style="font-weight: 600; color: #1B2A4A; margin-bottom: 12px;">Linked Contacts</div>
+      <div class="mb-2">Jane Cooper · Acme Films</div>
+      <div class="mb-2">Sarah Williams · MPI Media</div>
+    </div>
+  <% end %>
+<% end %>

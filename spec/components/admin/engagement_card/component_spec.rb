@@ -15,7 +15,7 @@ RSpec.describe Admin::EngagementCard::Component, type: :component do
       ],
       account_name: "Sony Pictures",
       account_path: "/accounts/1",
-      tags: [ { group: :buyers, role: "Buyer — Theatrical" } ],
+      tags: [ { group: :distribution, role: "Acquisitions" } ],
       creator_name: "M. Johnson"
     }
   end
@@ -26,34 +26,28 @@ RSpec.describe Admin::EngagementCard::Component, type: :component do
     expect(page).to have_css("article[style*='border-radius: 8px']")
   end
 
-  it "renders email type badge with blue outline" do
+  it "renders email type badge with blue color and background" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).to have_css("span[style*='color: #2E75B6'][style*='border: 1.5px solid']", text: "EMAIL")
+    expect(page).to have_css("span[style*='color: #2E75B6'][style*='background: #EBF3FB']", text: "EMAIL")
   end
 
-  it "renders meeting type badge with purple outline" do
+  it "renders meeting type badge with purple color and background" do
     render_inline(described_class.new(**default_params.merge(engagement_type: :meeting)))
 
-    expect(page).to have_css("span[style*='color: #8B5CF6']", text: "MEETING")
+    expect(page).to have_css("span[style*='color: #8B5CF6'][style*='background: #F3EFFE']", text: "MEETING")
   end
 
-  it "renders call type badge with green outline" do
+  it "renders call type badge with green color and background" do
     render_inline(described_class.new(**default_params.merge(engagement_type: :call)))
 
-    expect(page).to have_css("span[style*='color: #16A34A']", text: "CALL")
+    expect(page).to have_css("span[style*='color: #16A34A'][style*='background: #ECF8F4']", text: "CALL")
   end
 
-  it "renders note type badge with orange outline" do
+  it "renders note type badge with orange color and background" do
     render_inline(described_class.new(**default_params.merge(engagement_type: :note)))
 
-    expect(page).to have_css("span[style*='color: #E8913A']", text: "NOTE")
-  end
-
-  it "renders type badge as outlined (transparent background)" do
-    render_inline(described_class.new(**default_params))
-
-    expect(page).to have_css("span[style*='background: transparent']", text: "EMAIL")
+    expect(page).to have_css("span[style*='color: #E8913A'][style*='background: #FEF3EC']", text: "NOTE")
   end
 
   it "renders time" do
@@ -100,7 +94,7 @@ RSpec.describe Admin::EngagementCard::Component, type: :component do
     render_inline(described_class.new(**default_params))
 
     expect(page).to have_css("span[style*='background: #E8733A']")
-    expect(page).to have_text("Buyer — Theatrical")
+    expect(page).to have_text("Acquisitions")
   end
 
   it "renders creator name" do

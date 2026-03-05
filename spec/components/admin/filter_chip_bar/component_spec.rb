@@ -7,8 +7,8 @@ RSpec.describe Admin::FilterChipBar::Component, type: :component do
     let(:groups) do
       [
         { label: "All", count: 2307 },
-        { label: "Buyers", count: 342, group: :buyers, href: "/contacts?group=buyers" },
-        { label: "Press", count: 128, group: :press, href: "/contacts?group=press" }
+        { label: "Distribution", count: 342, group: :distribution, href: "/contacts?group=distribution" },
+        { label: "Outreach", count: 128, group: :outreach, href: "/contacts?group=outreach" }
       ]
     end
 
@@ -17,18 +17,18 @@ RSpec.describe Admin::FilterChipBar::Component, type: :component do
 
       expect(page).to have_css("span[style*='text-transform: uppercase']", text: "Groups:")
       expect(page).to have_text("All 2307")
-      expect(page).to have_text("Buyers 342")
+      expect(page).to have_text("Distribution 342")
     end
 
     it "renders group chips as links when href is provided" do
       render_inline(described_class.new(groups: groups))
 
-      expect(page).to have_css("a[href='/contacts?group=buyers']", text: "Buyers 342")
+      expect(page).to have_css("a[href='/contacts?group=distribution']", text: "Distribution 342")
     end
 
     it "highlights selected chip with group color" do
       selected_groups = [
-        { label: "Buyers", count: 342, group: :buyers, selected: true, href: "#" }
+        { label: "Distribution", count: 342, group: :distribution, selected: true, href: "#" }
       ]
       render_inline(described_class.new(groups: selected_groups))
 
@@ -53,7 +53,7 @@ RSpec.describe Admin::FilterChipBar::Component, type: :component do
     let(:active_filters) do
       [
         { category: "Keyword", value: "investors", remove_url: "/contacts?remove=keyword" },
-        { category: "Group", value: "Buyers", remove_url: "/contacts?remove=group" }
+        { category: "Group", value: "Distribution", remove_url: "/contacts?remove=group" }
       ]
     end
 
@@ -62,7 +62,7 @@ RSpec.describe Admin::FilterChipBar::Component, type: :component do
 
       expect(page).to have_css("span[style*='text-transform: uppercase']", text: "Active:")
       expect(page).to have_text("Keyword: investors")
-      expect(page).to have_text("Group: Buyers")
+      expect(page).to have_text("Group: Distribution")
     end
 
     it "renders pills in primary blue with white text" do
@@ -101,5 +101,22 @@ RSpec.describe Admin::FilterChipBar::Component, type: :component do
     render_inline(described_class.new(groups: [ { label: "All", count: 100 } ]))
 
     expect(page).not_to have_text("Active:")
+  end
+
+  it "renders reset all link when reset_all_url is provided" do
+    groups = [
+      { label: "All", count: 100 },
+      { label: "Distribution", count: 50, group: :distribution, selected: true, href: "#" }
+    ]
+    render_inline(described_class.new(groups: groups, reset_all_url: "/contacts"))
+
+    expect(page).to have_css("a[href='/contacts'][aria-label='Reset all filters']", text: "Reset all")
+  end
+
+  it "does not render reset all link when reset_all_url is nil" do
+    groups = [ { label: "All", count: 100 } ]
+    render_inline(described_class.new(groups: groups))
+
+    expect(page).not_to have_text("Reset all")
   end
 end

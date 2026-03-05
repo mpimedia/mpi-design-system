@@ -8,8 +8,8 @@ class Admin::ContactDetailPanel::ComponentPreview < ApplicationComponentPreview
       title: "VP of Acquisitions",
       company: "Acme Films",
       tags: [
-        { label: "Buyers", group: :buyers },
-        { label: "Festivals", group: :festivals }
+        { label: "Acquisitions", group: :distribution },
+        { label: "Festival", group: :press_festival }
       ],
       email: "jane.cooper@acmefilms.com",
       phone: "+1 (555) 010-0100",
@@ -18,8 +18,8 @@ class Admin::ContactDetailPanel::ComponentPreview < ApplicationComponentPreview
       added_date: "Jan 10, 2025",
       owner: { name: "Sarah Williams", path: "#" },
       auto_groups: [
-        { label: "VIP", group: :buyers },
-        { label: "Market Attendee", group: :festivals }
+        { label: "VIP", group: :distribution },
+        { label: "Market Attendee", group: :press_festival }
       ]
     )
   end
@@ -39,7 +39,7 @@ class Admin::ContactDetailPanel::ComponentPreview < ApplicationComponentPreview
       title: "Press Manager",
       company: "Film Weekly",
       tags: [
-        { label: "Press", group: :press, remove_url: "#" }
+        { label: "Journalist", group: :outreach, remove_url: "#" }
       ],
       add_tag_path: "#",
       email: "emily@filmweekly.com",

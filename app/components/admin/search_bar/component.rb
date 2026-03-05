@@ -8,16 +8,21 @@ module Admin
       # @param name [String] Input name attribute (default: "q")
       # @param size [Symbol] :md (default), :lg (full-width variant)
       # @param show_button [Boolean] Show explicit "Search" button (default: false)
+      # @param show_export [Boolean] Show "Export" secondary button (default: false)
+      # @param export_url [String] URL for export action
       # @param url [String] Form action URL (for server-side search)
       # @param turbo_frame [String] Turbo Frame target for search results
       # @param data [Hash] data-* attributes for Stimulus controllers
       def initialize(placeholder: "Search...", value: nil, name: "q", size: :md,
-                     show_button: false, url: nil, turbo_frame: nil, data: {})
+                     show_button: false, show_export: false, export_url: nil,
+                     url: nil, turbo_frame: nil, data: {})
         @placeholder = placeholder
         @value = value
         @name = name
         @size = %i[md lg].include?(size) ? size : :md
         @show_button = show_button
+        @show_export = show_export
+        @export_url = export_url
         @url = url
         @turbo_frame = turbo_frame
         @data = data

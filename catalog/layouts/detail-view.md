@@ -17,7 +17,7 @@ Two-panel detail page layout used for contact and account detail views. Left pan
 - **Avatar:** 64px circle with deterministic color and initials (22px font)
 - **Tag chips in profile:** Colored dot + text in a pill chip with colored border and light background. Different format from the inline dot tags in the list view -- detail view uses bordered pill chips
 - **"+ Add tag" link:** Blue link below tags for adding new tags
-- **Groups (Auto):** Auto-assigned group chips (e.g., "Buyers", "Festivals") based on tags. Light background with group color text, pill shape
+- **Groups (Auto):** Auto-assigned group chips (e.g., "Distribution", "Press/Festival") based on tags. Light background with group color text, pill shape
 - **Contact info section:** Key-value pairs in a compact two-column layout (label left, value right). Fields: Email (link), Phone, Account (link), Location, Added date, Owner (link)
 - **Right panel:** Uses EngagementTimeline component (full variant) with header, "+ New Engagement" button, and chronological entries
 

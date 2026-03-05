@@ -7,7 +7,7 @@ RSpec.describe Admin::TabBar::Component, type: :component do
     [
       { label: "Metadata", href: "#metadata", active: true },
       { label: "Archive Files", href: "#files", count: 47 },
-      { label: "Press", href: "#press" }
+      { label: "Outreach", href: "#outreach" }
     ]
   end
 
@@ -27,7 +27,7 @@ RSpec.describe Admin::TabBar::Component, type: :component do
   it "renders inactive tabs with transparent underline" do
     render_inline(described_class.new(tabs: tabs))
 
-    expect(page).to have_css("a[aria-selected='false'][style*='border-bottom: 2px solid transparent']", text: "Press")
+    expect(page).to have_css("a[aria-selected='false'][style*='border-bottom: 2px solid transparent']", text: "Outreach")
   end
 
   it "displays count in parentheses" do
@@ -45,7 +45,7 @@ RSpec.describe Admin::TabBar::Component, type: :component do
   it "renders pill inactive tabs with white background" do
     render_inline(described_class.new(tabs: tabs, variant: :pill))
 
-    expect(page).to have_css("a[style*='border-radius: 999px'][style*='background: #fff']", text: "Press")
+    expect(page).to have_css("a[style*='border-radius: 999px'][style*='background: #fff']", text: "Outreach")
   end
 
   it "renders disabled tab as span with aria-disabled" do

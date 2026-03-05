@@ -7,7 +7,7 @@ RSpec.describe Admin::ContactListRow::Component, type: :component do
     {
       name: "John Smith",
       title: "Theatrical Buyer",
-      tags: [ { group: :buyers, role: "Buyer — Theatrical" } ],
+      tags: [ { group: :distribution, role: "Acquisitions" } ],
       last_engagement: "2 days ago",
       account_name: "Sony Pictures",
       account_path: "/accounts/1"
@@ -36,7 +36,7 @@ RSpec.describe Admin::ContactListRow::Component, type: :component do
     render_inline(described_class.new(**default_params))
 
     expect(page).to have_css("span[style*='background: #E8733A']")
-    expect(page).to have_text("Buyer — Theatrical")
+    expect(page).to have_text("Acquisitions")
   end
 
   it "renders last engagement in muted text" do
@@ -60,8 +60,8 @@ RSpec.describe Admin::ContactListRow::Component, type: :component do
 
   it "renders multiple tags" do
     tags = [
-      { group: :buyers, role: "Buyer — Theatrical" },
-      { group: :press, role: "Press — Critic" }
+      { group: :distribution, role: "Acquisitions" },
+      { group: :outreach, role: "Journalist" }
     ]
     render_inline(described_class.new(**default_params.merge(tags: tags)))
 
@@ -80,7 +80,7 @@ RSpec.describe Admin::ContactListRow::Component, type: :component do
       {
         name: "Jane Doe",
         title: "Festival Director",
-        tags: [ { group: :festivals, role: "Festival — Director" } ],
+        tags: [ { group: :press_festival, role: "Festival — Director" } ],
         variant: :search_result,
         match_text: "Title contains <strong>director</strong>",
         last_engagement: "1 week ago",

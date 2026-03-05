@@ -9,8 +9,8 @@ RSpec.describe Admin::ContactDetailPanel::Component, type: :component do
       title: "VP of Acquisitions",
       company: "Sony Pictures",
       tags: [
-        { label: "VIP", group: :buyers },
-        { label: "TIFF 2026", group: :festivals }
+        { label: "VIP", group: :distribution },
+        { label: "TIFF 2026", group: :press_festival }
       ],
       add_tag_path: "/contacts/1/tags/new",
       email: "jane@sonypictures.com",
@@ -20,8 +20,8 @@ RSpec.describe Admin::ContactDetailPanel::Component, type: :component do
       added_date: "Jan 15, 2026",
       owner: { name: "M. Johnson", path: "/users/5" },
       auto_groups: [
-        { label: "Buyers", group: :buyers },
-        { label: "Festivals", group: :festivals }
+        { label: "Distribution", group: :distribution },
+        { label: "Press/Festival", group: :press_festival }
       ]
     }
   end
@@ -138,8 +138,8 @@ RSpec.describe Admin::ContactDetailPanel::Component, type: :component do
   it "renders auto-group pills with correct colors" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).to have_css("span[style*='color: #E8733A']", text: "Buyers")
-    expect(page).to have_css("span[style*='color: #2E75B6']", text: "Festivals")
+    expect(page).to have_css("span[style*='color: #E8733A']", text: "Distribution")
+    expect(page).to have_css("span[style*='color: #2E75B6']", text: "Press/Festival")
   end
 
   it "renders hr dividers between sections" do
@@ -179,7 +179,7 @@ RSpec.describe Admin::ContactDetailPanel::Component, type: :component do
     it "does not render + Add tag link" do
       render_inline(described_class.new(
         name: "Jane Doe",
-        tags: [ { label: "VIP", group: :buyers } ]
+        tags: [ { label: "VIP", group: :distribution } ]
       ))
 
       expect(page).not_to have_text("+ Add tag")

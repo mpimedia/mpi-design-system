@@ -45,7 +45,7 @@
   </div>
   <% if @priority_fixes.any? %>
     <div style="<%= panel_styles %>">
-      <div style="<%= heading_styles %>">Priority Fixes</div>
+      <div style="<%= heading_styles %>">Priority Fixes &mdash; Recently Active</div>
       <% @priority_fixes.each do |fix| %>
         <div style="<%= fix_row_styles %>">
           <div class="d-flex align-items-center justify-content-between">

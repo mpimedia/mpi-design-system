@@ -12,6 +12,19 @@
     </div>
   </div>
 
+  <%# Metrics Row %>
+  <% if @metrics.present? %>
+    <% metric_fragments = [] %>
+    <% metric_fragments << "#{@metrics[:contacts]} CONTACTS" if @metrics[:contacts] %>
+    <% metric_fragments << "#{@metrics[:engagements]} ENGAGEMENTS" if @metrics[:engagements] %>
+    <% metric_fragments << "#{@metrics[:titles]} TITLES" if @metrics[:titles] %>
+    <% if metric_fragments.any? %>
+      <div class="d-flex gap-2 mb-2" style="<%= metrics_styles %>">
+        <span><%= metric_fragments.join(' / ') %></span>
+      </div>
+    <% end %>
+  <% end %>
+
   <%# Associated Contacts Section %>
   <% if @contacts.any? %>
     <hr style="<%= divider_styles %>">
@@ -31,10 +44,10 @@
     <% end %>
   <% end %>
 
-  <%# Contact Info Section %>
+  <%# Account Info Section %>
   <% if has_contact_info? %>
     <hr style="<%= divider_styles %>">
-    <div style="<%= section_heading_styles %>">Contact Info</div>
+    <div style="<%= section_heading_styles %>">Account Info</div>
 
     <% if @email.present? %>
       <div style="<%= info_row_styles %>">
@@ -57,9 +70,30 @@
       </div>
     <% end %>
 
+    <% if @website.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Website</div>
+        <a href="<%= @website %>" style="<%= info_link_styles %>" target="_blank" rel="noopener"><%= @website %></a>
+      </div>
+    <% end %>
+
+    <% if @territory.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Territory</div>
+        <div style="<%= info_value_styles %>"><%= @territory %></div>
+      </div>
+    <% end %>
+
+    <% if @health.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Health</div>
+        <div style="<%= info_value_styles %>"><%= @health %></div>
+      </div>
+    <% end %>
+
     <% if @created_date.present? %>
       <div style="<%= info_row_styles %>">
-        <div style="<%= info_label_styles %>">Created</div>
+        <div style="<%= info_label_styles %>">Added</div>
         <div style="<%= info_value_styles %>"><%= @created_date %></div>
       </div>
     <% end %>
@@ -68,6 +102,39 @@
       <div style="<%= info_row_styles %>">
         <div style="<%= info_label_styles %>">Owner</div>
         <a href="<%= @owner[:path] %>" style="<%= info_link_styles %>"><%= @owner[:name] %></a>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Tag Groups Represented %>
+  <% if @tag_groups.any? %>
+    <hr style="<%= divider_styles %>">
+    <div style="<%= section_heading_styles %>">Tag Groups Represented</div>
+    <div class="d-flex flex-wrap gap-1">
+      <% @tag_groups.each do |tg| %>
+        <span style="<%= tag_group_chip_styles(tg[:group]) %>">
+          <%= tg[:label] %><% if tg[:count] %> (<%= tg[:count] %>)<% end %>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Linked Titles %>
+  <% if @linked_titles.any? %>
+    <hr style="<%= divider_styles %>">
+    <div style="<%= section_heading_styles %>">Linked Titles</div>
+    <% @linked_titles.each do |title| %>
+      <div style="<%= title_row_styles %>">
+        <div class="d-flex justify-content-between align-items-center">
+          <% if title[:path].present? %>
+            <a href="<%= title[:path] %>" style="<%= title_name_styles %>"><%= title[:name] %></a>
+          <% else %>
+            <span style="<%= title_name_styles %>"><%= title[:name] %></span>
+          <% end %>
+          <% if title[:status].present? %>
+            <span style="<%= title_status_styles %>"><%= title[:status] %></span>
+          <% end %>
+        </div>
       </div>
     <% end %>
   <% end %>

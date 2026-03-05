@@ -6,7 +6,7 @@ class Admin::ContactListRow::ComponentPreview < ApplicationComponentPreview
     render Admin::ContactListRow::Component.new(
       name: "Jane Cooper",
       title: "VP of Acquisitions",
-      tags: [ { group: :buyers, role: "Lead" } ],
+      tags: [ { group: :distribution, role: "Acquisitions" } ],
       last_engagement: "2 days ago",
       account_name: "Acme Films",
       account_path: "#"
@@ -19,8 +19,8 @@ class Admin::ContactListRow::ComponentPreview < ApplicationComponentPreview
       name: "Robert Fox",
       title: "Festival Director",
       tags: [
-        { group: :festivals, role: "Director" },
-        { group: :buyers, role: "Reviewer" }
+        { group: :press_festival, role: "Festival" },
+        { group: :distribution, role: "Streaming" }
       ],
       last_engagement: "1 week ago",
       account_name: "Berlin Film Fest",
@@ -35,7 +35,7 @@ class Admin::ContactListRow::ComponentPreview < ApplicationComponentPreview
       title: "Press Manager",
       variant: :search_result,
       match_text: "Email: emily.chen@filmweekly.com",
-      tags: [ { group: :press, role: "Contact" } ]
+      tags: [ { group: :outreach, role: "Journalist" } ]
     )
   end
 
@@ -45,7 +45,7 @@ class Admin::ContactListRow::ComponentPreview < ApplicationComponentPreview
       name: "Marcus Johnson",
       title: "Former Sales Rep",
       status: :inactive,
-      tags: [ { group: :sellers, role: "Rep" } ],
+      tags: [ { group: :vendors, role: "Intl Sales" } ],
       last_engagement: "6 months ago"
     )
   end

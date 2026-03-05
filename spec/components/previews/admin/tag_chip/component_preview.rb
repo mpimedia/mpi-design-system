@@ -3,16 +3,22 @@
 class Admin::TagChip::ComponentPreview < ApplicationComponentPreview
   # @label Default
   def default
-    render Admin::TagChip::Component.new(label: "Buyers", group: :buyers)
+    render Admin::TagChip::Component.new(label: "Acquisitions", group: :distribution)
   end
 
   # @label All Groups
   def all_groups
     render_with_template(
       locals: {
-        tags: Admin::TagChip::Component::GROUPS.keys.map do |group|
-          { label: group.to_s.capitalize, group: group }
-        end
+        tags: [
+          { label: "Acquisitions", group: :distribution },
+          { label: "Journalist", group: :outreach },
+          { label: "Festival", group: :press_festival },
+          { label: "Intl Sales", group: :vendors },
+          { label: "Institutional — Archive", group: :finance },
+          { label: "Organization — Studio", group: :production },
+          { label: "Internal — Staff", group: :internal }
+        ]
       }
     )
   end
@@ -20,8 +26,8 @@ class Admin::TagChip::ComponentPreview < ApplicationComponentPreview
   # @label Removable
   def removable
     render Admin::TagChip::Component.new(
-      label: "Festivals",
-      group: :festivals,
+      label: "Fest — MIPCOM 2025",
+      group: :press_festival,
       removable: true,
       remove_url: "#"
     )
@@ -31,9 +37,11 @@ class Admin::TagChip::ComponentPreview < ApplicationComponentPreview
   def small
     render_with_template(
       locals: {
-        tags: %i[buyers press festivals].map do |group|
-          { label: group.to_s.capitalize, group: group, size: :sm }
-        end
+        tags: [
+          { label: "Acquisitions", group: :distribution, size: :sm },
+          { label: "Journalist", group: :outreach, size: :sm },
+          { label: "Fest — Selection", group: :press_festival, size: :sm }
+        ]
       }
     )
   end

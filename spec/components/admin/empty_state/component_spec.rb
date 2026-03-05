@@ -40,14 +40,14 @@ RSpec.describe Admin::EmptyState::Component, type: :component do
 
   it "renders shortcut cards in a 2-column grid" do
     shortcuts = [
-      { title: "Buyers", description: "Follow-up candidates", href: "/search?q=buyers" },
-      { title: "Press", description: "All critics", href: "/search?q=press" }
+      { title: "Distribution", description: "Follow-up candidates", href: "/search?q=distribution" },
+      { title: "Outreach", description: "All critics", href: "/search?q=outreach" }
     ]
     render_inline(described_class.new(heading: "Start searching", shortcuts: shortcuts))
 
     expect(page).to have_css(".col-6", count: 2)
-    expect(page).to have_css("a[href='/search?q=buyers']")
-    expect(page).to have_css("div[style*='color: #2E75B6']", text: "Buyers")
+    expect(page).to have_css("a[href='/search?q=distribution']")
+    expect(page).to have_css("div[style*='color: #2E75B6']", text: "Distribution")
     expect(page).to have_css("div[style*='color: #6C757D']", text: "Follow-up candidates")
   end
 

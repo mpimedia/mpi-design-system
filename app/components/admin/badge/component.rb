@@ -8,21 +8,21 @@ module Admin
       SIZES = %i[sm md lg].freeze
 
       TAG_GROUPS = {
-        buyers: { color: "#E8733A", bg: "#FEF3EC" },
-        press: { color: "#2DA67E", bg: "#ECF8F4" },
-        festivals: { color: "#2E75B6", bg: "#EBF3FB" },
-        sellers: { color: "#8B5CF6", bg: "#F3EFFE" },
-        institutional: { color: "#D97706", bg: "#FEF9EC" },
-        organizations: { color: "#6366F1", bg: "#EEEFFE" },
-        internal: { color: "#64748B", bg: "#F1F5F9" }
+        production: { color: "#6366F1", bg: "#EEEFFE" },
+        distribution: { color: "#E8733A", bg: "#FEF3EC" },
+        finance: { color: "#D97706", bg: "#FEF9EC" },
+        press_festival: { color: "#2E75B6", bg: "#EBF3FB" },
+        internal: { color: "#64748B", bg: "#F1F5F9" },
+        vendors: { color: "#8B5CF6", bg: "#F3EFFE" },
+        outreach: { color: "#2DA67E", bg: "#ECF8F4" }
       }.freeze
 
       # @param label [String] Badge text
       # @param color [Symbol] :primary, :success, :danger, :warning, :secondary
       # @param variant [Symbol] :filled (default), :outline, :tag_group
       # @param size [Symbol] :sm, :md (default), :lg
-      # @param tag_group [Symbol] Optional — :buyers, :press, :festivals, :sellers,
-      #   :institutional, :organizations, :internal
+      # @param tag_group [Symbol] Optional — :production, :distribution, :finance, :press_festival,
+      #   :internal, :vendors, :outreach
       # @param count [Integer] Optional inline count
       def initialize(label:, color: :primary, variant: :filled, size: :md, tag_group: nil, count: nil)
         @label = label

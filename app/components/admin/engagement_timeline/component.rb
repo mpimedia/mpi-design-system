@@ -14,7 +14,7 @@ module Admin
       }.freeze
 
       # @param engagements [Array<Hash>] Each: { type: Symbol, date: String, time: String,
-      #   timezone: String, subject: String, excerpt: String, creator_name: String }
+      #   timezone: String, subject: String, excerpt: String, creator_name: String, date_group: String }
       # @param variant [Symbol] :full (default), :compact
       # @param new_engagement_path [String] URL for "+ New Engagement" button
       def initialize(engagements: [], variant: :full, new_engagement_path: nil)
@@ -99,6 +99,19 @@ module Admin
         "font-size: 12px; color: #6C757D;"
       end
 
+      def date_group_header_styles
+        [
+          "font-size: 11px",
+          "font-weight: 700",
+          "text-transform: uppercase",
+          "letter-spacing: 0.06em",
+          "color: #6C757D",
+          "padding: 12px 0 4px",
+          "border-bottom: 1px solid #DEE2E6",
+          "margin-bottom: 0"
+        ].join("; ")
+      end
+
       def title_text
         compact? ? "Recent Engagements" : "Engagements"
       end
@@ -109,6 +122,10 @@ module Admin
 
       def full?
         @variant == :full
+      end
+
+      def grouped_engagements
+        @grouped_engagements ||= @engagements.group_by { |e| e[:date_group] || e[:date] }
       end
 
       def format_date(engagement)

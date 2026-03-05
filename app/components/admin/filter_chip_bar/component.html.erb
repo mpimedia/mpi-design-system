@@ -15,6 +15,9 @@
           </span>
         <% end %>
       <% end %>
+      <% if @reset_all_url %>
+        <a href="<%= @reset_all_url %>" style="<%= reset_all_styles %>" aria-label="Reset all filters">Reset all</a>
+      <% end %>
     </div>
   <% end %>
 

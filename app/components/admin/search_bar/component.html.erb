@@ -18,5 +18,11 @@
     <% if @show_button %>
       <button type="submit" class="btn btn-primary">Search</button>
     <% end %>
+    <% if @show_export %>
+      <a href="<%= @export_url || '#' %>" class="btn btn-outline-secondary">
+        <i class="bi bi-download" aria-hidden="true"></i>
+        Export
+      </a>
+    <% end %>
   </div>
 <% end %>

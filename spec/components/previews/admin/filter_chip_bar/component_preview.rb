@@ -5,11 +5,11 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
   def default
     render Admin::FilterChipBar::Component.new(
       groups: [
-        { label: "All", count: 156, group: nil, selected: true },
-        { label: "Buyers", count: 42, group: :buyers, selected: false },
-        { label: "Press", count: 28, group: :press, selected: false },
-        { label: "Festivals", count: 35, group: :festivals, selected: false },
-        { label: "Sellers", count: 22, group: :sellers, selected: false }
+        { label: "All", count: 2307 },
+        { label: "Distribution", count: 342, group: :distribution, href: "#" },
+        { label: "Outreach", count: 128, group: :outreach, href: "#" },
+        { label: "Press/Festival", count: 95, group: :press_festival, href: "#" },
+        { label: "Vendors", count: 67, group: :vendors, href: "#" }
       ]
     )
   end
@@ -18,12 +18,14 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
   def with_active_filters
     render Admin::FilterChipBar::Component.new(
       groups: [
-        { label: "All", count: 156, group: nil, selected: false },
-        { label: "Buyers", count: 42, group: :buyers, selected: true }
+        { label: "All", count: 2307 },
+        { label: "Distribution", count: 342, group: :distribution, selected: true, href: "#" },
+        { label: "Outreach", count: 128, group: :outreach, href: "#" }
       ],
       active_filters: [
-        { category: "Status", value: "Active", remove_url: "#" },
-        { category: "Location", value: "New York", remove_url: "#" }
+        { category: "Keyword", value: "investors", remove_url: "#" },
+        { category: "Group", value: "Distribution", remove_url: "#" },
+        { category: "Activity", value: "Engaged last 90 days", remove_url: "#" }
       ],
       clear_all_url: "#"
     )
@@ -33,10 +35,23 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
   def groups_only
     render Admin::FilterChipBar::Component.new(
       groups: [
-        { label: "Buyers", count: 42, group: :buyers, selected: false },
-        { label: "Press", count: 28, group: :press, selected: false },
-        { label: "Festivals", count: 35, group: :festivals, selected: false }
+        { label: "All", count: 342 },
+        { label: "Distribution", count: 120, group: :distribution, href: "#" },
+        { label: "Outreach", count: 85, group: :outreach, href: "#" }
       ]
+    )
+  end
+
+  # @label With Reset All
+  def with_reset_all
+    render Admin::FilterChipBar::Component.new(
+      groups: [
+        { label: "All", count: 2307 },
+        { label: "Distribution", count: 342, group: :distribution, selected: true, href: "#" },
+        { label: "Outreach", count: 128, group: :outreach, href: "#" },
+        { label: "Press/Festival", count: 95, group: :press_festival, href: "#" }
+      ],
+      reset_all_url: "#"
     )
   end
 end

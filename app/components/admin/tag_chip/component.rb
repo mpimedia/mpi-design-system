@@ -4,17 +4,17 @@ module Admin
   module TagChip
     class Component < ViewComponent::Base
       GROUPS = {
-        buyers: { color: "#E8733A", bg: "#FEF3EC" },
-        press: { color: "#2DA67E", bg: "#ECF8F4" },
-        festivals: { color: "#2E75B6", bg: "#EBF3FB" },
-        sellers: { color: "#8B5CF6", bg: "#F3EFFE" },
-        institutional: { color: "#D97706", bg: "#FEF9EC" },
-        organizations: { color: "#6366F1", bg: "#EEEFFE" },
-        internal: { color: "#64748B", bg: "#F1F5F9" }
+        production: { color: "#6366F1", bg: "#EEEFFE" },
+        distribution: { color: "#E8733A", bg: "#FEF3EC" },
+        finance: { color: "#D97706", bg: "#FEF9EC" },
+        press_festival: { color: "#2E75B6", bg: "#EBF3FB" },
+        internal: { color: "#64748B", bg: "#F1F5F9" },
+        vendors: { color: "#8B5CF6", bg: "#F3EFFE" },
+        outreach: { color: "#2DA67E", bg: "#ECF8F4" }
       }.freeze
 
       # @param label [String] Tag display text
-      # @param group [Symbol] :buyers, :press, :festivals, :sellers, :institutional, :organizations, :internal
+      # @param group [Symbol] :production, :distribution, :finance, :press_festival, :internal, :vendors, :outreach
       # @param removable [Boolean] Show x remove button (default: false)
       # @param size [Symbol] :sm (12px), :md (13px, default)
       # @param remove_url [String] URL for Turbo Stream removal
@@ -40,6 +40,16 @@ module Admin
           "padding: 0.25em 0.75em",
           "border-radius: 999px",
           "line-height: 1.4"
+        ].join("; ")
+      end
+
+      def dot_styles
+        [
+          "width: 8px",
+          "height: 8px",
+          "border-radius: 50%",
+          "background-color: #{colors[:color]}",
+          "flex-shrink: 0"
         ].join("; ")
       end
 

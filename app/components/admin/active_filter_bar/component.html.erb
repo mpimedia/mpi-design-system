@@ -1,0 +1,21 @@
+<% if show? %>
+  <div style="<%= bar_styles %>" role="toolbar" aria-label="Active filters">
+    <span style="<%= label_styles %>">Active:</span>
+    <% @filters.each do |filter| %>
+      <span style="<%= pill_styles %>">
+        <%= pill_label(filter) %>
+        <% if filter[:remove_url] %>
+          <a href="<%= filter[:remove_url] %>"
+             style="<%= remove_btn_styles %>"
+             aria-label="Remove filter: <%= pill_label(filter) %>"
+             data-turbo-method="delete">
+            <i class="bi bi-x" aria-hidden="true"></i>
+          </a>
+        <% end %>
+      </span>
+    <% end %>
+    <% if @clear_all_url %>
+      <a href="<%= @clear_all_url %>" style="<%= clear_all_styles %>" aria-label="Clear all filters">Clear all</a>
+    <% end %>
+  </div>
+<% end %>

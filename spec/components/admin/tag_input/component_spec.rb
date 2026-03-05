@@ -5,17 +5,17 @@ require "spec_helper"
 RSpec.describe Admin::TagInput::Component, type: :component do
   let(:available_tags) do
     [
-      { label: "VIP", group: :buyers },
-      { label: "Priority", group: :press },
-      { label: "TIFF 2026", group: :festivals },
-      { label: "Cannes", group: :festivals }
+      { label: "VIP", group: :distribution },
+      { label: "Priority", group: :outreach },
+      { label: "TIFF 2026", group: :press_festival },
+      { label: "Cannes", group: :press_festival }
     ]
   end
 
   let(:selected_tags) do
     [
-      { label: "VIP", group: :buyers },
-      { label: "TIFF 2026", group: :festivals }
+      { label: "VIP", group: :distribution },
+      { label: "TIFF 2026", group: :press_festival }
     ]
   end
 
@@ -101,7 +101,7 @@ RSpec.describe Admin::TagInput::Component, type: :component do
   it "renders selected tag chips with correct colors" do
     render_inline(described_class.new(
       available_tags: available_tags,
-      selected_tags: [ { label: "VIP", group: :buyers } ]
+      selected_tags: [ { label: "VIP", group: :distribution } ]
     ))
 
     expect(page).to have_css("span[style*='color: #E8733A']", text: "VIP")
@@ -144,5 +144,32 @@ RSpec.describe Admin::TagInput::Component, type: :component do
 
       expect(page).to have_css("div[data-tag-input-available-tags-value='[]']")
     end
+  end
+
+  context "with derived groups" do
+    it "renders auto-derived groups section when tags are selected" do
+      render_inline(described_class.new(
+        available_tags: available_tags,
+        selected_tags: selected_tags
+      ))
+
+      expect(page).to have_text("Auto-Derived Groups")
+      expect(page).to have_text("Distribution")
+      expect(page).to have_text("Press Festival")
+    end
+
+    it "does not render derived groups when no tags are selected" do
+      render_inline(described_class.new(available_tags: available_tags))
+
+      expect(page).not_to have_text("Auto-Derived Groups")
+    end
+  end
+
+  it "renders keyboard navigation hint" do
+    render_inline(described_class.new(available_tags: available_tags))
+
+    expect(page).to have_text("to navigate")
+    expect(page).to have_text("Enter to select")
+    expect(page).to have_text("Esc to close")
   end
 end

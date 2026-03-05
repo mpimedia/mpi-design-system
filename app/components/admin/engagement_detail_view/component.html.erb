@@ -1,0 +1,60 @@
+<div style="<%= container_styles %>">
+  <% if breadcrumb? %>
+    <div style="<%= breadcrumb_bar_styles %>">
+      <%= breadcrumb %>
+    </div>
+  <% end %>
+
+  <% if header_bar? %>
+    <div style="<%= header_bar_container_styles %>">
+      <%= header_bar %>
+    </div>
+  <% elsif show_default_header? %>
+    <div style="<%= header_bar_container_styles %>">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3">
+          <i class="bi <%= type_icon_class %>" style="font-size: 20px; color: #6C757D;" aria-hidden="true"></i>
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <% if @title.present? %>
+                <h4 style="<%= header_title_styles %>"><%= @title %></h4>
+              <% end %>
+              <span style="<%= type_badge_styles %>"><%= type_label %></span>
+            </div>
+            <% if @date.present? || @status.present? %>
+              <div style="<%= header_meta_styles %>" class="mt-1">
+                <% if @date.present? %><span><%= @date %></span><% end %>
+                <% if @status.present? %><span class="ms-2"><%= @status %></span><% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if tabs? %>
+    <div style="<%= tabs_container_styles %>">
+      <%= tabs %>
+    </div>
+  <% end %>
+
+  <div style="<%= body_styles %>">
+    <div class="row g-4">
+      <div class="col-md-8">
+        <% if main_content? %>
+          <div style="<%= main_panel_styles %>">
+            <%= main_content %>
+          </div>
+        <% end %>
+      </div>
+      <div class="col-md-4">
+        <% if sidebar? %>
+          <div style="<%= sidebar_panel_styles %>">
+            <%= sidebar %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

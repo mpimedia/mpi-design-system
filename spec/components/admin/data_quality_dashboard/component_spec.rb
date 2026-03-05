@@ -118,7 +118,7 @@ RSpec.describe Admin::DataQualityDashboard::Component, type: :component do
   it "hides priority fixes section when empty" do
     render_inline(described_class.new(**default_params.merge(priority_fixes: [])))
 
-    expect(page).not_to have_text("Priority Fixes")
+    expect(page).not_to have_text("Priority Fixes — Recently Active")
   end
 
   it "clamps score to 0-100" do

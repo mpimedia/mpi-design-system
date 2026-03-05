@@ -195,9 +195,9 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
   it "renders contacts by group chart" do
     params = default_params.merge(
       group_data: [
-        { label: "Buyers", count: 120, color: "#C05621", percentage: 35.0 },
-        { label: "Press", count: 85, color: "#2E75B6", percentage: 25.0 },
-        { label: "Festivals", count: 137, color: "#8B5CF6", percentage: 40.0 }
+        { label: "Distribution", count: 120, color: "#E8733A", percentage: 35.0 },
+        { label: "Outreach", count: 85, color: "#2DA67E", percentage: 25.0 },
+        { label: "Press/Festival", count: 137, color: "#2E75B6", percentage: 40.0 }
       ]
     )
     render_inline(described_class.new(**params))
@@ -208,21 +208,21 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
   it "renders group chart bar segments with colors" do
     params = default_params.merge(
-      group_data: [ { label: "Buyers", count: 120, color: "#C05621", percentage: 35.0 } ]
+      group_data: [ { label: "Distribution", count: 120, color: "#E8733A", percentage: 35.0 } ]
     )
     render_inline(described_class.new(**params))
 
-    expect(page).to have_css("div[style*='background: #C05621']")
+    expect(page).to have_css("div[style*='background: #E8733A']")
   end
 
   it "renders group chart legend with dots and counts" do
     params = default_params.merge(
-      group_data: [ { label: "Buyers", count: 120, color: "#C05621", percentage: 35.0 } ]
+      group_data: [ { label: "Distribution", count: 120, color: "#E8733A", percentage: 35.0 } ]
     )
     render_inline(described_class.new(**params))
 
-    expect(page).to have_css("div[style*='background: #C05621'][style*='border-radius: 50%']")
-    expect(page).to have_text("Buyers")
+    expect(page).to have_css("div[style*='background: #E8733A'][style*='border-radius: 50%']")
+    expect(page).to have_text("Distribution")
     expect(page).to have_text("120")
   end
 
@@ -253,5 +253,50 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
     end
 
     expect(page).to have_css("#custom-actions", text: "Custom Actions")
+  end
+
+  it "renders activity with contact name and link" do
+    params = default_params.merge(
+      activities: [ {
+        type: :email,
+        description: "Email logged with",
+        contact_name: "Sarah Chen",
+        contact_path: "/contacts/1",
+        timestamp: "2 hours ago"
+      } ]
+    )
+    render_inline(described_class.new(**params))
+
+    expect(page).to have_link("Sarah Chen", href: "/contacts/1")
+  end
+
+  it "renders activity with account name and link" do
+    params = default_params.merge(
+      activities: [ {
+        type: :email,
+        description: "Email logged",
+        account_name: "Sony Pictures",
+        account_path: "/accounts/1",
+        timestamp: "now"
+      } ]
+    )
+    render_inline(described_class.new(**params))
+
+    expect(page).to have_link("Sony Pictures", href: "/accounts/1")
+  end
+
+  it "renders followup with contact name" do
+    params = default_params.merge(
+      followups: [ {
+        name: "Sarah Chen",
+        description: "Follow-up task",
+        status: :overdue,
+        status_label: "7d overdue",
+        avatar_name: "Sarah Chen"
+      } ]
+    )
+    render_inline(described_class.new(**params))
+
+    expect(page).to have_css("div[style*='font-weight: 600']", text: "Sarah Chen")
   end
 end

@@ -8,6 +8,7 @@ RSpec.describe Admin::AccountDetailPanel::Component, type: :component do
       name: "Sony Pictures",
       account_type: "Distributor",
       account_type_color: :primary,
+      metrics: { contacts: 7, engagements: 34, titles: 12 },
       contacts: [
         { name: "Jane Doe", title: "VP of Acquisitions", path: "/contacts/1" },
         { name: "John Smith", title: "Director of Sales", path: "/contacts/2" }
@@ -15,8 +16,19 @@ RSpec.describe Admin::AccountDetailPanel::Component, type: :component do
       email: "info@sonypictures.com",
       phone: "+1 (555) 987-6543",
       location: "Los Angeles, CA",
+      website: "https://sonypictures.com",
+      territory: "North America",
+      health: "Good",
       created_date: "Jan 10, 2025",
-      owner: { name: "A. Garcia", path: "/users/3" }
+      owner: { name: "A. Garcia", path: "/users/3" },
+      tag_groups: [
+        { label: "Distribution", count: 5, group: :distribution },
+        { label: "Press/Festival", count: 2, group: :press_festival }
+      ],
+      linked_titles: [
+        { name: "The Great Film", status: "In Distribution", path: "/titles/1" },
+        { name: "Another Movie", status: "Pre-Release", path: "/titles/2" }
+      ]
     }
   end
 
@@ -48,6 +60,14 @@ RSpec.describe Admin::AccountDetailPanel::Component, type: :component do
     render_inline(described_class.new(**default_params))
 
     expect(page).to have_css("span.badge", text: "Distributor")
+  end
+
+  it "renders metrics row" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_text("7 CONTACTS")
+    expect(page).to have_text("34 ENGAGEMENTS")
+    expect(page).to have_text("12 TITLES")
   end
 
   it "renders associated contacts section heading" do
@@ -83,10 +103,10 @@ RSpec.describe Admin::AccountDetailPanel::Component, type: :component do
     expect(page).to have_css("div[style*='border-bottom: 1px solid #F0F0F0']", minimum: 1)
   end
 
-  it "renders contact info section heading" do
+  it "renders account info section heading" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).to have_css("div[style*='text-transform: uppercase']", text: "Contact Info")
+    expect(page).to have_css("div[style*='text-transform: uppercase']", text: "Account Info")
   end
 
   it "renders email as mailto link" do
@@ -107,6 +127,24 @@ RSpec.describe Admin::AccountDetailPanel::Component, type: :component do
     expect(page).to have_text("Los Angeles, CA")
   end
 
+  it "renders website as link" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_css("a[href='https://sonypictures.com'][target='_blank']", text: "https://sonypictures.com")
+  end
+
+  it "renders territory" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_text("North America")
+  end
+
+  it "renders health" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_text("Good")
+  end
+
   it "renders created date" do
     render_inline(described_class.new(**default_params))
 
@@ -119,10 +157,21 @@ RSpec.describe Admin::AccountDetailPanel::Component, type: :component do
     expect(page).to have_css("a[href='/users/3']", text: "A. Garcia")
   end
 
-  it "renders owner label" do
+  it "renders tag groups represented section" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).to have_css("div[style*='text-transform: uppercase']", text: "Owner")
+    expect(page).to have_css("div[style*='text-transform: uppercase']", text: "Tag Groups Represented")
+    expect(page).to have_css("span[style*='color: #E8733A']", text: /Distribution/)
+    expect(page).to have_text("Distribution (5)")
+    expect(page).to have_text("Press/Festival (2)")
+  end
+
+  it "renders linked titles section" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_css("div[style*='text-transform: uppercase']", text: "Linked Titles")
+    expect(page).to have_css("a[href='/titles/1']", text: "The Great Film")
+    expect(page).to have_text("In Distribution")
   end
 
   it "renders hr dividers between sections" do
@@ -140,10 +189,10 @@ RSpec.describe Admin::AccountDetailPanel::Component, type: :component do
   end
 
   context "with no contact info" do
-    it "does not render contact info section" do
+    it "does not render account info section" do
       render_inline(described_class.new(name: "Sony Pictures"))
 
-      expect(page).not_to have_text("Contact Info")
+      expect(page).not_to have_text("Account Info")
     end
   end
 

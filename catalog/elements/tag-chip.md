@@ -11,7 +11,7 @@ Color-coded tag chips for CRM contact and account classification. Each of the 7 
 ## Design Decisions
 
 - **Shape:** Pill (`border-radius: 999px`) — consistent with all badges in the system
-- **Color inheritance:** Specific tags inherit their parent group's color pair (e.g., "MIPCOM 2025" under Buyers gets orange)
+- **Color inheritance:** Specific tags inherit their parent group's color pair (e.g., "MIPCOM 2025" under Distribution gets orange)
 - **7 color pairs:** Fixed and extensible — new groups get new color pairs from the design token system
 - **Remove button:** `×` button for removable variant, opacity increases on hover
 - **Font size:** 13px default, 12px when used inline on cards
@@ -20,12 +20,12 @@ Color-coded tag chips for CRM contact and account classification. Each of the 7 
 
 | Group | Text Color | Background Color |
 |---|---|---|
-| Buyers | `#E8733A` | `#FEF3EC` |
-| Press | `#2DA67E` | `#ECF8F4` |
-| Festivals | `#2E75B6` | `#EBF3FB` |
-| Sellers | `#8B5CF6` | `#F3EFFE` |
-| Institutional | `#D97706` | `#FEF9EC` |
-| Organizations | `#6366F1` | `#EEEFFE` |
+| Distribution | `#E8733A` | `#FEF3EC` |
+| Outreach | `#2DA67E` | `#ECF8F4` |
+| Press/Festival | `#2E75B6` | `#EBF3FB` |
+| Vendors | `#8B5CF6` | `#F3EFFE` |
+| Finance | `#D97706` | `#FEF9EC` |
+| Production | `#6366F1` | `#EEEFFE` |
 | Internal | `#64748B` | `#F1F5F9` |
 
 ## Variants
@@ -34,7 +34,7 @@ Color-coded tag chips for CRM contact and account classification. Each of the 7 
 |---|---|
 | **Default** | Read-only chip showing group or tag name |
 | **Removable** | Includes `×` button for removal (used in edit forms, filter bars) |
-| **Specific tag** | Named tag within a group — inherits group color (e.g., "MIPCOM 2025" = Buyers orange) |
+| **Specific tag** | Named tag within a group — inherits group color (e.g., "MIPCOM 2025" = Distribution orange) |
 
 ## States
 
@@ -50,8 +50,8 @@ Color-coded tag chips for CRM contact and account classification. Each of the 7 
 # Admin::TagChip::Component
 class Admin::TagChip::Component < ViewComponent::Base
   # @param label [String] Tag display text (group name or specific tag name)
-  # @param group [Symbol] :buyers, :press, :festivals, :sellers,
-  #   :institutional, :organizations, :internal
+  # @param group [Symbol] :distribution, :outreach, :press_festival, :vendors,
+  #   :finance, :production, :internal
   # @param removable [Boolean] Show × remove button (default: false)
   # @param size [Symbol] :sm (12px, for cards), :md (13px, default)
   # @param remove_url [String] URL for Turbo Stream removal (when removable)

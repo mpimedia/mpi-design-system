@@ -127,6 +127,10 @@ module Admin
         "font-size: 12px; font-weight: 600; color: #{color};"
       end
 
+      def followup_name_styles
+        "font-size: 13px; font-weight: 600; color: #1B2A4A;"
+      end
+
       def followup_desc_styles
         "font-size: 13px; color: #1B2A4A;"
       end

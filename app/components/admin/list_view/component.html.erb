@@ -30,6 +30,11 @@
     </div>
   <% end %>
 
+  <%# Rich search summary %>
+  <% if show_search_summary? %>
+    <div style="<%= search_summary_styles %>"><%= @search_summary %></div>
+  <% end %>
+
   <%# Result toolbar with list/card toggle %>
   <div style="<%= section_spacing_styles %>">
     <%= render Admin::ListCardToggle::Component.new(

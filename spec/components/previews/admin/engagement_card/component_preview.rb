@@ -11,6 +11,7 @@ class Admin::EngagementCard::ComponentPreview < ApplicationComponentPreview
       contacts: [ { name: "Jane Cooper", path: "#" } ],
       account_name: "Acme Films",
       account_path: "#",
+      tags: [ { group: :distribution, role: "Acquisitions" } ],
       creator_name: "Sarah Williams"
     )
   end
@@ -27,7 +28,7 @@ class Admin::EngagementCard::ComponentPreview < ApplicationComponentPreview
       ],
       account_name: "Berlin Film Fest",
       account_path: "#",
-      tags: [ { group: :festivals, role: "Director" } ],
+      tags: [ { group: :press_festival, role: "Festival" } ],
       creator_name: "David Kim"
     )
   end
@@ -40,6 +41,7 @@ class Admin::EngagementCard::ComponentPreview < ApplicationComponentPreview
       subject: "Sales pitch — Global Distribution",
       excerpt: "Discussed pricing tiers and delivery timelines for Q2...",
       contacts: [ { name: "Marcus Johnson", path: "#" } ],
+      tags: [ { group: :vendors, role: "Intl Sales" } ],
       creator_name: "Tom Wilson"
     )
   end
@@ -52,6 +54,7 @@ class Admin::EngagementCard::ComponentPreview < ApplicationComponentPreview
       subject: "Internal note",
       excerpt: "Contact expressed interest in exclusive screening rights for Asia-Pacific region.",
       contacts: [ { name: "Lisa Park", path: "#" } ],
+      tags: [ { group: :outreach, role: "Journalist" } ],
       creator_name: "Jane Cooper"
     )
   end
