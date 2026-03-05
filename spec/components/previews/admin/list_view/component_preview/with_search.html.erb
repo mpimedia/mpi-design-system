@@ -2,18 +2,18 @@
   entity_type: :contacts,
   groups: [
     { label: "All", count: 156, group: nil, selected: true },
-    { label: "Buyers", count: 42, group: :buyers, selected: false },
-    { label: "Press", count: 28, group: :press, selected: false }
+    { label: "Distribution", count: 42, group: :distribution, selected: false },
+    { label: "Outreach", count: 28, group: :outreach, selected: false }
   ],
   total_count: 2,
   current_page: 1,
   per_page: 25,
   search_query: "investors",
-  search_summary: "2 contacts match investors in Buyers, engaged in last 90 days",
+  search_summary: "2 contacts match investors in Distribution, engaged in last 90 days",
   view_mode: :list,
   active_filters: [
     { category: "Keyword", value: "investors", remove_url: "#" },
-    { category: "Group", value: "Buyers", remove_url: "#" }
+    { category: "Group", value: "Distribution", remove_url: "#" }
   ],
   clear_all_url: "#",
   list_url: "#list",
@@ -28,8 +28,8 @@
         { key: :last_engagement, label: "Last Engagement", sortable: true }
       ],
       rows: [
-        { name: "Jane Cooper", account: "Acme Films", tags: [{ group: :buyers, label: "Buyer — Theatrical" }], last_engagement: "2 days ago" },
-        { name: "Marcus Johnson", account: "Global Distribution", tags: [{ group: :sellers, label: "Seller — Worldwide" }], last_engagement: "Yesterday" }
+        { name: "Jane Cooper", account: "Acme Films", tags: [{ group: :distribution, label: "Acquisitions" }], last_engagement: "2 days ago" },
+        { name: "Marcus Johnson", account: "Global Distribution", tags: [{ group: :vendors, label: "Intl Sales" }], last_engagement: "Yesterday" }
       ],
       sort_by: :name,
       sort_dir: :asc

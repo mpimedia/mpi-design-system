@@ -15,7 +15,7 @@ RSpec.describe Admin::EngagementCard::Component, type: :component do
       ],
       account_name: "Sony Pictures",
       account_path: "/accounts/1",
-      tags: [ { group: :buyers, role: "Buyer — Theatrical" } ],
+      tags: [ { group: :distribution, role: "Acquisitions" } ],
       creator_name: "M. Johnson"
     }
   end
@@ -94,7 +94,7 @@ RSpec.describe Admin::EngagementCard::Component, type: :component do
     render_inline(described_class.new(**default_params))
 
     expect(page).to have_css("span[style*='background: #E8733A']")
-    expect(page).to have_text("Buyer — Theatrical")
+    expect(page).to have_text("Acquisitions")
   end
 
   it "renders creator name" do

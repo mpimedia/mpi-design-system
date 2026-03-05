@@ -78,7 +78,7 @@ module Admin
       end
 
       def derived_group_label(group_sym)
-        group_sym.to_s.capitalize
+        group_sym.to_s.tr("_", " ").split.map(&:capitalize).join(" ")
       end
 
       def derived_group_styles(group_sym)

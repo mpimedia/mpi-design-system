@@ -22,8 +22,8 @@ RSpec.describe Admin::AccountDetailPanel::Component, type: :component do
       created_date: "Jan 10, 2025",
       owner: { name: "A. Garcia", path: "/users/3" },
       tag_groups: [
-        { label: "Buyers", count: 5, group: :buyers },
-        { label: "Festivals", count: 2, group: :festivals }
+        { label: "Distribution", count: 5, group: :distribution },
+        { label: "Press/Festival", count: 2, group: :press_festival }
       ],
       linked_titles: [
         { name: "The Great Film", status: "In Distribution", path: "/titles/1" },
@@ -161,9 +161,9 @@ RSpec.describe Admin::AccountDetailPanel::Component, type: :component do
     render_inline(described_class.new(**default_params))
 
     expect(page).to have_css("div[style*='text-transform: uppercase']", text: "Tag Groups Represented")
-    expect(page).to have_css("span[style*='color: #E8733A']", text: /Buyers/)
-    expect(page).to have_text("Buyers (5)")
-    expect(page).to have_text("Festivals (2)")
+    expect(page).to have_css("span[style*='color: #E8733A']", text: /Distribution/)
+    expect(page).to have_text("Distribution (5)")
+    expect(page).to have_text("Press/Festival (2)")
   end
 
   it "renders linked titles section" do

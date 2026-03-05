@@ -5,13 +5,13 @@ class Admin::TagInput::ComponentPreview < ApplicationComponentPreview
   def default
     render Admin::TagInput::Component.new(
       available_tags: [
-        { label: "Buyer — Theatrical", group: :buyers },
-        { label: "Buyer — Digital", group: :buyers },
-        { label: "Press — Film Critic", group: :press },
-        { label: "Press — Trade Publication", group: :press },
-        { label: "Fest — Acquisitions", group: :festivals },
-        { label: "Fest — MIPCOM 2025", group: :festivals },
-        { label: "Seller — Worldwide", group: :sellers },
+        { label: "Acquisitions", group: :distribution },
+        { label: "Streaming", group: :distribution },
+        { label: "Journalist", group: :outreach },
+        { label: "Press — Trade Publication", group: :outreach },
+        { label: "Festival", group: :press_festival },
+        { label: "Fest — MIPCOM 2025", group: :press_festival },
+        { label: "Intl Sales", group: :vendors },
         { label: "Internal — Staff", group: :internal }
       ]
     )
@@ -21,17 +21,17 @@ class Admin::TagInput::ComponentPreview < ApplicationComponentPreview
   def with_selected
     render Admin::TagInput::Component.new(
       available_tags: [
-        { label: "Buyer — Theatrical", group: :buyers },
-        { label: "Buyer — Digital", group: :buyers },
-        { label: "Press — Film Critic", group: :press },
-        { label: "Press — Trade Publication", group: :press },
-        { label: "Fest — Acquisitions", group: :festivals },
-        { label: "Fest — MIPCOM 2025", group: :festivals }
+        { label: "Acquisitions", group: :distribution },
+        { label: "Streaming", group: :distribution },
+        { label: "Journalist", group: :outreach },
+        { label: "Press — Trade Publication", group: :outreach },
+        { label: "Festival", group: :press_festival },
+        { label: "Fest — MIPCOM 2025", group: :press_festival }
       ],
       selected_tags: [
-        { label: "Buyer — Theatrical", group: :buyers },
-        { label: "Fest — Acquisitions", group: :festivals },
-        { label: "Press — Film Critic", group: :press }
+        { label: "Acquisitions", group: :distribution },
+        { label: "Festival", group: :press_festival },
+        { label: "Journalist", group: :outreach }
       ]
     )
   end
@@ -40,8 +40,8 @@ class Admin::TagInput::ComponentPreview < ApplicationComponentPreview
   def custom_field
     render Admin::TagInput::Component.new(
       available_tags: [
-        { label: "Buyer — Theatrical", group: :buyers },
-        { label: "Press — Film Critic", group: :press }
+        { label: "Acquisitions", group: :distribution },
+        { label: "Journalist", group: :outreach }
       ],
       name: "contact[tags][]",
       placeholder: "Search and add tags..."

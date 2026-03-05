@@ -9,7 +9,7 @@ RSpec.describe Admin::AccountListRow::Component, type: :component do
       type_label: "Distributor",
       location: "Los Angeles, CA",
       contact_names: [ "Sarah Chen", "James Park", "Maria Lopez" ],
-      tags: [ { group: :buyers, role: "Buyer — Theatrical" } ],
+      tags: [ { group: :distribution, role: "Acquisitions" } ],
       health: :active,
       account_path: "/accounts/1"
     }
@@ -58,7 +58,7 @@ RSpec.describe Admin::AccountListRow::Component, type: :component do
     render_inline(described_class.new(**default_params))
 
     expect(page).to have_css("span[style*='background: #E8733A']")
-    expect(page).to have_text("Buyer — Theatrical")
+    expect(page).to have_text("Acquisitions")
   end
 
   it "renders health status with colored dot" do
@@ -92,8 +92,8 @@ RSpec.describe Admin::AccountListRow::Component, type: :component do
 
   it "renders multiple tags" do
     tags = [
-      { group: :buyers, role: "Buyer — Theatrical" },
-      { group: :press, role: "Press — Publicist" }
+      { group: :distribution, role: "Acquisitions" },
+      { group: :outreach, role: "Press — Publicist" }
     ]
     render_inline(described_class.new(**default_params.merge(tags: tags)))
 

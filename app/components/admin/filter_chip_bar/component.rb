@@ -7,7 +7,7 @@ module Admin
 
       # @param groups [Array<Hash>] Group chip data:
       #   [{ label: "All", count: 2307 },
-      #    { label: "Buyers", count: 342, group: :buyers, selected: true }]
+      #    { label: "Distribution", count: 342, group: :distribution, selected: true }]
       # @param active_filters [Array<Hash>] Active filter pill data:
       #   [{ category: "Keyword", value: "investors", remove_url: "/contacts?remove=keyword" }]
       # @param clear_all_url [String] URL to clear all active filters

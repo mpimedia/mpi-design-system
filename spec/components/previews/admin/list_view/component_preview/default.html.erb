@@ -2,9 +2,9 @@
   entity_type: :contacts,
   groups: [
     { label: "All", count: 156, group: nil, selected: true },
-    { label: "Buyers", count: 42, group: :buyers, selected: false },
-    { label: "Press", count: 28, group: :press, selected: false },
-    { label: "Festivals", count: 35, group: :festivals, selected: false }
+    { label: "Distribution", count: 42, group: :distribution, selected: false },
+    { label: "Outreach", count: 28, group: :outreach, selected: false },
+    { label: "Press/Festival", count: 35, group: :press_festival, selected: false }
   ],
   total_count: 156,
   current_page: 1,
@@ -23,9 +23,9 @@
         { key: :last_engagement, label: "Last Engagement", sortable: true }
       ],
       rows: [
-        { name: "Jane Cooper", account: "Acme Films", tags: [{ group: :buyers, label: "Buyer — Theatrical" }], last_engagement: "2 days ago" },
-        { name: "Robert Fox", account: "Berlin Film Fest", tags: [{ group: :festivals, label: "Fest — Acquisitions" }], last_engagement: "1 week ago" },
-        { name: "Emily Chen", account: "Film Weekly", tags: [{ group: :press, label: "Press — Film Critic" }, { group: :buyers, label: "Buyer — Digital" }], last_engagement: "3 days ago" }
+        { name: "Jane Cooper", account: "Acme Films", tags: [{ group: :distribution, label: "Acquisitions" }], last_engagement: "2 days ago" },
+        { name: "Robert Fox", account: "Berlin Film Fest", tags: [{ group: :press_festival, label: "Festival" }], last_engagement: "1 week ago" },
+        { name: "Emily Chen", account: "Film Weekly", tags: [{ group: :outreach, label: "Journalist" }, { group: :distribution, label: "Streaming" }], last_engagement: "3 days ago" }
       ],
       sort_by: :name,
       sort_dir: :asc

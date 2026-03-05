@@ -12,7 +12,7 @@ Displayed in a responsive grid: 3 columns on desktop, 2 on tablet, 1 on mobile.
 
 ## Design Decisions
 
-- **Pill tags** — Tags use colored pill badges matching their group color pair (not dot-format, not blue text). Group name is implied by color; only the sub-category is shown (e.g., "Theatrical" not "Buyer — Theatrical")
+- **Pill tags** — Tags use colored pill badges matching their group color pair (not dot-format, not blue text). Group name is implied by color; only the sub-category is shown (e.g., "Theatrical" not "Acquisitions")
 - **Tag redundancy** — When a contact has multiple tags from the same group, each shows as a separate pill but the group prefix is omitted since color encodes the group
 - **Tag wrapping** — Tags wrap to multiple lines when there are many (no truncation)
 - **Owner field** — Bottom-right shows "Owner: Name" (internal contact owner), replacing the former engagement count

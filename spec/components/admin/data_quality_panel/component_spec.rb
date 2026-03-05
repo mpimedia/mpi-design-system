@@ -15,7 +15,7 @@ RSpec.describe Admin::DataQualityPanel::Component, type: :component do
         { name: "Email", complete: true, priority: :high, value: "john@sony.com" },
         { name: "Phone", complete: false, priority: :med },
         { name: "Title", complete: true, priority: :med, value: "VP of Acquisitions" },
-        { name: "Tags", complete: true, priority: :med, value: "Buyer — Theatrical" },
+        { name: "Tags", complete: true, priority: :med, value: "Acquisitions" },
         { name: "Account", complete: false, priority: :low },
         { name: "Engagement History", complete: false, priority: :low }
       ]

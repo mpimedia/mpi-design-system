@@ -2,9 +2,9 @@
   entity_type: :accounts,
   groups: [
     { label: "All", count: 84, group: nil, selected: true },
-    { label: "Distributors", count: 32, group: :sellers, selected: false },
-    { label: "Studios", count: 28, group: :organizations, selected: false },
-    { label: "Festivals", count: 24, group: :festivals, selected: false }
+    { label: "Distributors", count: 32, group: :vendors, selected: false },
+    { label: "Studios", count: 28, group: :production, selected: false },
+    { label: "Press/Festival", count: 24, group: :press_festival, selected: false }
   ],
   total_count: 84,
   current_page: 1,
@@ -28,7 +28,7 @@
         {
           name: "Acme Films",
           contacts: "7 contacts",
-          tag_groups: [{ group: :buyers, label: "Buyers" }, { group: :sellers, label: "Sellers" }],
+          tag_groups: [{ group: :distribution, label: "Distribution" }, { group: :vendors, label: "Vendors" }],
           health: "Active",
           last_engaged: "2 days ago",
           linked_titles: "12 titles"
@@ -36,7 +36,7 @@
         {
           name: "Berlin Film Festival",
           contacts: "3 contacts",
-          tag_groups: [{ group: :festivals, label: "Festivals" }],
+          tag_groups: [{ group: :press_festival, label: "Press/Festival" }],
           health: "Warm",
           last_engaged: "1 week ago",
           linked_titles: "5 titles"
@@ -44,7 +44,7 @@
         {
           name: "Global Distribution Co.",
           contacts: "12 contacts",
-          tag_groups: [{ group: :sellers, label: "Sellers" }, { group: :organizations, label: "Organizations" }],
+          tag_groups: [{ group: :vendors, label: "Vendors" }, { group: :production, label: "Organizations" }],
           health: "Active",
           last_engaged: "Yesterday",
           linked_titles: "34 titles"

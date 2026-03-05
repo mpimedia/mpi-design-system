@@ -2,7 +2,7 @@
   entity_type: :contacts,
   groups: [
     { label: "All", count: 156, group: nil, selected: true },
-    { label: "Buyers", count: 42, group: :buyers, selected: false }
+    { label: "Distribution", count: 42, group: :distribution, selected: false }
   ],
   total_count: 156,
   current_page: 1,
@@ -14,13 +14,13 @@
   <% view.with_card_content do %>
     <div class="row g-3">
       <div class="col-md-4">
-        <%= render Admin::ContactCard::Component.new(name: "Jane Cooper", company: "Acme Films", tags: [{ label: "Buyer — Theatrical", group: :buyers }], last_engaged: "2 days ago", engagement_count: 14, path: "#") %>
+        <%= render Admin::ContactCard::Component.new(name: "Jane Cooper", company: "Acme Films", tags: [{ label: "Acquisitions", group: :distribution }], last_engaged: "2 days ago", engagement_count: 14, path: "#") %>
       </div>
       <div class="col-md-4">
-        <%= render Admin::ContactCard::Component.new(name: "Robert Fox", company: "Berlin Film Fest", tags: [{ label: "Fest — Acquisitions", group: :festivals }], last_engaged: "1 week ago", engagement_count: 8, path: "#") %>
+        <%= render Admin::ContactCard::Component.new(name: "Robert Fox", company: "Berlin Film Fest", tags: [{ label: "Festival", group: :press_festival }], last_engaged: "1 week ago", engagement_count: 8, path: "#") %>
       </div>
       <div class="col-md-4">
-        <%= render Admin::ContactCard::Component.new(name: "Emily Chen", company: "Film Weekly", tags: [{ label: "Press — Film Critic", group: :press }], last_engaged: "3 days ago", engagement_count: 22, path: "#") %>
+        <%= render Admin::ContactCard::Component.new(name: "Emily Chen", company: "Film Weekly", tags: [{ label: "Journalist", group: :outreach }], last_engaged: "3 days ago", engagement_count: 22, path: "#") %>
       </div>
     </div>
   <% end %>

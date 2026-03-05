@@ -6,10 +6,10 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
     render Admin::FilterChipBar::Component.new(
       groups: [
         { label: "All", count: 2307 },
-        { label: "Buyers", count: 342, group: :buyers, href: "#" },
-        { label: "Press", count: 128, group: :press, href: "#" },
-        { label: "Festivals", count: 95, group: :festivals, href: "#" },
-        { label: "Sellers", count: 67, group: :sellers, href: "#" }
+        { label: "Distribution", count: 342, group: :distribution, href: "#" },
+        { label: "Outreach", count: 128, group: :outreach, href: "#" },
+        { label: "Press/Festival", count: 95, group: :press_festival, href: "#" },
+        { label: "Vendors", count: 67, group: :vendors, href: "#" }
       ]
     )
   end
@@ -19,12 +19,12 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
     render Admin::FilterChipBar::Component.new(
       groups: [
         { label: "All", count: 2307 },
-        { label: "Buyers", count: 342, group: :buyers, selected: true, href: "#" },
-        { label: "Press", count: 128, group: :press, href: "#" }
+        { label: "Distribution", count: 342, group: :distribution, selected: true, href: "#" },
+        { label: "Outreach", count: 128, group: :outreach, href: "#" }
       ],
       active_filters: [
         { category: "Keyword", value: "investors", remove_url: "#" },
-        { category: "Group", value: "Buyers", remove_url: "#" },
+        { category: "Group", value: "Distribution", remove_url: "#" },
         { category: "Activity", value: "Engaged last 90 days", remove_url: "#" }
       ],
       clear_all_url: "#"
@@ -36,8 +36,8 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
     render Admin::FilterChipBar::Component.new(
       groups: [
         { label: "All", count: 342 },
-        { label: "Buyers", count: 120, group: :buyers, href: "#" },
-        { label: "Press", count: 85, group: :press, href: "#" }
+        { label: "Distribution", count: 120, group: :distribution, href: "#" },
+        { label: "Outreach", count: 85, group: :outreach, href: "#" }
       ]
     )
   end
@@ -47,9 +47,9 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
     render Admin::FilterChipBar::Component.new(
       groups: [
         { label: "All", count: 2307 },
-        { label: "Buyers", count: 342, group: :buyers, selected: true, href: "#" },
-        { label: "Press", count: 128, group: :press, href: "#" },
-        { label: "Festivals", count: 95, group: :festivals, href: "#" }
+        { label: "Distribution", count: 342, group: :distribution, selected: true, href: "#" },
+        { label: "Outreach", count: 128, group: :outreach, href: "#" },
+        { label: "Press/Festival", count: 95, group: :press_festival, href: "#" }
       ],
       reset_all_url: "#"
     )

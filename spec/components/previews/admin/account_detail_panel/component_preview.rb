@@ -21,9 +21,9 @@ class Admin::AccountDetailPanel::ComponentPreview < ApplicationComponentPreview
       created_date: "Jan 10, 2025",
       owner: { name: "A. Garcia", path: "#" },
       tag_groups: [
-        { label: "Buyers", count: 5, group: :buyers },
-        { label: "Festivals", count: 2, group: :festivals },
-        { label: "Press", count: 1, group: :press }
+        { label: "Distribution", count: 5, group: :distribution },
+        { label: "Press/Festival", count: 2, group: :press_festival },
+        { label: "Outreach", count: 1, group: :outreach }
       ],
       linked_titles: [
         { name: "The Great Film", status: "In Distribution", path: "#" },
