@@ -254,4 +254,49 @@ RSpec.describe Admin::Dashboard::Component, type: :component do
 
     expect(page).to have_css("#custom-actions", text: "Custom Actions")
   end
+
+  it "renders activity with contact name and link" do
+    params = default_params.merge(
+      activities: [ {
+        type: :email,
+        description: "Email logged with",
+        contact_name: "Sarah Chen",
+        contact_path: "/contacts/1",
+        timestamp: "2 hours ago"
+      } ]
+    )
+    render_inline(described_class.new(**params))
+
+    expect(page).to have_link("Sarah Chen", href: "/contacts/1")
+  end
+
+  it "renders activity with account name and link" do
+    params = default_params.merge(
+      activities: [ {
+        type: :email,
+        description: "Email logged",
+        account_name: "Sony Pictures",
+        account_path: "/accounts/1",
+        timestamp: "now"
+      } ]
+    )
+    render_inline(described_class.new(**params))
+
+    expect(page).to have_link("Sony Pictures", href: "/accounts/1")
+  end
+
+  it "renders followup with contact name" do
+    params = default_params.merge(
+      followups: [ {
+        name: "Sarah Chen",
+        description: "Follow-up task",
+        status: :overdue,
+        status_label: "7d overdue",
+        avatar_name: "Sarah Chen"
+      } ]
+    )
+    render_inline(described_class.new(**params))
+
+    expect(page).to have_css("div[style*='font-weight: 600']", text: "Sarah Chen")
+  end
 end

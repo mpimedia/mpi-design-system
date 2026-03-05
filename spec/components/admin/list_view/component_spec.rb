@@ -157,4 +157,20 @@ RSpec.describe Admin::ListView::Component, type: :component do
 
     expect(page).to have_css("span[style*='text-transform: uppercase']", text: "Sub-groups")
   end
+
+  it "renders search summary when provided" do
+    render_inline(described_class.new(
+      entity_type: :contacts,
+      total_count: 5,
+      search_summary: "5 contacts match investors in Buyers"
+    ))
+
+    expect(page).to have_text("5 contacts match investors in Buyers")
+  end
+
+  it "does not render search summary when not provided" do
+    render_inline(described_class.new(entity_type: :contacts, total_count: 10))
+
+    expect(page).not_to have_text("contacts match")
+  end
 end

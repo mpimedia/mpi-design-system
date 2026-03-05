@@ -145,4 +145,31 @@ RSpec.describe Admin::TagInput::Component, type: :component do
       expect(page).to have_css("div[data-tag-input-available-tags-value='[]']")
     end
   end
+
+  context "with derived groups" do
+    it "renders auto-derived groups section when tags are selected" do
+      render_inline(described_class.new(
+        available_tags: available_tags,
+        selected_tags: selected_tags
+      ))
+
+      expect(page).to have_text("Auto-Derived Groups")
+      expect(page).to have_text("Buyers")
+      expect(page).to have_text("Festivals")
+    end
+
+    it "does not render derived groups when no tags are selected" do
+      render_inline(described_class.new(available_tags: available_tags))
+
+      expect(page).not_to have_text("Auto-Derived Groups")
+    end
+  end
+
+  it "renders keyboard navigation hint" do
+    render_inline(described_class.new(available_tags: available_tags))
+
+    expect(page).to have_text("to navigate")
+    expect(page).to have_text("Enter to select")
+    expect(page).to have_text("Esc to close")
+  end
 end

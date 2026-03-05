@@ -5,11 +5,11 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
   def default
     render Admin::FilterChipBar::Component.new(
       groups: [
-        { label: "All", count: 156, group: nil, selected: true },
-        { label: "Buyers", count: 42, group: :buyers, selected: false },
-        { label: "Press", count: 28, group: :press, selected: false },
-        { label: "Festivals", count: 35, group: :festivals, selected: false },
-        { label: "Sellers", count: 22, group: :sellers, selected: false }
+        { label: "All", count: 2307 },
+        { label: "Buyers", count: 342, group: :buyers, href: "#" },
+        { label: "Press", count: 128, group: :press, href: "#" },
+        { label: "Festivals", count: 95, group: :festivals, href: "#" },
+        { label: "Sellers", count: 67, group: :sellers, href: "#" }
       ]
     )
   end
@@ -18,12 +18,14 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
   def with_active_filters
     render Admin::FilterChipBar::Component.new(
       groups: [
-        { label: "All", count: 156, group: nil, selected: false },
-        { label: "Buyers", count: 42, group: :buyers, selected: true }
+        { label: "All", count: 2307 },
+        { label: "Buyers", count: 342, group: :buyers, selected: true, href: "#" },
+        { label: "Press", count: 128, group: :press, href: "#" }
       ],
       active_filters: [
-        { category: "Status", value: "Active", remove_url: "#" },
-        { category: "Location", value: "New York", remove_url: "#" }
+        { category: "Keyword", value: "investors", remove_url: "#" },
+        { category: "Group", value: "Buyers", remove_url: "#" },
+        { category: "Activity", value: "Engaged last 90 days", remove_url: "#" }
       ],
       clear_all_url: "#"
     )
@@ -33,10 +35,23 @@ class Admin::FilterChipBar::ComponentPreview < ApplicationComponentPreview
   def groups_only
     render Admin::FilterChipBar::Component.new(
       groups: [
-        { label: "Buyers", count: 42, group: :buyers, selected: false },
-        { label: "Press", count: 28, group: :press, selected: false },
-        { label: "Festivals", count: 35, group: :festivals, selected: false }
+        { label: "All", count: 342 },
+        { label: "Buyers", count: 120, group: :buyers, href: "#" },
+        { label: "Press", count: 85, group: :press, href: "#" }
       ]
+    )
+  end
+
+  # @label With Reset All
+  def with_reset_all
+    render Admin::FilterChipBar::Component.new(
+      groups: [
+        { label: "All", count: 2307 },
+        { label: "Buyers", count: 342, group: :buyers, selected: true, href: "#" },
+        { label: "Press", count: 128, group: :press, href: "#" },
+        { label: "Festivals", count: 95, group: :festivals, href: "#" }
+      ],
+      reset_all_url: "#"
     )
   end
 end

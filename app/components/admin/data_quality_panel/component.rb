@@ -123,6 +123,10 @@ module Admin
         "color: #DC3545; font-size: 14px;"
       end
 
+      def add_action_styles
+        "font-size: 12px; color: #2E75B6; text-decoration: none; font-weight: 500;"
+      end
+
       def progress_percentage
         return 0 if @fields_total == 0
 

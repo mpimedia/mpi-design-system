@@ -68,6 +68,47 @@ module Admin
         config = groups[group_sym] || groups[:internal]
         config[:bg]
       end
+
+      def derived_groups
+        @selected_tags.map { |t| t[:group] }.compact.uniq
+      end
+
+      def show_derived_groups?
+        derived_groups.any?
+      end
+
+      def derived_group_label(group_sym)
+        group_sym.to_s.capitalize
+      end
+
+      def derived_group_styles(group_sym)
+        groups = Admin::TagChip::Component::GROUPS
+        config = groups[group_sym] || groups[:internal]
+        [
+          "display: inline-block",
+          "padding: 2px 8px",
+          "border-radius: 999px",
+          "font-size: 11px",
+          "font-weight: 500",
+          "color: #{config[:color]}",
+          "background-color: #{config[:bg]}"
+        ].join("; ")
+      end
+
+      def section_heading_styles
+        [
+          "font-size: 10px",
+          "font-weight: 600",
+          "text-transform: uppercase",
+          "letter-spacing: 0.04em",
+          "color: #6C757D",
+          "margin-bottom: 6px"
+        ].join("; ")
+      end
+
+      def keyboard_hint_styles
+        "font-size: 11px; color: #ADB5BD; margin-top: 6px;"
+      end
     end
   end
 end
