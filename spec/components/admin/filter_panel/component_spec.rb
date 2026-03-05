@@ -9,9 +9,9 @@ RSpec.describe Admin::FilterPanel::Component, type: :component do
         title: "Tag Group",
         field_name: "tag_group[]",
         options: [
-          { label: "Buyers", value: "buyers", count: 42, checked: false },
-          { label: "Press", value: "press", count: 28, checked: true },
-          { label: "Festivals", value: "festivals", count: 15, checked: false }
+          { label: "Distribution", value: "distribution", count: 42, checked: false },
+          { label: "Outreach", value: "outreach", count: 28, checked: true },
+          { label: "Press/Festival", value: "press_festival", count: 15, checked: false }
         ]
       },
       {
@@ -49,23 +49,23 @@ RSpec.describe Admin::FilterPanel::Component, type: :component do
   it "renders options with checkbox inputs" do
     render_inline(described_class.new(sections: sections))
 
-    expect(page).to have_css("input[type='checkbox'][name='tag_group[]'][value='buyers']")
-    expect(page).to have_css("input[type='checkbox'][name='tag_group[]'][value='press']")
-    expect(page).to have_css("input[type='checkbox'][name='tag_group[]'][value='festivals']")
+    expect(page).to have_css("input[type='checkbox'][name='tag_group[]'][value='distribution']")
+    expect(page).to have_css("input[type='checkbox'][name='tag_group[]'][value='outreach']")
+    expect(page).to have_css("input[type='checkbox'][name='tag_group[]'][value='press_festival']")
   end
 
   it "renders checked options" do
     render_inline(described_class.new(sections: sections))
 
-    expect(page).to have_css("input[type='checkbox'][value='press'][checked]")
+    expect(page).to have_css("input[type='checkbox'][value='outreach'][checked]")
   end
 
   it "renders option labels" do
     render_inline(described_class.new(sections: sections))
 
-    expect(page).to have_text("Buyers")
-    expect(page).to have_text("Press")
-    expect(page).to have_text("Festivals")
+    expect(page).to have_text("Distribution")
+    expect(page).to have_text("Outreach")
+    expect(page).to have_text("Press/Festival")
   end
 
   it "renders option counts" do

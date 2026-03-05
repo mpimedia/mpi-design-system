@@ -38,12 +38,12 @@ Pill-shaped badges used for status indicators, counts, and labels across all MPI
 
 | Group | Text | Background |
 |---|---|---|
-| Buyers | `#E8733A` | `#FEF3EC` |
+| Distribution | `#E8733A` | `#FEF3EC` |
 | Press | `#2DA67E` | `#ECF8F4` |
-| Festivals | `#2E75B6` | `#EBF3FB` |
-| Sellers | `#8B5CF6` | `#F3EFFE` |
-| Institutional | `#D97706` | `#FEF9EC` |
-| Organizations | `#6366F1` | `#EEEFFE` |
+| Press/Festival | `#2E75B6` | `#EBF3FB` |
+| Vendors | `#8B5CF6` | `#F3EFFE` |
+| Finance | `#D97706` | `#FEF9EC` |
+| Production | `#6366F1` | `#EEEFFE` |
 | Internal | `#64748B` | `#F1F5F9` |
 
 ## Sizes
@@ -70,8 +70,8 @@ class Admin::Badge::Component < ViewComponent::Base
   # @param color [Symbol] :primary, :success, :danger, :warning, :secondary
   # @param variant [Symbol] :filled (default), :outline, :tag_group
   # @param size [Symbol] :sm, :md (default), :lg
-  # @param tag_group [Symbol] Optional — :buyers, :press, :festivals, :sellers,
-  #   :institutional, :organizations, :internal
+  # @param tag_group [Symbol] Optional — :distribution, :outreach, :press_festival, :vendors,
+  #   :finance, :production, :internal
   # @param count [Integer] Optional inline count
 end
 ```

@@ -11,7 +11,7 @@ Sortable data table for CRM list views. Used for contacts, search results, and o
 ## Design Decisions
 
 - **Row structure:** Avatar + Name/Title in first column, Tags with colored dots, Last Engagement as relative time, Account as blue link
-- **Tag format:** Colored dot + "Group — Role" text (e.g., `● Buyer — Theatrical`), not pill badges in table rows
+- **Tag format:** Colored dot + "Group — Role" text (e.g., `● Acquisitions`), not pill badges in table rows
 - **Status format:** Colored dot + text (e.g., `● Active`, `● Follow up`)
 - **Search results variant:** Adds "Match Found In" and "Status" columns with keyword highlighting (`<strong>`)
 - **Account names:** Blue links (`#2E75B6`) that navigate to account detail

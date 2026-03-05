@@ -11,7 +11,7 @@ Two filter bar patterns used in CRM list views. Group filter chips provide tag-g
 ## Design Decisions
 
 - **Group chips:** Pill-shaped buttons with counts, one per tag group. "All" chip is always first
-- **Selected chip:** Uses the tag group's own color (e.g., Buyers selected = orange border/background `#E8733A` / `#FEF3EC`)
+- **Selected chip:** Uses the tag group's own color (e.g., Distribution selected = orange border/background `#E8733A` / `#FEF3EC`)
 - **Active pills:** Filled primary blue (`#2E75B6`) pills with white text and `×` remove button
 - **Labels:** ALL-CAPS prefix labels — "GROUPS:" and "ACTIVE:" — in gray, 11px, `font-weight: 600`
 - **Clear all:** Text link after active pills, gray by default, blue on hover
@@ -31,19 +31,19 @@ Two filter bar patterns used in CRM list views. Group filter chips provide tag-g
 | Container | Horizontal flex row with `gap-2`, wraps on small screens |
 | Label | "GROUPS:" in gray, ALL-CAPS, 11px |
 | "All" chip | Shows total count, always first, neutral border |
-| Group chip | Pill with group name + count (e.g., "Buyers 342") |
+| Group chip | Pill with group name + count (e.g., "Distribution 342") |
 | Selected chip | Border + background in group's color pair |
 
 ### Group Chip Colors (Selected State)
 
 | Group | Border/Text | Background |
 |---|---|---|
-| Buyers | `#E8733A` | `#FEF3EC` |
+| Distribution | `#E8733A` | `#FEF3EC` |
 | Press | `#2DA67E` | `#ECF8F4` |
-| Festivals | `#2E75B6` | `#EBF3FB` |
-| Sellers | `#8B5CF6` | `#F3EFFE` |
-| Institutional | `#D97706` | `#FEF9EC` |
-| Organizations | `#6366F1` | `#EEEFFE` |
+| Press/Festival | `#2E75B6` | `#EBF3FB` |
+| Vendors | `#8B5CF6` | `#F3EFFE` |
+| Finance | `#D97706` | `#FEF9EC` |
+| Production | `#6366F1` | `#EEEFFE` |
 | Internal | `#64748B` | `#F1F5F9` |
 
 ## Active Filter Pills
@@ -73,10 +73,10 @@ Two filter bar patterns used in CRM list views. Group filter chips provide tag-g
 class Admin::FilterChipBar::Component < ViewComponent::Base
   # @param groups [Array<Hash>] Group chip data:
   #   [{ label: "All", count: 2307 },
-  #    { label: "Buyers", count: 342, group: :buyers, selected: true }]
+  #    { label: "Distribution", count: 342, group: :distribution, selected: true }]
   # @param active_filters [Array<Hash>] Active filter pill data:
   #   [{ category: "Keyword", value: "investors", remove_url: "/contacts?remove=keyword" },
-  #    { category: "Group", value: "Buyers", remove_url: "/contacts?remove=group" }]
+  #    { category: "Group", value: "Distribution", remove_url: "/contacts?remove=group" }]
   # @param clear_all_url [String] URL to clear all active filters
 end
 ```

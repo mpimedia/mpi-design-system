@@ -8,7 +8,7 @@ RSpec.describe Admin::ContactCard::Component, type: :component do
       name: "Jane Doe",
       company: "Paramount Pictures",
       tags: [
-        { label: "Buyer — Theatrical", group: :buyers },
+        { label: "Acquisitions", group: :distribution },
         { label: "Critic", color: "#2DA67E", bg_color: "#ECF8F4" }
       ],
       last_engaged: "2 days ago",
@@ -52,14 +52,14 @@ RSpec.describe Admin::ContactCard::Component, type: :component do
     render_inline(described_class.new(**default_params))
 
     expect(page).to have_css("span[style*='border-radius: 50%']", minimum: 1)
-    expect(page).to have_text("Buyer — Theatrical")
+    expect(page).to have_text("Acquisitions")
   end
 
   it "renders tag pills from group symbol" do
-    tags = [ { label: "Buyer — Theatrical", group: :buyers } ]
+    tags = [ { label: "Acquisitions", group: :distribution } ]
     render_inline(described_class.new(name: "Test", tags: tags))
 
-    expect(page).to have_css("span[style*='color: #E8733A']", text: "Buyer — Theatrical")
+    expect(page).to have_css("span[style*='color: #E8733A']", text: "Acquisitions")
   end
 
   it "renders tag pills from raw colors" do

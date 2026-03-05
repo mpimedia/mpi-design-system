@@ -22,9 +22,9 @@ RSpec.describe Admin::Badge::Component, type: :component do
   end
 
   it "renders a tag group variant with inline styles" do
-    render_inline(described_class.new(label: "Buyers", variant: :tag_group, tag_group: :buyers))
+    render_inline(described_class.new(label: "Distribution", variant: :tag_group, tag_group: :distribution))
 
-    expect(page).to have_css("span.badge[style*='#E8733A']", text: "Buyers")
+    expect(page).to have_css("span.badge[style*='#E8733A']", text: "Distribution")
   end
 
   it "renders with a count" do

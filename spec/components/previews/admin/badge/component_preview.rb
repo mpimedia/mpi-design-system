@@ -29,7 +29,7 @@ class Admin::Badge::ComponentPreview < ApplicationComponentPreview
         badges: [
           { label: "Filled", color: :primary, variant: :filled },
           { label: "Outline", color: :primary, variant: :outline },
-          { label: "Buyers", color: :primary, variant: :tag_group, tag_group: :buyers }
+          { label: "Distribution", color: :primary, variant: :tag_group, tag_group: :distribution }
         ]
       }
     )

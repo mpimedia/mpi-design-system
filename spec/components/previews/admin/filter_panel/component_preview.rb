@@ -10,10 +10,10 @@ class Admin::FilterPanel::ComponentPreview < ApplicationComponentPreview
           title: "Tag Group",
           field_name: "tag_group[]",
           options: [
-            { label: "Buyers", value: "buyers", count: 42, checked: false },
-            { label: "Press", value: "press", count: 28, checked: true },
-            { label: "Festivals", value: "festivals", count: 15, checked: false },
-            { label: "Sellers", value: "sellers", count: 8, checked: false },
+            { label: "Distribution", value: "distribution", count: 42, checked: false },
+            { label: "Outreach", value: "outreach", count: 28, checked: true },
+            { label: "Press/Festival", value: "press_festival", count: 15, checked: false },
+            { label: "Vendors", value: "sellers", count: 8, checked: false },
             { label: "Institutional", value: "institutional", count: 4, checked: false }
           ]
         },

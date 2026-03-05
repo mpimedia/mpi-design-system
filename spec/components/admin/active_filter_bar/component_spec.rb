@@ -6,7 +6,7 @@ RSpec.describe Admin::ActiveFilterBar::Component, type: :component do
   let(:filters) do
     [
       { category: "Keyword", value: "investors", remove_url: "/contacts?remove=keyword" },
-      { category: "Group", value: "Buyers", remove_url: "/contacts?remove=group" }
+      { category: "Group", value: "Distribution", remove_url: "/contacts?remove=group" }
     ]
   end
 
@@ -14,7 +14,7 @@ RSpec.describe Admin::ActiveFilterBar::Component, type: :component do
     render_inline(described_class.new(filters: filters))
 
     expect(page).to have_css("span[style*='background: #2E75B6']", text: "Keyword: investors")
-    expect(page).to have_css("span[style*='background: #2E75B6']", text: "Group: Buyers")
+    expect(page).to have_css("span[style*='background: #2E75B6']", text: "Group: Distribution")
   end
 
   it "renders ACTIVE label" do
