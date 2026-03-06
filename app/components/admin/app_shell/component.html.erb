@@ -1,10 +1,11 @@
 <div style="<%= shell_styles %>" role="document">
-  <%= render Admin::NavBar::Component.new(
-    current_section: @current_section,
-    current_subsection: @current_subsection,
-    user_name: @user_name,
-    search_url: @search_url
-  ) %>
+  <%= render Admin::NavBar::Component.new(**nav_bar_options) %>
+
+  <% if breadcrumb? %>
+    <div style="padding: 0 24px; background: #F5F7FA;">
+      <%= breadcrumb %>
+    </div>
+  <% end %>
 
   <div style="<%= content_wrapper_styles %>">
     <% if show_sidebar? %>
