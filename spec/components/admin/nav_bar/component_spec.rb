@@ -274,4 +274,32 @@ RSpec.describe Admin::NavBar::Component, type: :component do
       expect(page).to have_css("a[href='/home'] span", text: "MARKAZ")
     end
   end
+
+  context "regression: profile_url without sign_out_url" do
+    it "does not render sign out link when only profile_url is provided" do
+      render_inline(described_class.new(
+        current_section: :dashboard,
+        user_name: "Jane Doe",
+        profile_url: "/profile"
+      ))
+
+      expect(page).to have_css("button[data-bs-toggle='dropdown']")
+      expect(page).to have_link("Profile", href: "/profile")
+      expect(page).not_to have_link("Sign out")
+    end
+  end
+
+  context "regression: logo href with hidden first section" do
+    it "uses first visible section href for logo link" do
+      sections = [
+        { key: :hidden, label: "Hidden", href: "/hidden", visible: false },
+        { key: :home, label: "Home", href: "/home" },
+        { key: :settings, label: "Settings", href: "/settings" }
+      ]
+
+      render_inline(described_class.new(current_section: :home, sections: sections))
+
+      expect(page).to have_css("a[href='/home'] span", text: "MARKAZ")
+    end
+  end
 end

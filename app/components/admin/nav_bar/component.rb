@@ -56,7 +56,11 @@ module Admin
         @sign_out_method = sign_out_method
         @profile_url = profile_url
         @logo_text = logo_text
-        @logo_href = logo_href || @sections.first&.dig(:href) || "/"
+        @logo_href = logo_href
+      end
+
+      def before_render
+        @logo_href ||= visible_sections.first&.dig(:href) || "/"
       end
 
       private

@@ -43,11 +43,13 @@
             <% if @profile_url %>
               <li><a class="dropdown-item" href="<%= @profile_url %>">Profile</a></li>
             <% end %>
-            <li>
-              <a class="dropdown-item" href="<%= @sign_out_url %>" data-turbo-method="<%= @sign_out_method %>">
-                Sign out
-              </a>
-            </li>
+            <% if @sign_out_url %>
+              <li>
+                <a class="dropdown-item" href="<%= @sign_out_url %>" data-turbo-method="<%= @sign_out_method %>">
+                  Sign out
+                </a>
+              </li>
+            <% end %>
           </ul>
         </div>
       <% else %>
