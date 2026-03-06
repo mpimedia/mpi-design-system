@@ -91,4 +91,69 @@ RSpec.describe Admin::AppShell::Component, type: :component do
 
     expect(page).to have_css("div[style*='min-height: 100vh']")
   end
+
+  context "with breadcrumb slot" do
+    it "renders breadcrumb between nav and content" do
+      render_inline(described_class.new(current_section: :crm, current_subsection: :contacts)) do |shell|
+        shell.with_breadcrumb do
+          "<nav aria-label='Breadcrumb'>Contacts > Jane</nav>".html_safe
+        end
+        shell.with_body { "<p>Detail page</p>".html_safe }
+      end
+
+      expect(page).to have_css("nav[aria-label='Breadcrumb']", text: "Contacts > Jane")
+    end
+
+    it "does not render breadcrumb area when no breadcrumb provided" do
+      render_inline(described_class.new(current_section: :dashboard)) do |shell|
+        shell.with_body { "<p>Content</p>".html_safe }
+      end
+
+      # The breadcrumb wrapper div should not be present
+      expect(page).not_to have_css("div[style*='padding: 0 24px'] nav[aria-label='Breadcrumb']")
+    end
+  end
+
+  context "forwarding nav config to NavBar" do
+    it "forwards custom sections to NavBar" do
+      sections = [
+        { key: :home, label: "Home", href: "/admin" },
+        { key: :contacts, label: "Contacts", href: "/admin/contacts" }
+      ]
+
+      render_inline(described_class.new(current_section: :home, sections: sections))
+
+      expect(page).to have_link("Home", href: "/admin")
+      expect(page).to have_link("Contacts", href: "/admin/contacts")
+      expect(page).not_to have_link("Dashboard")
+    end
+
+    it "forwards environment to NavBar" do
+      render_inline(described_class.new(current_section: :dashboard, environment: :development))
+
+      expect(page).to have_css("div[style*='background: #2E75B6']")
+    end
+
+    it "forwards system_url to NavBar" do
+      render_inline(described_class.new(current_section: :dashboard, system_url: "/admin/system"))
+
+      expect(page).to have_css("a[href='/admin/system'][aria-label='System administration']")
+    end
+
+    it "forwards sign_out_url to NavBar" do
+      render_inline(described_class.new(
+        current_section: :dashboard,
+        user_name: "Jane Doe",
+        sign_out_url: "/sign_out"
+      ))
+
+      expect(page).to have_link("Sign out", href: "/sign_out")
+    end
+
+    it "forwards custom logo_text to NavBar" do
+      render_inline(described_class.new(current_section: :dashboard, logo_text: "MY CRM"))
+
+      expect(page).to have_text("MY CRM")
+    end
+  end
 end

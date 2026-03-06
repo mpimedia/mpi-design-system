@@ -1,13 +1,13 @@
 <nav aria-label="Main navigation">
   <div style="<%= topbar_styles %>" class="d-flex align-items-center justify-content-between px-3">
     <div class="d-flex align-items-center gap-3">
-      <a href="/dashboard" class="d-flex align-items-center gap-2" style="<%= logo_text_styles %>">
+      <a href="<%= @logo_href %>" class="d-flex align-items-center gap-2" style="<%= logo_text_styles %>">
         <%= nexus_svg %>
-        <span>MARKAZ</span>
+        <span><%= @logo_text %></span>
       </a>
 
       <div class="d-flex align-items-center">
-        <% SECTIONS.each do |section| %>
+        <% visible_sections.each do |section| %>
           <a href="<%= section[:href] %>"
              style="<%= nav_item_styles(@current_section == section[:key]) %>"
              <% if @current_section == section[:key] %>aria-current="page"<% end %>>
@@ -21,7 +21,40 @@
       <% if @search_url %>
         <%= render Admin::SearchBar::Component.new(url: @search_url, placeholder: "Search...", size: :md) %>
       <% end %>
-      <%= render Admin::AvatarCircle::Component.new(name: @user_name, size: :sm) %>
+
+      <% if @system_url %>
+        <a href="<%= @system_url %>" aria-label="System administration"
+           class="d-inline-flex align-items-center justify-content-center"
+           style="width: 28px; height: 28px; text-decoration: none;">
+          <%= gear_svg %>
+        </a>
+      <% end %>
+
+      <% if show_user_menu? %>
+        <div class="dropdown">
+          <button class="btn btn-link p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
+            <%= render Admin::AvatarCircle::Component.new(name: @user_name, size: :sm) %>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <% if @user_name %>
+              <li><span class="dropdown-item-text fw-semibold"><%= @user_name %></span></li>
+              <li><hr class="dropdown-divider"></li>
+            <% end %>
+            <% if @profile_url %>
+              <li><a class="dropdown-item" href="<%= @profile_url %>">Profile</a></li>
+            <% end %>
+            <% if @sign_out_url %>
+              <li>
+                <a class="dropdown-item" href="<%= @sign_out_url %>" data-turbo-method="<%= @sign_out_method %>">
+                  Sign out
+                </a>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% else %>
+        <%= render Admin::AvatarCircle::Component.new(name: @user_name, size: :sm) %>
+      <% end %>
     </div>
   </div>
 </nav>
@@ -29,7 +62,7 @@
 <% if show_subnav? %>
   <nav aria-label="Section navigation">
     <div style="<%= subnav_styles %>" class="d-flex align-items-center px-3">
-      <% subsections.each do |sub| %>
+      <% current_subsections.each do |sub| %>
         <a href="<%= sub[:href] %>"
            style="<%= subnav_item_styles(@current_subsection == sub[:key]) %>"
            <% if @current_subsection == sub[:key] %>aria-current="page"<% end %>>

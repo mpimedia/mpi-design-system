@@ -1,0 +1,21 @@
+<%= render Admin::AppShell::Component.new(
+  current_section: current_section,
+  current_subsection: current_subsection,
+  user_name: user_name,
+  search_url: search_url,
+  show_sidebar: show_sidebar,
+  sections: sections,
+  subsections: subsections,
+  logo_text: logo_text,
+  system_url: system_url,
+  sign_out_url: sign_out_url,
+  profile_url: profile_url,
+  environment: environment
+) do |shell| %>
+  <% shell.with_body do %>
+    <div class="p-4">
+      <h1 class="h3 mb-3" style="color: #1B2A4A;">CRM Contacts</h1>
+      <p class="text-muted">Custom CRM app with configurable sections, environment color-coding, system icon, and user menu.</p>
+    </div>
+  <% end %>
+<% end %>

@@ -1,0 +1,22 @@
+<%= render Admin::AppShell::Component.new(
+  current_section: current_section,
+  current_subsection: current_subsection,
+  user_name: user_name,
+  search_url: search_url,
+  show_sidebar: show_sidebar,
+  sign_out_url: sign_out_url
+) do |shell| %>
+  <% shell.with_breadcrumb do %>
+    <%= render Admin::BreadcrumbNav::Component.new(
+      back_path: "/crm/contacts",
+      back_label: "Contacts",
+      current_title: "Sarah Chen"
+    ) %>
+  <% end %>
+  <% shell.with_body do %>
+    <div class="p-4">
+      <h1 class="h3 mb-3" style="color: #1B2A4A;">Sarah Chen</h1>
+      <p class="text-muted">Detail page with breadcrumb navigation rendered via the AppShell breadcrumb slot.</p>
+    </div>
+  <% end %>
+<% end %>
