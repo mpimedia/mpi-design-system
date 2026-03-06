@@ -8,14 +8,14 @@ Gem::Specification.new do |spec|
   spec.homepage    = "https://github.com/mpimedia/mpi-design-system"
   spec.summary     = "Shared ViewComponent library for MPI Media applications"
   spec.description = "Rails engine providing shared UI components, layouts, and design tokens for MPI Media's application suite (Markaz, SFA, Garden, Harvest, Markaz CRM)."
-  spec.license     = "MIT"
+  spec.license     = "LicenseRef-MPI-Proprietary"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/mpimedia/mpi-design-system"
   spec.metadata["changelog_uri"] = "https://github.com/mpimedia/mpi-design-system/blob/main/CHANGELOG.md"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    Dir["{app,config,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
+    Dir["{app,config,lib}/**/*", "LICENSE", "Rakefile", "README.md"]
   end
 
   spec.required_ruby_version = ">= 3.4"
