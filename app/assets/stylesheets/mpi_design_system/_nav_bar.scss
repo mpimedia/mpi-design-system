@@ -79,7 +79,7 @@
 
 // Sub-navigation bar (second tier)
 .mds-subnav {
-  background: $mpi-surface;
+  background: $mpi-background;
   border-bottom: 1px solid $mpi-border;
   height: 42px;
 }
@@ -90,7 +90,7 @@
   padding: 10px 12px;
   text-decoration: none;
   border-bottom: 2px solid transparent;
-  color: $mpi-text-muted;
+  color: $mpi-primary;
   font-weight: 500;
 
   &:hover {
