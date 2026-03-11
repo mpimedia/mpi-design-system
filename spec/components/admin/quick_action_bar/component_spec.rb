@@ -56,9 +56,17 @@ RSpec.describe Admin::QuickActionBar::Component, type: :component do
     expect(page).to have_css("a.btn.btn-sm")
   end
 
-  it "applies md size by default" do
+  it "applies lg size" do
+    render_inline(described_class.new(buttons: [ { label: "Go", path: "/go" } ], size: :lg))
+
+    expect(page).to have_css("a.btn.btn-lg")
+  end
+
+  it "omits size class by default (Bootstrap standard btn size)" do
     render_inline(described_class.new(buttons: [ { label: "Go", path: "/go" } ]))
 
-    expect(page).to have_css("a.btn.btn-md")
+    expect(page).to have_css("a.btn.btn-outline-primary")
+    expect(page).not_to have_css("a.btn-sm")
+    expect(page).not_to have_css("a.btn-lg")
   end
 end
