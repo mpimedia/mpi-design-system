@@ -1,0 +1,13 @@
+<div class="d-flex justify-content-between align-items-center" style="<%= container_styles %>">
+  <div>
+    <h5 class="mb-0" style="<%= title_styles %>"><%= @title %></h5>
+    <% if @subtitle %>
+      <div style="<%= subtitle_styles %>"><%= @subtitle %></div>
+    <% end %>
+  </div>
+  <% if actions? %>
+    <div>
+      <%= actions %>
+    </div>
+  <% end %>
+</div>

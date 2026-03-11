@@ -1,0 +1,10 @@
+<div class="d-flex gap-2 align-items-center">
+  <% @buttons.each do |button| %>
+    <a href="<%= button[:path] %>" class="<%= button_class %>">
+      <% if button[:icon] %>
+        <i class="bi <%= button[:icon] %>" aria-hidden="true"></i>
+      <% end %>
+      <%= button[:label] %>
+    </a>
+  <% end %>
+</div>
