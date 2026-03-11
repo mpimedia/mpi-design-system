@@ -1,15 +1,19 @@
+<% if show_env_bar? %>
+  <div class="<%= env_bar_class %>"></div>
+<% end %>
+
 <nav aria-label="Main navigation">
-  <div style="<%= topbar_styles %>" class="d-flex align-items-center justify-content-between px-3">
+  <div class="mds-navbar d-flex align-items-center justify-content-between px-3">
     <div class="d-flex align-items-center gap-3">
-      <a href="<%= @logo_href %>" class="d-flex align-items-center gap-2" style="<%= logo_text_styles %>">
-        <%= nexus_svg %>
+      <a href="<%= @logo_href %>" class="mds-navbar__brand d-flex align-items-center gap-2">
+        <%= markaz_logo_svg %>
         <span><%= @logo_text %></span>
       </a>
 
       <div class="d-flex align-items-center">
         <% visible_sections.each do |section| %>
           <a href="<%= section[:href] %>"
-             style="<%= nav_item_styles(@current_section == section[:key]) %>"
+             class="<%= section_link_class(section[:key]) %>"
              <% if @current_section == section[:key] %>aria-current="page"<% end %>>
             <%= section[:label] %>
           </a>
@@ -19,13 +23,13 @@
 
     <div class="d-flex align-items-center gap-3">
       <% if @search_url %>
-        <%= render Admin::SearchBar::Component.new(url: @search_url, placeholder: "Search...", size: :md) %>
+        <div class="mds-navbar__search">
+          <%= render Admin::SearchBar::Component.new(url: @search_url, placeholder: @search_placeholder, size: :md) %>
+        </div>
       <% end %>
 
       <% if @system_url %>
-        <a href="<%= @system_url %>" aria-label="System administration"
-           class="d-inline-flex align-items-center justify-content-center"
-           style="width: 28px; height: 28px; text-decoration: none;">
+        <a href="<%= @system_url %>" class="mds-navbar__gear" aria-label="System administration">
           <%= gear_svg %>
         </a>
       <% end %>
@@ -33,7 +37,7 @@
       <% if show_user_menu? %>
         <div class="dropdown">
           <button class="btn btn-link p-0 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
-            <%= render Admin::AvatarCircle::Component.new(name: @user_name, size: :sm) %>
+            <%= render Admin::AvatarCircle::Component.new(name: @user_name, size: :sm, variant: :nav) %>
           </button>
           <ul class="dropdown-menu dropdown-menu-end">
             <% if @user_name %>
@@ -53,7 +57,7 @@
           </ul>
         </div>
       <% else %>
-        <%= render Admin::AvatarCircle::Component.new(name: @user_name, size: :sm) %>
+        <%= render Admin::AvatarCircle::Component.new(name: @user_name, size: :sm, variant: :nav) %>
       <% end %>
     </div>
   </div>
@@ -61,10 +65,10 @@
 
 <% if show_subnav? %>
   <nav aria-label="Section navigation">
-    <div style="<%= subnav_styles %>" class="d-flex align-items-center px-3">
+    <div class="mds-subnav d-flex align-items-center px-3">
       <% current_subsections.each do |sub| %>
         <a href="<%= sub[:href] %>"
-           style="<%= subnav_item_styles(@current_subsection == sub[:key]) %>"
+           class="<%= subnav_link_class(sub[:key]) %>"
            <% if @current_subsection == sub[:key] %>aria-current="page"<% end %>>
           <%= sub[:label] %>
         </a>

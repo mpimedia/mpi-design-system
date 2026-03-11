@@ -61,4 +61,30 @@ RSpec.describe Admin::AvatarCircle::Component, type: :component do
 
     expect(page).to have_css("span[aria-label='Maria Garcia']")
   end
+
+  describe "nav variant" do
+    it "adds mds-avatar--nav class when variant is :nav" do
+      render_inline(described_class.new(name: "Jane Doe", size: :sm, variant: :nav))
+
+      expect(page).to have_css("span.mds-avatar--nav")
+    end
+
+    it "does not add nav class for default variant" do
+      render_inline(described_class.new(name: "Jane Doe", size: :sm))
+
+      expect(page).not_to have_css("span.mds-avatar--nav")
+    end
+
+    it "does not add nav class when variant is explicitly :default" do
+      render_inline(described_class.new(name: "Jane Doe", size: :sm, variant: :default))
+
+      expect(page).not_to have_css("span.mds-avatar--nav")
+    end
+
+    it "falls back to default for invalid variant" do
+      render_inline(described_class.new(name: "Jane Doe", variant: :invalid))
+
+      expect(page).not_to have_css("span.mds-avatar--nav")
+    end
+  end
 end

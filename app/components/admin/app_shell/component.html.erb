@@ -1,20 +1,20 @@
-<div style="<%= shell_styles %>" role="document">
+<div class="mds-shell" role="document">
   <%= render Admin::NavBar::Component.new(**nav_bar_options) %>
 
   <% if breadcrumb? %>
-    <div style="padding: 0 24px; background: #F5F7FA;">
+    <div class="mds-shell__breadcrumb">
       <%= breadcrumb %>
     </div>
   <% end %>
 
-  <div style="<%= content_wrapper_styles %>">
+  <div class="mds-shell__content-wrapper">
     <% if show_sidebar? %>
-      <aside style="<%= sidebar_styles %>" role="complementary" aria-label="Content sidebar">
+      <aside class="mds-shell__sidebar" role="complementary" aria-label="Content sidebar">
         <%= sidebar %>
       </aside>
     <% end %>
 
-    <main style="<%= content_area_styles %>" role="main">
+    <main class="mds-shell__main" role="main">
       <%= body %>
     </main>
   </div>

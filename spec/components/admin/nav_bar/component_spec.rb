@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe Admin::NavBar::Component, type: :component do
-  it "renders the Nexus logo SVG and MARKAZ text" do
+  it "renders the brand logo SVG and MARKAZ text" do
     render_inline(described_class.new(current_section: :dashboard))
 
     expect(page).to have_css("svg")
@@ -21,16 +21,17 @@ RSpec.describe Admin::NavBar::Component, type: :component do
     expect(page).to have_link("Screenings")
   end
 
-  it "highlights the active section with blue underline" do
+  it "highlights the active section with CSS class" do
     render_inline(described_class.new(current_section: :crm))
 
-    expect(page).to have_css("a[aria-current='page'][style*='color: #2E75B6'][style*='font-weight: 600']", text: "CRM")
+    expect(page).to have_css("a.mds-navbar__section-link--active[aria-current='page']", text: "CRM")
   end
 
-  it "renders inactive sections in gray" do
+  it "renders inactive sections without active class" do
     render_inline(described_class.new(current_section: :crm))
 
-    expect(page).to have_css("a[style*='color: #6C757D']", text: "Dashboard")
+    dashboard_link = page.find("a.mds-navbar__section-link", text: "Dashboard")
+    expect(dashboard_link[:class]).not_to include("mds-navbar__section-link--active")
   end
 
   it "renders Level 1 only when section has no sub-nav" do
@@ -50,10 +51,10 @@ RSpec.describe Admin::NavBar::Component, type: :component do
     expect(page).to have_link("Engagements")
   end
 
-  it "highlights the active subsection" do
+  it "highlights the active subsection with CSS class" do
     render_inline(described_class.new(current_section: :crm, current_subsection: :contacts))
 
-    expect(page).to have_css("nav[aria-label='Section navigation'] a[aria-current='page']", text: "Contacts")
+    expect(page).to have_css("a.mds-subnav__link--active[aria-current='page']", text: "Contacts")
   end
 
   it "renders the user avatar" do
@@ -75,25 +76,69 @@ RSpec.describe Admin::NavBar::Component, type: :component do
     expect(page).not_to have_css("form[action]")
   end
 
-  it "renders the top bar at 52px height" do
+  it "renders the navbar with mds-navbar CSS class" do
     render_inline(described_class.new(current_section: :dashboard))
 
-    expect(page).to have_css("div[style*='height: 52px']")
+    expect(page).to have_css("div.mds-navbar")
   end
 
-  it "renders the sub-nav at 42px height" do
+  it "renders the sub-nav with mds-subnav CSS class" do
     render_inline(described_class.new(current_section: :crm, current_subsection: :dashboard))
 
-    expect(page).to have_css("div[style*='height: 42px']")
+    expect(page).to have_css("div.mds-subnav")
   end
 
-  it "logo links to dashboard" do
+  it "logo links to first section href by default" do
     render_inline(described_class.new(current_section: :dashboard))
 
-    expect(page).to have_css("a[href='/dashboard'] span", text: "MARKAZ")
+    expect(page).to have_css("a.mds-navbar__brand[href='/dashboard']", text: "MARKAZ")
   end
 
-  context "with custom sections" do
+  describe "search_placeholder passthrough" do
+    it "passes custom placeholder to SearchBar" do
+      render_inline(described_class.new(
+        current_section: :dashboard,
+        search_url: "/search",
+        search_placeholder: "Search contacts, accounts, engagements"
+      ))
+
+      expect(page).to have_css("input[placeholder='Search contacts, accounts, engagements']")
+    end
+
+    it "uses default placeholder when not specified" do
+      render_inline(described_class.new(current_section: :dashboard, search_url: "/search"))
+
+      expect(page).to have_css("input[placeholder='Search...']")
+    end
+  end
+
+  describe "environment bar" do
+    it "renders 10px env bar for development" do
+      render_inline(described_class.new(current_section: :dashboard, environment: :development))
+
+      expect(page).to have_css("div.mds-env-bar.mds-env-bar--development")
+    end
+
+    it "renders 10px env bar for staging" do
+      render_inline(described_class.new(current_section: :dashboard, environment: :staging))
+
+      expect(page).to have_css("div.mds-env-bar.mds-env-bar--staging")
+    end
+
+    it "does not render env bar for production" do
+      render_inline(described_class.new(current_section: :dashboard, environment: :production))
+
+      expect(page).not_to have_css("div.mds-env-bar")
+    end
+
+    it "does not render env bar when environment is nil" do
+      render_inline(described_class.new(current_section: :dashboard))
+
+      expect(page).not_to have_css("div.mds-env-bar")
+    end
+  end
+
+  describe "custom sections" do
     let(:custom_sections) do
       [
         { key: :home, label: "Home", href: "/admin" },
@@ -115,17 +160,27 @@ RSpec.describe Admin::NavBar::Component, type: :component do
     it "highlights the active custom section" do
       render_inline(described_class.new(current_section: :contacts, sections: custom_sections))
 
-      expect(page).to have_css("a[aria-current='page']", text: "Contacts")
+      expect(page).to have_css("a.mds-navbar__section-link--active[aria-current='page']", text: "Contacts")
     end
 
     it "uses first custom section href for logo link" do
       render_inline(described_class.new(current_section: :home, sections: custom_sections))
 
-      expect(page).to have_css("a[href='/admin'] span", text: "MARKAZ")
+      expect(page).to have_css("a.mds-navbar__brand[href='/admin']", text: "MARKAZ")
+    end
+
+    it "renders placeholder sections that will 404" do
+      sections = [
+        { key: :crm, label: "CRM", href: "/admin/organizations" },
+        { key: :avails, label: "Avails", href: "/avails" }
+      ]
+      render_inline(described_class.new(current_section: :crm, sections: sections))
+
+      expect(page).to have_link("Avails", href: "/avails")
     end
   end
 
-  context "with custom subsections" do
+  describe "custom subsections" do
     let(:custom_subsections) do
       {
         contacts: [
@@ -149,7 +204,7 @@ RSpec.describe Admin::NavBar::Component, type: :component do
     end
   end
 
-  context "with visible: false sections" do
+  describe "visible: false sections" do
     it "hides sections marked as not visible" do
       sections = [
         { key: :home, label: "Home", href: "/admin", visible: true },
@@ -165,48 +220,22 @@ RSpec.describe Admin::NavBar::Component, type: :component do
     end
   end
 
-  context "with environment color-coding" do
-    it "renders development environment with blue background" do
-      render_inline(described_class.new(current_section: :dashboard, environment: :development))
-
-      expect(page).to have_css("div[style*='background: #2E75B6']")
-    end
-
-    it "renders staging environment with red background" do
-      render_inline(described_class.new(current_section: :dashboard, environment: :staging))
-
-      expect(page).to have_css("div[style*='background: #DC3545']")
-    end
-
-    it "renders production environment with white background" do
-      render_inline(described_class.new(current_section: :dashboard, environment: :production))
-
-      expect(page).to have_css("div[style*='background: #fff']")
-    end
-
-    it "renders active section text in white for colored environments" do
-      render_inline(described_class.new(current_section: :dashboard, environment: :development))
-
-      expect(page).to have_css("a[aria-current='page'][style*='color: #fff']", text: "Dashboard")
-    end
-  end
-
-  context "with system_url" do
+  describe "system admin gear" do
     it "renders gear icon when system_url is provided" do
       render_inline(described_class.new(current_section: :dashboard, system_url: "/admin/system"))
 
-      expect(page).to have_css("a[href='/admin/system'][aria-label='System administration']")
-      expect(page).to have_css("a[href='/admin/system'] svg")
+      expect(page).to have_css("a.mds-navbar__gear[href='/admin/system']")
+      expect(page).to have_css("a[aria-label='System administration'] svg")
     end
 
     it "does not render gear icon when system_url is nil" do
       render_inline(described_class.new(current_section: :dashboard))
 
-      expect(page).not_to have_css("a[aria-label='System administration']")
+      expect(page).not_to have_css("a.mds-navbar__gear")
     end
   end
 
-  context "with user menu (sign out)" do
+  describe "user menu" do
     it "renders avatar as dropdown trigger when sign_out_url is provided" do
       render_inline(described_class.new(
         current_section: :dashboard,
@@ -227,6 +256,16 @@ RSpec.describe Admin::NavBar::Component, type: :component do
       ))
 
       expect(page).to have_css(".dropdown-item-text", text: "Jane Doe")
+    end
+
+    it "renders avatar with nav variant" do
+      render_inline(described_class.new(
+        current_section: :dashboard,
+        user_name: "Jane Doe",
+        sign_out_url: "/sign_out"
+      ))
+
+      expect(page).to have_css("span.mds-avatar--nav")
     end
 
     it "renders profile link when profile_url is provided" do
@@ -260,22 +299,21 @@ RSpec.describe Admin::NavBar::Component, type: :component do
     end
   end
 
-  context "with custom logo" do
+  describe "custom logo" do
     it "renders custom logo text" do
-      render_inline(described_class.new(current_section: :dashboard, logo_text: "MY APP"))
+      render_inline(described_class.new(current_section: :dashboard, logo_text: "MARKAZ CRM"))
 
-      expect(page).to have_text("MY APP")
-      expect(page).not_to have_text("MARKAZ")
+      expect(page).to have_css("a.mds-navbar__brand", text: "MARKAZ CRM")
     end
 
     it "renders custom logo href" do
-      render_inline(described_class.new(current_section: :dashboard, logo_href: "/home"))
+      render_inline(described_class.new(current_section: :dashboard, logo_href: "/admin"))
 
-      expect(page).to have_css("a[href='/home'] span", text: "MARKAZ")
+      expect(page).to have_css("a.mds-navbar__brand[href='/admin']")
     end
   end
 
-  context "regression: profile_url without sign_out_url" do
+  describe "regression: profile_url without sign_out_url" do
     it "does not render sign out link when only profile_url is provided" do
       render_inline(described_class.new(
         current_section: :dashboard,
@@ -289,7 +327,7 @@ RSpec.describe Admin::NavBar::Component, type: :component do
     end
   end
 
-  context "regression: logo href with hidden first section" do
+  describe "regression: logo href with hidden first section" do
     it "uses first visible section href for logo link" do
       sections = [
         { key: :hidden, label: "Hidden", href: "/hidden", visible: false },
@@ -299,7 +337,7 @@ RSpec.describe Admin::NavBar::Component, type: :component do
 
       render_inline(described_class.new(current_section: :home, sections: sections))
 
-      expect(page).to have_css("a[href='/home'] span", text: "MARKAZ")
+      expect(page).to have_css("a.mds-navbar__brand[href='/home']", text: "MARKAZ")
     end
   end
 end
