@@ -16,7 +16,7 @@ module Admin
 
       def container_styles
         [
-          "padding: 16px 0",
+          "padding: 8px 0",
           "margin-bottom: 8px"
         ].join("; ")
       end
