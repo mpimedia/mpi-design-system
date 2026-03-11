@@ -12,13 +12,17 @@ module Admin
 
       COLORS = %w[#2E75B6 #8B5CF6 #E8733A #2DA67E #D97706 #6366F1 #DC3545 #4EA8DE #22A06B #64748B].freeze
 
+      VARIANTS = %i[default nav].freeze
+
       # @param name [String] Contact's full name (used for initials + color hash)
       # @param size [Symbol] :sm, :md (default), :lg, :xl
       # @param href [String] Optional link URL
-      def initialize(name: nil, size: :md, href: nil)
+      # @param variant [Symbol] :default or :nav (nav-specific compact styling)
+      def initialize(name: nil, size: :md, href: nil, variant: :default)
         @name = name
         @size = SIZES.key?(size) ? size : :md
         @href = href
+        @variant = VARIANTS.include?(variant) ? variant : :default
       end
 
       def call
@@ -30,12 +34,18 @@ module Admin
 
       def tag_attributes
         attrs = {
-          class: "d-inline-flex align-items-center justify-content-center rounded-circle fw-semibold",
+          class: css_classes,
           style: inline_styles,
           aria: { label: @name || "Unknown contact" }
         }
         attrs[:href] = @href if @href
         attrs
+      end
+
+      def css_classes
+        classes = "d-inline-flex align-items-center justify-content-center rounded-circle fw-semibold"
+        classes += " mds-avatar--nav" if @variant == :nav
+        classes
       end
 
       def inner_content

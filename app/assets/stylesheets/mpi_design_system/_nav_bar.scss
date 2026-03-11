@@ -1,0 +1,144 @@
+// MPI Design System — NavBar Component Styles
+// Replaces inline styles with CSS classes for maintainability.
+
+// Environment indicator bar (10px strip above the nav)
+.mds-env-bar {
+  height: 10px;
+  width: 100%;
+
+  &--development {
+    background-color: $mpi-primary;
+  }
+
+  &--staging {
+    background-color: $danger;
+  }
+}
+
+// Top-level navigation bar
+.mds-navbar {
+  background: $mpi-surface;
+  border-bottom: 1px solid $mpi-border;
+  height: 52px;
+}
+
+// Brand logo link
+.mds-navbar__brand {
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  color: $mpi-brand-navy;
+  font-size: 14px;
+  text-decoration: none;
+
+  &:hover {
+    color: $mpi-brand-navy;
+    text-decoration: none;
+  }
+}
+
+// Section navigation links
+.mds-navbar__section-link {
+  font-size: 14px;
+  padding: 14px 12px;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  color: $mpi-text-muted;
+  font-weight: 500;
+
+  &:hover {
+    color: $mpi-primary;
+    text-decoration: none;
+  }
+
+  &--active {
+    color: $mpi-primary;
+    font-weight: 600;
+    border-bottom-color: $mpi-primary;
+  }
+}
+
+// Search bar container in the navbar
+.mds-navbar__search {
+  max-width: 280px;
+}
+
+// Gear icon link
+.mds-navbar__gear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  text-decoration: none;
+  color: $mpi-text-muted;
+
+  &:hover {
+    color: $mpi-primary;
+  }
+}
+
+// Sub-navigation bar (second tier)
+.mds-subnav {
+  background: $mpi-surface;
+  border-bottom: 1px solid $mpi-border;
+  height: 42px;
+}
+
+// Sub-navigation links
+.mds-subnav__link {
+  font-size: 13px;
+  padding: 10px 12px;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  color: $mpi-text-muted;
+  font-weight: 500;
+
+  &:hover {
+    color: $mpi-primary;
+    text-decoration: none;
+  }
+
+  &--active {
+    color: $mpi-primary;
+    font-weight: 600;
+    border-bottom-color: $mpi-primary;
+  }
+}
+
+// Avatar nav variant — compact for nav bar context
+.mds-avatar--nav {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 12px !important;
+}
+
+// AppShell layout classes
+.mds-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mds-shell__content-wrapper {
+  flex: 1;
+  display: flex;
+}
+
+.mds-shell__sidebar {
+  width: 180px;
+  border-right: 1px solid $mpi-border;
+  background: $mpi-surface;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.mds-shell__main {
+  flex: 1;
+  padding: 24px;
+  background: $mpi-background;
+}
+
+.mds-shell__breadcrumb {
+  padding: 0 24px;
+  background: $mpi-background;
+}

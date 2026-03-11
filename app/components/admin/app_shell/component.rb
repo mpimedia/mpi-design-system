@@ -11,10 +11,11 @@ module Admin
       # @param current_subsection [Symbol] Active subsection key
       # @param user_name [String] Current user name (for avatar)
       # @param search_url [String] Global search action URL
+      # @param search_placeholder [String] Placeholder text for search input (default: "Search...")
       # @param show_sidebar [Boolean] Whether to show the content sidebar (default: false)
       # @param sections [Array<Hash>] Custom top-level sections (overrides NavBar defaults)
       # @param subsections [Hash{Symbol => Array<Hash>}] Custom subsections (overrides NavBar defaults)
-      # @param environment [Symbol] :development, :staging, :production (for nav color-coding)
+      # @param environment [Symbol] :development, :staging, :production (for env bar)
       # @param system_url [String] URL for system admin gear icon
       # @param sign_out_url [String] URL for sign-out action
       # @param sign_out_method [Symbol] HTTP method for sign-out (default: :delete)
@@ -22,14 +23,15 @@ module Admin
       # @param logo_text [String] Logo text (default: "MARKAZ")
       # @param logo_href [String] Logo link URL
       def initialize(current_section: :dashboard, current_subsection: nil, user_name: nil,
-                     search_url: nil, show_sidebar: false, sections: nil, subsections: nil,
-                     environment: nil, system_url: nil, sign_out_url: nil,
-                     sign_out_method: :delete, profile_url: nil,
+                     search_url: nil, search_placeholder: "Search...", show_sidebar: false,
+                     sections: nil, subsections: nil, environment: nil, system_url: nil,
+                     sign_out_url: nil, sign_out_method: :delete, profile_url: nil,
                      logo_text: "MARKAZ", logo_href: nil)
         @current_section = current_section
         @current_subsection = current_subsection
         @user_name = user_name
         @search_url = search_url
+        @search_placeholder = search_placeholder
         @show_sidebar = show_sidebar
         @sections = sections
         @subsections = subsections
@@ -50,6 +52,7 @@ module Admin
           current_subsection: @current_subsection,
           user_name: @user_name,
           search_url: @search_url,
+          search_placeholder: @search_placeholder,
           logo_text: @logo_text
         }
         opts[:sections] = @sections if @sections
@@ -61,32 +64,6 @@ module Admin
         opts[:profile_url] = @profile_url if @profile_url
         opts[:logo_href] = @logo_href if @logo_href
         opts
-      end
-
-      def shell_styles
-        "min-height: 100vh; display: flex; flex-direction: column;"
-      end
-
-      def content_wrapper_styles
-        "flex: 1; display: flex;"
-      end
-
-      def sidebar_styles
-        [
-          "width: 180px",
-          "border-right: 1px solid #DEE2E6",
-          "background: #fff",
-          "padding: 16px",
-          "overflow-y: auto"
-        ].join("; ")
-      end
-
-      def content_area_styles
-        [
-          "flex: 1",
-          "padding: 24px",
-          "background: #F5F7FA"
-        ].join("; ")
       end
 
       def show_sidebar?
