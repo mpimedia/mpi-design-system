@@ -57,6 +57,5 @@ These values exist in current apps but may not carry forward:
 |---|---|---|
 | avails_server | `font-family: "Helvetica Neue", Helvetica, Arial, sans-serif` | Admin section only — diverges from Bootstrap default |
 | SFA | No font override | Uses Bootstrap default |
-| markaz-crm | No font override | Uses Bootstrap default |
 | garden | No font override | Uses Bootstrap default |
 | harvest | No font override | Uses Bootstrap default |

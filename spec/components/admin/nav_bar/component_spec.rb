@@ -301,9 +301,9 @@ RSpec.describe Admin::NavBar::Component, type: :component do
 
   describe "custom logo" do
     it "renders custom logo text" do
-      render_inline(described_class.new(current_section: :dashboard, logo_text: "MARKAZ CRM"))
+      render_inline(described_class.new(current_section: :dashboard, logo_text: "MARKAZ"))
 
-      expect(page).to have_css("a.mds-navbar__brand", text: "MARKAZ CRM")
+      expect(page).to have_css("a.mds-navbar__brand", text: "MARKAZ")
     end
 
     it "renders custom logo href" do

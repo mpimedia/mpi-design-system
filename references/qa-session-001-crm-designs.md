@@ -1,5 +1,7 @@
 # Q&A Session 001 — CRM Design Review
 
+> **Archived 2026-05-13** — Markaz CRM has been sunsetted and `mpimedia/markaz-crm` is archived. This document is preserved as a historical QA record from when CRM was an active product. Do not treat its design recommendations as live guidance.
+
 > **Date:** 2026-03-02
 > **Files reviewed:** 14 Markaz CRM screens from Figma project
 > **Status:** Draft — pending confirmation from Badie on exact values

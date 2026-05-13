@@ -44,7 +44,7 @@ class Admin::NavBar::ComponentPreview < ApplicationComponentPreview
       current_subsection: :contacts,
       user_name: "Jane Cooper",
       search_url: "#",
-      logo_text: "MARKAZ CRM",
+      logo_text: "MARKAZ",
       sections: [
         { key: :dashboard, label: "Dashboard", href: "/admin" },
         { key: :sites, label: "Sites", href: "/admin/sites" },
