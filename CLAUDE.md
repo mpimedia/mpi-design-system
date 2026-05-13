@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## About This Project
 
-MPI Design System is a Rails engine gem that provides shared ViewComponents, design tokens, and Stimulus controllers for all MPI Media applications (Markaz, SFA, Garden, Harvest, Markaz CRM). It defines the visual language and reusable UI components used across the ecosystem.
+MPI Design System is a Rails engine gem that provides shared ViewComponents, design tokens, and Stimulus controllers for all MPI Media applications (Markaz, SFA, Garden, Harvest). It defines the visual language and reusable UI components used across the ecosystem.
 
 ## Tech Stack
 
@@ -23,7 +23,6 @@ MPI Design System is a Rails engine gem that provides shared ViewComponents, des
 - **SFA** — Video clip hosting and search
 - **Garden** — Static site generator
 - **Harvest** — Ecommerce platform
-- **Markaz CRM** — Customer relationship management
 
 All apps share a common visual language defined by this design system.
 

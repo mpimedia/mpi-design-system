@@ -24,7 +24,6 @@ The design system serves these MPI Media applications:
 | **SFA** | Video clip hosting and search |
 | **Garden** | Static site generator |
 | **Harvest** | Ecommerce platform |
-| **Markaz CRM** | Customer relationship management (replacing Dynamics BCC) |
 
 ## Repo Structure
 
