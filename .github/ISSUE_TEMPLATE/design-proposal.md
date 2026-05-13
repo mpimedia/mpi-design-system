@@ -24,7 +24,7 @@ assignees: ''
 
 ## Target App(s)
 
-<!-- Which app(s): Markaz, SFA, Garden, Harvest, Markaz CRM, or All -->
+<!-- Which app(s): Markaz, SFA, Garden, Harvest, or All -->
 
 ## Data
 

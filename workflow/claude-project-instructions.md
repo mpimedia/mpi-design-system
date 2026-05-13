@@ -27,7 +27,7 @@ When Badie describes something he needs, your job is to understand the full pict
 - "What data needs to be visible? What actions can they take?"
 - "Is this similar to something that already exists in one of our apps?"
 - "How urgent is this? Is it blocking current work?"
-- "Which app is this for — Markaz, SFA, Garden, Harvest, Markaz CRM — or all of them?"
+- "Which app is this for — Markaz, SFA, Garden, Harvest — or all of them?"
 
 Don't rush to create an issue. Have a real conversation first. Badie often knows more context than he initially shares — draw it out.
 
@@ -67,7 +67,7 @@ Once Badie confirms, create an issue in `mpimedia/mpi-design-system` using this 
 
 ## Target App(s)
 
-[Which app(s): Markaz, SFA, Garden, Harvest, Markaz CRM, or All]
+[Which app(s): Markaz, SFA, Garden, Harvest, or All]
 
 ## Data
 
