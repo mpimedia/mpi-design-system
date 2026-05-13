@@ -47,7 +47,7 @@ class Admin::AppShell::ComponentPreview < ApplicationComponentPreview
             { key: :engagements, label: "Engagements", href: "/admin/engagements" }
           ]
         },
-        logo_text: "MARKAZ CRM",
+        logo_text: "MARKAZ",
         system_url: "/admin/system",
         sign_out_url: "/sign_out",
         profile_url: "/admin/profile",

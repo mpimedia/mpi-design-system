@@ -84,4 +84,3 @@ These values exist in current apps but are being replaced by the tokens above:
 | SFA | `$purple` | `#612574` | Deprecated |
 | SFA | `$faint-gray` | `#f7f7f7` | Replaced by `$mpi-background` (`#F5F7FA`) |
 | avails_server | `$link-color` | `#0a3d7e` | Replaced by `$mpi-primary` (`#2E75B6`) |
-| markaz-crm | `.bg-custom-light-gray` | `#c2c2c2` | Deprecated |

@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.email       = [ "wrburgess@gmail.com" ]
   spec.homepage    = "https://github.com/mpimedia/mpi-design-system"
   spec.summary     = "Shared ViewComponent library for MPI Media applications"
-  spec.description = "Rails engine providing shared UI components, layouts, and design tokens for MPI Media's application suite (Markaz, SFA, Garden, Harvest, Markaz CRM)."
+  spec.description = "Rails engine providing shared UI components, layouts, and design tokens for MPI Media's application suite (Markaz, SFA, Garden, Harvest)."
   spec.license     = "LicenseRef-MPI-Proprietary"
 
   spec.metadata["homepage_uri"] = spec.homepage

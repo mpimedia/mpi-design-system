@@ -4,7 +4,7 @@ Instructions for all AI coding agents (Claude Code, Copilot, and others) working
 
 ## Project Overview
 
-MPI Design System is a Rails engine gem providing shared ViewComponents, design tokens, and Stimulus controllers for the MPI Media application ecosystem (Markaz, SFA, Garden, Harvest, Markaz CRM).
+MPI Design System is a Rails engine gem providing shared ViewComponents, design tokens, and Stimulus controllers for the MPI Media application ecosystem (Markaz, SFA, Garden, Harvest).
 
 **Tech Stack:** Ruby 3.4+ / Rails 8.1+ / ViewComponent 3.0+ / Bootstrap 5.3 / Hotwire (Stimulus) / esbuild / Sass
 

@@ -79,6 +79,5 @@ Current override files in each app (for migration planning):
 | SFA | `app/assets/stylesheets/overrides/_variables.scss` | Extensive: 13 custom colors, pill buttons, accordion, carousel, form overrides |
 | SFA | `app/assets/stylesheets/overrides/_theme_colors.scss` | Merges 11 custom colors into Bootstrap theme map |
 | avails_server | `app/assets/stylesheets/customizations/admin.scss` | Moderate: link color, heading sizes, font family, table styling, accordion levels |
-| markaz-crm | `app/assets/stylesheets/admin.scss` | Minimal: one custom background color, readonly input styling, table headers, mobile responsive |
-| garden | `app/assets/stylesheets/admin.scss` | Minimal (similar to markaz-crm) |
-| harvest | `app/assets/stylesheets/admin.scss` | Minimal (similar to markaz-crm) |
+| garden | `app/assets/stylesheets/admin.scss` | Minimal: small set of overrides |
+| harvest | `app/assets/stylesheets/admin.scss` | Minimal: small set of overrides |

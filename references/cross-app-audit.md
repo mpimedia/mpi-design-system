@@ -2,12 +2,12 @@
 
 > **Date:** 2026-03-02
 > **Purpose:** Inventory of existing UI components across MPI apps. Used for migration planning, not as the basis for the design system.
+> **2026-05-13 update:** Markaz CRM was sunsetted and its repo archived. CRM-specific rows and the CRM column have been removed from this audit. Counts and component data for the remaining apps reflect the 2026-03-02 scan and have not been re-verified.
 
 ## Component Counts
 
 | Repo | ViewComponents | Stimulus Controllers | Custom SCSS |
 |---|---|---|---|
-| markaz-crm | 38 | 0 | Minimal |
 | avails_server | 24 | 45 | Moderate |
 | wpa_film_library (SFA) | 20 | 29 | Heavy (28+ files) |
 | garden | 31 | 0 | Minimal |
@@ -17,7 +17,7 @@
 
 | Pattern | Repos |
 |---|---|
-| `Admin::Name::Component` (folder-based) | markaz-crm, garden, harvest |
+| `Admin::Name::Component` (folder-based) | garden, harvest |
 | Flat (no namespace) | avails_server |
 | `Admin::NameComponent` (class-based) | wpa_film_library |
 
@@ -25,52 +25,45 @@
 
 ## Shared Admin Components
 
-These 28 components exist in markaz-crm, garden, and harvest with identical implementations (same file SHAs). avails_server and SFA have equivalents with different names.
+These 28 components exist in garden and harvest with identical implementations (same file SHAs). avails_server and SFA have equivalents with different names.
 
-| Component | markaz-crm | avails_server | SFA | garden | harvest |
-|---|---|---|---|---|---|
-| ActionButton | `Admin::ActionButton` | `ActionButton` | — | `Admin::ActionButton` | `Admin::ActionButton` |
-| ArchivedBadge | `Admin::ArchivedBadge` | `ArchivedFlag` | — | `Admin::ArchivedBadge` | `Admin::ArchivedBadge` |
-| BatchActionButton | `Admin::BatchActionButton` | — | `Admin::BatchActionButtonComponent` | `Admin::BatchActionButton` | `Admin::BatchActionButton` |
-| BatchActionModalButton | `Admin::BatchActionModalButton` | — | `Admin::BatchActionModalButtonComponent` | `Admin::BatchActionModalButton` | `Admin::BatchActionModalButton` |
-| Brand | `Admin::Brand` | `Brand` | — | `Admin::Brand` | `Admin::Brand` |
-| DashboardCard | `Admin::DashboardCard` | — | `Admin::DashboardCardComponent` | `Admin::DashboardCard` | `Admin::DashboardCard` |
-| DashboardCardLink | `Admin::DashboardCardLink` | — | — | `Admin::DashboardCardLink` | `Admin::DashboardCardLink` |
-| DashboardContainer | `Admin::DashboardContainer` | — | — | `Admin::DashboardContainer` | `Admin::DashboardContainer` |
-| DashboardHeader | `Admin::DashboardHeader` | — | — | `Admin::DashboardHeader` | `Admin::DashboardHeader` |
-| DashboardHeaderLink | `Admin::DashboardHeaderLink` | — | — | `Admin::DashboardHeaderLink` | `Admin::DashboardHeaderLink` |
-| FilterCard | `Admin::FilterCard` | — | `Admin::FilterCardComponent` | `Admin::FilterCard` | `Admin::FilterCard` |
-| FormButton | `Admin::FormButton` | — | — | `Admin::FormButton` | `Admin::FormButton` |
-| HeaderForEdit | `Admin::HeaderForEdit` | `HeaderForEdit` | `Admin::HeaderComponent` | `Admin::HeaderForEdit` | `Admin::HeaderForEdit` |
-| HeaderForIndex | `Admin::HeaderForIndex` | `HeaderForIndex` | `Admin::HeaderComponent` | `Admin::HeaderForIndex` | `Admin::HeaderForIndex` |
-| HeaderForNew | `Admin::HeaderForNew` | `HeaderForNew` | `Admin::HeaderComponent` | `Admin::HeaderForNew` | `Admin::HeaderForNew` |
-| HeaderForShow | `Admin::HeaderForShow` | `HeaderForShow` | `Admin::HeaderComponent` | `Admin::HeaderForShow` | `Admin::HeaderForShow` |
-| HeaderForUpload | `Admin::HeaderForUpload` | `HeaderForUpload` | — | `Admin::HeaderForUpload` | `Admin::HeaderForUpload` |
-| IndexPager | `Admin::IndexPager` | `IndexPager` | — | `Admin::IndexPager` | `Admin::IndexPager` |
-| InterfaceNotification | `Admin::InterfaceNotification` | `InterfaceNotification` | — | `Admin::InterfaceNotification` | `Admin::InterfaceNotification` |
-| LinkButton | `Admin::LinkButton` | — | — | `Admin::LinkButton` | `Admin::LinkButton` |
-| NavBar | `Admin::NavBar` | `NavBar` | `Admin::NavBarComponent` | `Admin::NavBar` | `Admin::NavBar` |
-| NavDropdownItem | `Admin::NavDropdownItem` | `NavDropdownItem` | `Admin::NavDropdownItemComponent` | `Admin::NavDropdownItem` | `Admin::NavDropdownItem` |
-| NavItem | `Admin::NavItem` | `NavItem` | `Admin::NavItemComponent` | `Admin::NavItem` | `Admin::NavItem` |
-| PageContainer | `Admin::PageContainer` | `PageWrapper` | `Admin::ContainerComponent` | `Admin::PageContainer` | `Admin::PageContainer` |
-| TableForAssociations | `Admin::TableForAssociations` | (shared partials) | — | `Admin::TableForAssociations` | `Admin::TableForAssociations` |
-| TableForIndex | `Admin::TableForIndex` | (shared partials) | `Admin::TableComponent` | `Admin::TableForIndex` | `Admin::TableForIndex` |
-| TableForIndexColumn | `Admin::TableForIndexColumn` | — | — | `Admin::TableForIndexColumn` | `Admin::TableForIndexColumn` |
-| TableForShow | `Admin::TableForShow` | `ShowTable` | `Admin::TwoColumnTableComponent` | `Admin::TableForShow` | `Admin::TableForShow` |
-| TableForShowRow | `Admin::TableForShowRow` | — | — | `Admin::TableForShowRow` | `Admin::TableForShowRow` |
-| UserLogin | `Admin::UserLogin` | `UserLogin` | — | `Admin::UserLogin` | `Admin::UserLogin` |
+| Component | avails_server | SFA | garden | harvest |
+|---|---|---|---|---|
+| ActionButton | `ActionButton` | — | `Admin::ActionButton` | `Admin::ActionButton` |
+| ArchivedBadge | `ArchivedFlag` | — | `Admin::ArchivedBadge` | `Admin::ArchivedBadge` |
+| BatchActionButton | — | `Admin::BatchActionButtonComponent` | `Admin::BatchActionButton` | `Admin::BatchActionButton` |
+| BatchActionModalButton | — | `Admin::BatchActionModalButtonComponent` | `Admin::BatchActionModalButton` | `Admin::BatchActionModalButton` |
+| Brand | `Brand` | — | `Admin::Brand` | `Admin::Brand` |
+| DashboardCard | — | `Admin::DashboardCardComponent` | `Admin::DashboardCard` | `Admin::DashboardCard` |
+| DashboardCardLink | — | — | `Admin::DashboardCardLink` | `Admin::DashboardCardLink` |
+| DashboardContainer | — | — | `Admin::DashboardContainer` | `Admin::DashboardContainer` |
+| DashboardHeader | — | — | `Admin::DashboardHeader` | `Admin::DashboardHeader` |
+| DashboardHeaderLink | — | — | `Admin::DashboardHeaderLink` | `Admin::DashboardHeaderLink` |
+| FilterCard | — | `Admin::FilterCardComponent` | `Admin::FilterCard` | `Admin::FilterCard` |
+| FormButton | — | — | `Admin::FormButton` | `Admin::FormButton` |
+| HeaderForEdit | `HeaderForEdit` | `Admin::HeaderComponent` | `Admin::HeaderForEdit` | `Admin::HeaderForEdit` |
+| HeaderForIndex | `HeaderForIndex` | `Admin::HeaderComponent` | `Admin::HeaderForIndex` | `Admin::HeaderForIndex` |
+| HeaderForNew | `HeaderForNew` | `Admin::HeaderComponent` | `Admin::HeaderForNew` | `Admin::HeaderForNew` |
+| HeaderForShow | `HeaderForShow` | `Admin::HeaderComponent` | `Admin::HeaderForShow` | `Admin::HeaderForShow` |
+| HeaderForUpload | `HeaderForUpload` | — | `Admin::HeaderForUpload` | `Admin::HeaderForUpload` |
+| IndexPager | `IndexPager` | — | `Admin::IndexPager` | `Admin::IndexPager` |
+| InterfaceNotification | `InterfaceNotification` | — | `Admin::InterfaceNotification` | `Admin::InterfaceNotification` |
+| LinkButton | — | — | `Admin::LinkButton` | `Admin::LinkButton` |
+| NavBar | `NavBar` | `Admin::NavBarComponent` | `Admin::NavBar` | `Admin::NavBar` |
+| NavDropdownItem | `NavDropdownItem` | `Admin::NavDropdownItemComponent` | `Admin::NavDropdownItem` | `Admin::NavDropdownItem` |
+| NavItem | `NavItem` | `Admin::NavItemComponent` | `Admin::NavItem` | `Admin::NavItem` |
+| PageContainer | `PageWrapper` | `Admin::ContainerComponent` | `Admin::PageContainer` | `Admin::PageContainer` |
+| TableForAssociations | (shared partials) | — | `Admin::TableForAssociations` | `Admin::TableForAssociations` |
+| TableForIndex | (shared partials) | `Admin::TableComponent` | `Admin::TableForIndex` | `Admin::TableForIndex` |
+| TableForIndexColumn | — | — | `Admin::TableForIndexColumn` | `Admin::TableForIndexColumn` |
+| TableForShow | `ShowTable` | `Admin::TwoColumnTableComponent` | `Admin::TableForShow` | `Admin::TableForShow` |
+| TableForShowRow | — | — | `Admin::TableForShowRow` | `Admin::TableForShowRow` |
+| UserLogin | `UserLogin` | — | `Admin::UserLogin` | `Admin::UserLogin` |
 
 ## App-Specific Components
 
 | App | Component | Purpose |
 |---|---|---|
-| markaz-crm | `Admin::DashboardActiveEngagements` | CRM active engagements widget |
-| markaz-crm | `Admin::DashboardFollowUps` | CRM follow-up reminders widget |
-| markaz-crm | `Admin::DashboardQuickActions` | CRM quick action buttons |
-| markaz-crm | `Admin::DashboardQuickStats` | CRM statistics widget |
-| markaz-crm | `Admin::DashboardRecentlyAdded` | CRM recent additions widget |
-| markaz-crm | `Admin::SavedFilterControls` | Saved filter management |
-| markaz-crm | `Favicon` | Favicon meta tags |
 | avails_server | `BooleanFlag` | Boolean status indicator |
 | avails_server | `CamaFlag` | CAMA status flag |
 | avails_server | `ExpiredFlag` | Expired status flag |

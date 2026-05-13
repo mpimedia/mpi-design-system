@@ -40,14 +40,6 @@
       "github_repo": "optimus",
       "role": "template"
     },
-    "markaz_crm": {
-      "name": "Markaz CRM",
-      "description": "Customer relationship management for MPI Media",
-      "github_url": "https://github.com/mpimedia/markaz-crm",
-      "github_org": "mpimedia",
-      "github_repo": "markaz-crm",
-      "role": "crm"
-    },
     "mpi_design_system": {
       "name": "MPI Design System",
       "description": "Shared ViewComponent library and design tokens for MPI Media applications",
