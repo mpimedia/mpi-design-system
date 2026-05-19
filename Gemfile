@@ -2,17 +2,17 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "puma"
-gem "propshaft"
-gem "jsbundling-rails"
-gem "cssbundling-rails"
-gem "bootstrap", "~> 5.3"
-gem "lookbook", ">= 2.0"
-gem "foreman"
+gem "puma", "~> 8"
+gem "propshaft", "~> 1"
+gem "jsbundling-rails", "~> 1"
+gem "cssbundling-rails", "~> 1"
+gem "bootstrap", "~> 5"
+gem "lookbook", "~> 2"
+gem "foreman", "~> 0"
 
 group :development, :test do
-  gem "rspec-rails"
-  gem "capybara"
+  gem "rspec-rails", "~> 8"
+  gem "capybara", "~> 3"
 end
 
-gem "rubocop-rails-omakase", require: false
+gem "rubocop-rails-omakase", "~> 1", require: false
