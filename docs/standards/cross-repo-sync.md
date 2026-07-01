@@ -61,6 +61,14 @@ Run `/compare` (defaults to comparing this repo against Optimus):
 4. **Gates** — both required checks pass (`bundle exec rubocop -a`, `bundle exec rspec`); grep the changed docs/rules for imported app-isms and confirm none appear.
 5. **Upstream first** — if the better pattern originated in *this* repo, change Optimus first, then propagate back here. The template stays canonical.
 
+## Upstream Findings Log
+
+The standing record of findings *against the canonical template* that were deliberately **not** fixed locally — the local copy stays byte-identical and the fix belongs upstream in Optimus (per "Upstream first" above). Log each one here so drift checks and future ports don't re-discover or "helpfully" patch them.
+
+| Date | Finding | Disposition | Evidence | Status |
+|------|---------|-------------|----------|--------|
+| 2026-07-01 | `bin/guard-protected-branch` (byte-identical Optimus port) intends to exempt Human Contributors via TTY detection (`[[ ! -t 0 ]]` fallback), but git >= 2.36 runs hooks with stdin attached to `/dev/null` — so through the git layer (`.githooks/*`) **every** invocation, human or AI, is classified as an AC and blocked on protected branches. Verified empirically on git 2.55 (scratch repo, hooks installed, AC env vars unset, real PTY: commit and push on `main` both blocked). Practical impact low: the flow is PR-based and HCs retain `git commit/push --no-verify`. The alternative fix (probing `/dev/tty`) risks silently exempting ACs. Found during Stage-4 verification of PR #108. | Accept-and-document; byte-identity with Optimus preserved | [PR #108 comment](https://github.com/mpimedia/mpi-design-system/pull/108#issuecomment-4860931688) | To raise upstream in Optimus |
+
 ## Model Attribution Strings
 
 Attribution strings are hardcoded and go stale as models change: the commit trailer (`Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`) and comment/PR footer (`— Claude Code (Fable 5)`) appear in `CLAUDE.md`, `AGENTS.md`, the `attribution` block of `.claude/settings.json`, and the command templates. Keeping them current is part of this sync process:
