@@ -1,0 +1,68 @@
+name: CI
+
+# Bespoke, DB-free CI for the mpi_design_system engine.
+#
+# The engine is an ActiveRecord-disabled Rails engine (no DB, no Postgres),
+# so it deliberately does NOT use the shared `mpi-application-workflows`
+# `ci-rails.yml`: that reusable workflow's `test` job unconditionally
+# provisions Postgres and runs `db:create db:schema:load`, which fail against
+# the dummy app's disabled ActiveRecord with no toggle to skip.
+#
+# Marketplace actions are pinned to a full commit SHA (immutable / supply-chain
+# safe); the trailing `# vN` comment records the tag the SHA resolves to and
+# lets Dependabot bump it.
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint (RuboCop)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: Set up Ruby
+        # ruby-version omitted: setup-ruby reads the version from .tool-versions
+        uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1
+        with:
+          bundler-cache: true
+      - name: RuboCop
+        run: bin/rubocop -f github
+
+  test:
+    name: Test (RSpec, eager-load)
+    runs-on: ubuntu-latest
+    env:
+      # The dummy app sets `config.eager_load = ENV["CI"].present?`, so CI=true
+      # eager-loads every component and preview constant — the structural safety
+      # net that catches a broken constant/path anywhere in the engine.
+      CI: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1
+        with:
+          bundler-cache: true
+      - name: RSpec
+        run: bundle exec rspec
+
+  js-build:
+    name: JS build (esbuild)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: ".tool-versions"
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Build JS bundle
+        run: yarn build
