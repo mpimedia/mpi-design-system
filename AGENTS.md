@@ -66,7 +66,7 @@ When reviewing code, check for:
 - Accessibility violations (missing ARIA attributes, poor contrast)
 
 ### P1 — Should Fix
-- Pattern violations (components not following `Admin::Name::Component` convention)
+- Pattern violations (components not following `MpiDesignSystem::Admin::Name::Component` convention)
 - Missing tests for new components
 - Incorrect Bootstrap class usage
 - Missing responsive behavior

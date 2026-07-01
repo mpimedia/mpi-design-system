@@ -99,7 +99,7 @@ export default class extends Controller {
   }
 
   removeTag(event) {
-    const tagEl = event.currentTarget.closest("[data-tag-input-target='tag']")
+    const tagEl = event.currentTarget.closest("[data-mpi--tag-input-target='tag']")
     if (!tagEl) return
 
     const hiddenInput = tagEl.nextElementSibling
@@ -147,7 +147,7 @@ export default class extends Controller {
                    style="padding: 8px 12px; cursor: pointer; font-size: 13px; color: #1B2A4A;"
                    data-tag-label="${this.escapeHtml(tag.label)}"
                    data-tag-group="${this.escapeHtml(tag.group)}"
-                   data-action="click->tag-input#onDropdownItemClick mouseover->tag-input#onDropdownItemHover">
+                   data-action="click->mpi--tag-input#onDropdownItemClick mouseover->mpi--tag-input#onDropdownItemHover">
         <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${colors.color}; margin-right: 8px;"></span>
         ${this.escapeHtml(tag.label)}
       </div>`
@@ -183,14 +183,14 @@ export default class extends Controller {
     const chip = document.createElement("span")
     chip.className = "d-inline-flex align-items-center gap-1 fw-semibold"
     chip.style.cssText = `color: ${colors.color}; background-color: ${colors.bg}; font-size: 13px; padding: 0.25em 0.75em; border-radius: 999px; line-height: 1.4;`
-    chip.dataset.tagInputTarget = "tag"
+    chip.setAttribute("data-mpi--tag-input-target", "tag")
     chip.dataset.tagLabel = label
     chip.dataset.tagGroup = group
     chip.innerHTML = `${this.escapeHtml(label)}
       <button type="button"
               style="color: ${colors.color}; opacity: 0.6; background: none; border: none; padding: 0; font-size: inherit; line-height: 1; cursor: pointer;"
               aria-label="Remove ${this.escapeHtml(label)}"
-              data-action="tag-input#removeTag">
+              data-action="mpi--tag-input#removeTag">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>`
 

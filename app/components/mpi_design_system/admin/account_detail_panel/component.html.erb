@@ -1,0 +1,141 @@
+<div style="<%= card_styles %>" aria-label="Account details for <%= @name %>">
+  <%# Header: Avatar + Name + Type Badge %>
+  <div class="d-flex align-items-center gap-3 mb-3">
+    <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: @name, size: :lg) %>
+    <div>
+      <h5 style="<%= name_styles %>"><%= @name %></h5>
+      <% if @account_type.present? %>
+        <div class="mt-1">
+          <%= render MpiDesignSystem::Admin::Badge::Component.new(label: @account_type, color: @account_type_color, size: :sm) %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Metrics Row %>
+  <% if @metrics.present? %>
+    <% metric_fragments = [] %>
+    <% metric_fragments << "#{@metrics[:contacts]} CONTACTS" if @metrics[:contacts] %>
+    <% metric_fragments << "#{@metrics[:engagements]} ENGAGEMENTS" if @metrics[:engagements] %>
+    <% metric_fragments << "#{@metrics[:titles]} TITLES" if @metrics[:titles] %>
+    <% if metric_fragments.any? %>
+      <div class="d-flex gap-2 mb-2" style="<%= metrics_styles %>">
+        <span><%= metric_fragments.join(' / ') %></span>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Associated Contacts Section %>
+  <% if @contacts.any? %>
+    <hr style="<%= divider_styles %>">
+    <div style="<%= section_heading_styles %>">Associated Contacts</div>
+    <% @contacts.each_with_index do |contact, index| %>
+      <div style="<%= index == @contacts.length - 1 ? contact_last_row_styles : contact_row_styles %>">
+        <div class="d-flex align-items-center gap-2">
+          <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: contact[:name], size: :sm) %>
+          <div>
+            <a href="<%= contact[:path] %>" style="<%= contact_name_styles %>"><%= contact[:name] %></a>
+            <% if contact[:title].present? %>
+              <div style="<%= contact_title_styles %>"><%= contact[:title] %></div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Account Info Section %>
+  <% if has_contact_info? %>
+    <hr style="<%= divider_styles %>">
+    <div style="<%= section_heading_styles %>">Account Info</div>
+
+    <% if @email.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Email</div>
+        <a href="mailto:<%= @email %>" style="<%= info_link_styles %>"><%= @email %></a>
+      </div>
+    <% end %>
+
+    <% if @phone.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Phone</div>
+        <div style="<%= info_value_styles %>"><%= @phone %></div>
+      </div>
+    <% end %>
+
+    <% if @location.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Location</div>
+        <div style="<%= info_value_styles %>"><%= @location %></div>
+      </div>
+    <% end %>
+
+    <% if @website.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Website</div>
+        <a href="<%= @website %>" style="<%= info_link_styles %>" target="_blank" rel="noopener"><%= @website %></a>
+      </div>
+    <% end %>
+
+    <% if @territory.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Territory</div>
+        <div style="<%= info_value_styles %>"><%= @territory %></div>
+      </div>
+    <% end %>
+
+    <% if @health.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Health</div>
+        <div style="<%= info_value_styles %>"><%= @health %></div>
+      </div>
+    <% end %>
+
+    <% if @created_date.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Added</div>
+        <div style="<%= info_value_styles %>"><%= @created_date %></div>
+      </div>
+    <% end %>
+
+    <% if @owner.present? %>
+      <div style="<%= info_row_styles %>">
+        <div style="<%= info_label_styles %>">Owner</div>
+        <a href="<%= @owner[:path] %>" style="<%= info_link_styles %>"><%= @owner[:name] %></a>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# Tag Groups Represented %>
+  <% if @tag_groups.any? %>
+    <hr style="<%= divider_styles %>">
+    <div style="<%= section_heading_styles %>">Tag Groups Represented</div>
+    <div class="d-flex flex-wrap gap-1">
+      <% @tag_groups.each do |tg| %>
+        <span style="<%= tag_group_chip_styles(tg[:group]) %>">
+          <%= tg[:label] %><% if tg[:count] %> (<%= tg[:count] %>)<% end %>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Linked Titles %>
+  <% if @linked_titles.any? %>
+    <hr style="<%= divider_styles %>">
+    <div style="<%= section_heading_styles %>">Linked Titles</div>
+    <% @linked_titles.each do |title| %>
+      <div style="<%= title_row_styles %>">
+        <div class="d-flex justify-content-between align-items-center">
+          <% if title[:path].present? %>
+            <a href="<%= title[:path] %>" style="<%= title_name_styles %>"><%= title[:name] %></a>
+          <% else %>
+            <span style="<%= title_name_styles %>"><%= title[:name] %></span>
+          <% end %>
+          <% if title[:status].present? %>
+            <span style="<%= title_status_styles %>"><%= title[:status] %></span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>

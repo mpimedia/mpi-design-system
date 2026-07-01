@@ -13,6 +13,7 @@ gem "foreman", "~> 0"
 group :development, :test do
   gem "rspec-rails", "~> 8"
   gem "capybara", "~> 3"
+  gem "selenium-webdriver", "~> 4"
 end
 
 gem "rubocop-rails-omakase", "~> 1", require: false

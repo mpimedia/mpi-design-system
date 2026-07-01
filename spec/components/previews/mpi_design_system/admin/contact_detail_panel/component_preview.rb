@@ -1,0 +1,49 @@
+# frozen_string_literal: true
+
+class MpiDesignSystem::Admin::ContactDetailPanel::ComponentPreview < ApplicationComponentPreview
+  # @label Default
+  def default
+    render MpiDesignSystem::Admin::ContactDetailPanel::Component.new(
+      name: "Jane Cooper",
+      title: "VP of Acquisitions",
+      company: "Acme Films",
+      tags: [
+        { label: "Acquisitions", group: :distribution },
+        { label: "Festival", group: :press_festival }
+      ],
+      email: "jane.cooper@acmefilms.com",
+      phone: "+1 (555) 010-0100",
+      account: { name: "Acme Films", path: "#" },
+      location: "New York, NY",
+      added_date: "Jan 10, 2025",
+      owner: { name: "Sarah Williams", path: "#" },
+      auto_groups: [
+        { label: "VIP", group: :distribution },
+        { label: "Market Attendee", group: :press_festival }
+      ]
+    )
+  end
+
+  # @label Minimal
+  def minimal
+    render MpiDesignSystem::Admin::ContactDetailPanel::Component.new(
+      name: "Robert Fox",
+      title: "Festival Director"
+    )
+  end
+
+  # @label With Tag Input
+  def with_tag_input
+    render MpiDesignSystem::Admin::ContactDetailPanel::Component.new(
+      name: "Emily Chen",
+      title: "Press Manager",
+      company: "Film Weekly",
+      tags: [
+        { label: "Journalist", group: :outreach, remove_url: "#" }
+      ],
+      add_tag_path: "#",
+      email: "emily@filmweekly.com",
+      owner: { name: "David Kim", path: "#" }
+    )
+  end
+end

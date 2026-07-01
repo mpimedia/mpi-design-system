@@ -1,0 +1,5 @@
+<div class="d-flex gap-2 align-items-center">
+  <% buttons.each do |button| %>
+    <%= render MpiDesignSystem::Admin::ActionButton::Component.new(**button) %>
+  <% end %>
+</div>

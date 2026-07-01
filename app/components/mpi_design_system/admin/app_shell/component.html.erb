@@ -1,0 +1,21 @@
+<div class="mds-shell" role="document">
+  <%= render MpiDesignSystem::Admin::NavBar::Component.new(**nav_bar_options) %>
+
+  <% if breadcrumb? %>
+    <div class="mds-shell__breadcrumb">
+      <%= breadcrumb %>
+    </div>
+  <% end %>
+
+  <div class="mds-shell__content-wrapper">
+    <% if show_sidebar? %>
+      <aside class="mds-shell__sidebar" role="complementary" aria-label="Content sidebar">
+        <%= sidebar %>
+      </aside>
+    <% end %>
+
+    <main class="mds-shell__main" role="main">
+      <%= body %>
+    </main>
+  </div>
+</div>
