@@ -48,7 +48,11 @@ RSpec.describe "bin/guard-protected-branch" do
 
   # Runs a command with a pseudo-terminal on stdin so the child sees a TTY,
   # exactly like a human typing in an interactive shell.
-  # Returns [ output, status ].
+  # Returns [ output, status ]. The output is BEST-EFFORT only — never
+  # assert on it: on Linux, reading the PTY master after the child exits
+  # raises Errno::EIO, often before delivering buffered output, so the
+  # drain below can silently yield "". It exists purely so the child cannot
+  # block on a full PTY buffer; redirect to a file anything you must assert.
   def run_with_tty(env, dir, *command)
     output = +""
     status = nil
@@ -176,10 +180,17 @@ RSpec.describe "bin/guard-protected-branch" do
       Dir.mktmpdir do |dir|
         init_repo(dir)
         install_hooks(dir)
-        output, status = run_with_tty(hc_env, dir, "git", "commit", "--allow-empty", "-m", "hc attempt")
+        # The guard's message is captured via git's stderr into a file
+        # (hooks inherit git's stderr) instead of asserting on the PTY
+        # stream, which is unreliable on Linux — see run_with_tty.
+        _output, status = run_with_tty(
+          hc_env, dir,
+          "bash", "-c", "git commit --allow-empty -m 'hc attempt' 2>guard-stderr.log"
+        )
 
         expect(status.exitstatus).not_to eq(0)
-        expect(output).to include("Blocked: cannot commit on protected branch 'main'")
+        expect(File.read(File.join(dir, "guard-stderr.log")))
+          .to include("Blocked: cannot commit on protected branch 'main'")
       end
     end
   end
