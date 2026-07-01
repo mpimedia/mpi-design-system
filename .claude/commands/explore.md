@@ -3,10 +3,10 @@ Explore the MPI Design System codebase for the topic: $ARGUMENTS
 ## Steps
 
 1. **Understand the topic** — determine what area of the codebase is relevant
-2. **Read architecture docs** — start with `CLAUDE.md` and any relevant docs in the repo
+2. **Read design-system docs** — start with `CLAUDE.md`, then the component catalog (`catalog/`) and token docs (`tokens/`) as relevant
 3. **Search the codebase** — use Grep and Glob to find relevant files, classes, methods, and patterns
 4. **Read key files** — read the most relevant files in full to understand implementation details
-5. **Trace relationships** — follow component hierarchies, concerns, Stimulus controllers, and SCSS tokens to understand how the pieces connect
+5. **Trace relationships** — follow component hierarchies, Stimulus controllers, SCSS tokens, specs, and Lookbook previews to understand how the pieces connect
 6. **Summarize findings** — provide a clear report of what you found
 
 ## Output Format
