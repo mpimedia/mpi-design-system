@@ -139,6 +139,8 @@ Before creating a new component, check the existing catalog:
 - `catalog/patterns/` — Forms, search bars, filters, data entry (Organisms)
 - `catalog/layouts/` — Dashboards, detail pages, list views (Templates)
 
+Machine-readable component inventory and token reference work is tracked in issue #96 — do not expand catalog metadata here without checking that issue first.
+
 ## Design Tokens
 
 Reference these tokens when choosing values. Do not invent arbitrary colors, sizes, or spacing.
@@ -178,6 +180,26 @@ Reference these tokens when choosing values. Do not invent arbitrary colors, siz
 - Maintain 4.5:1 contrast ratio for normal text, 3:1 for large text
 - Provide visible focus indicators
 
+## Domain-Triggered Rules
+
+Detailed conventions live in `.claude/rules/` — consult the matching rule when working in its area:
+
+| Rule | What It Covers | Applies When |
+|------|----------------|--------------|
+| `.claude/rules/frontend.md` | ViewComponent, Stimulus, and Bootstrap 5 patterns | Working in `app/components/`, `app/javascript/`, or `app/assets/` |
+| `.claude/rules/testing.md` | Component spec, Lookbook preview, and dummy-app coverage requirements | Writing or changing anything under `spec/` |
+| `.claude/rules/self-review.md` | Pre-PR self-review checklist | Before creating or updating any PR |
+| `.claude/rules/dependencies.md` | Dependency update policy for a published gem | Touching `Gemfile`, `*.gemspec`, `package.json`, or reviewing dependency PRs |
+
+## Standards Documentation
+
+Process standards live in `docs/standards/`:
+
+- `docs/standards/development-lifecycle.md` — the five-stage lifecycle behind `/assess`, `/cplan`, `/impl`, `/verify`, `/final`
+- `docs/standards/code-review.md` — review checklists and the P0/P1/P2 Severity Priority framework
+- `docs/standards/memory-management.md` — auto-memory structure, budgets, and maintenance (`/memory-review`)
+- `docs/standards/cross-repo-sync.md` — how this engine stays in sync with the Optimus template (`/compare`)
+
 ## Commit and PR Standards
 
 **All commits and PRs must have verbose, detailed documentation.**
@@ -192,7 +214,7 @@ Detailed explanation of changes:
 - Technical approach taken
 - Any architectural decisions made
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 ```
 
 ### PR Description Format
@@ -221,7 +243,7 @@ Detailed overview of what this PR accomplishes and why it was needed.
 
 Every AI agent **must** include attribution on every piece of work:
 
-- **Commits**: `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+- **Commits**: `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>` (the active model — kept current via `docs/standards/cross-repo-sync.md`)
 - **PRs**: Agent name in description footer
 - **Comments**: Attribution line
 
