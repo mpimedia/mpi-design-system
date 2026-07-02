@@ -1,19 +1,27 @@
 {
   "mpi_projects": {
-    "avails": {
-      "name": "Avails Server",
-      "description": "Central data repository for MPI Media",
-      "github_url": "https://github.com/mpimedia/avails_server",
+    "optimus": {
+      "name": "Optimus",
+      "description": "Rails application template and pattern source",
+      "github_url": "https://github.com/mpimedia/optimus",
       "github_org": "mpimedia",
-      "github_repo": "avails_server",
+      "github_repo": "optimus",
+      "role": "template"
+    },
+    "markaz": {
+      "name": "Markaz",
+      "description": "Central data repository for MPI Media",
+      "github_url": "https://github.com/mpimedia/markaz",
+      "github_org": "mpimedia",
+      "github_repo": "markaz",
       "role": "data_repository"
     },
     "sfa": {
-      "name": "SFA Film Library",
+      "name": "MPI Stock Footage Archive",
       "description": "Video clip hosting and search engine",
-      "github_url": "https://github.com/mpimedia/wpa_film_library",
+      "github_url": "https://github.com/mpimedia/sfa",
       "github_org": "mpimedia",
-      "github_repo": "wpa_film_library",
+      "github_repo": "sfa",
       "role": "media_library"
     },
     "garden": {
@@ -32,21 +40,37 @@
       "github_repo": "harvest",
       "role": "ecommerce"
     },
-    "optimus": {
-      "name": "Optimus",
-      "description": "Rails application template and pattern source",
-      "github_url": "https://github.com/mpimedia/optimus",
-      "github_org": "mpimedia",
-      "github_repo": "optimus",
-      "role": "template"
-    },
-    "mpi_design_system": {
+    "design_system": {
       "name": "MPI Design System",
-      "description": "Shared ViewComponent library and design tokens for MPI Media applications",
+      "description": "Shared design system and UI components for MPI applications",
       "github_url": "https://github.com/mpimedia/mpi-design-system",
       "github_org": "mpimedia",
       "github_repo": "mpi-design-system",
       "role": "design_system"
+    },
+    "infrastructure": {
+      "name": "MPI Infrastructure",
+      "description": "Infrastructure configuration and provisioning",
+      "github_url": "https://github.com/mpimedia/mpi-infrastructure",
+      "github_org": "mpimedia",
+      "github_repo": "mpi-infrastructure",
+      "role": "infrastructure"
+    },
+    "ci_workflows": {
+      "name": "MPI Application Workflows",
+      "description": "Shared reusable GitHub Actions workflows for CI/CD",
+      "github_url": "https://github.com/mpimedia/mpi-application-workflows",
+      "github_org": "mpimedia",
+      "github_repo": "mpi-application-workflows",
+      "role": "ci"
+    },
+    "github_org": {
+      "name": ".github",
+      "description": "Organization-level GitHub configuration",
+      "github_url": "https://github.com/mpimedia/.github",
+      "github_org": "mpimedia",
+      "github_repo": ".github",
+      "role": "org_config"
     }
   }
 }

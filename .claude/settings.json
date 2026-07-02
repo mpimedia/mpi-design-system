@@ -6,13 +6,25 @@
       "Bash(gh workflow:*)",
       "Bash(gh workflow view:*)",
       "Bash(gh pr:*)",
-      "Bash(gh issue:*)"
+      "Bash(gh issue:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh search:*)",
+      "Bash(gh label:*)"
+    ],
+    "deny": [
+      "Edit(path:spec/dummy/config/**)",
+      "Write(path:spec/dummy/config/**)"
     ]
+  },
+  "attribution": {
+    "commit": "Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>",
+    "pr": "— Claude Code (Fable 5)"
   },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|Bash(git commit:*)|Bash(git push:*)|Bash(git merge:*)|Bash(git rebase:*)",
         "hooks": [
           {
             "type": "command",
@@ -21,5 +33,16 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "github@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "figma@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "bash-language-server@claude-code-lsps": true
   }
 }

@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+require "fileutils"
+
+APP_ROOT = File.expand_path("..", __dir__)
+
+def system!(*args)
+  system(*args, exception: true)
+end
+
+def step(name)
+  puts "\n== #{name} =="
+end
+
+FileUtils.chdir APP_ROOT do
+  # This script is a way to set up or update your development environment automatically.
+  # This script is idempotent, so that you can run it at any time and get an expectable outcome.
+
+  step "Installing gem dependencies"
+  system("bundle check") || system!("bundle install")
+
+  step "Installing JavaScript dependencies"
+  system! "yarn install"
+
+  step "Installing git hooks"
+  system! "bin/install-git-hooks"
+
+  puts "\nSetup complete."
+end

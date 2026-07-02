@@ -92,7 +92,7 @@ When multiple agents work on the same feature:
 ```
 app/components/admin/
 ├── badge/
-│   ├── component.rb           # Ruby logic (inherits ApplicationComponent)
+│   ├── component.rb           # Ruby logic (inherits ViewComponent::Base)
 │   └── component.html.erb     # ERB template
 ├── data_table/
 │   ├── component.rb
@@ -140,7 +140,7 @@ Every AI agent **must** include attribution on all work:
 
 - **Commits**: `Co-Authored-By: Agent Name <email>` trailer
 - **PRs**: Agent name in description footer
-- **Comments**: Attribution line (e.g., `— Claude Code (Opus 4.6)`)
+- **Comments**: Attribution line (e.g., `— Claude Code (Fable 5)`)
 
 If multiple agents contribute, include a `Co-Authored-By` line for each.
 
