@@ -152,6 +152,23 @@ AC posts a reference link on the original issue pointing to the SOW on the PR.
 
 **HC decides when to compress. AC does not self-select a compressed workflow.**
 
+## Automated / Streamlined Track (`/ship`)
+
+For standard, engine-internal work the HC can run the whole lifecycle hands-off with `/ship NNN`. It sequences `/assess → /cplan → /impl → /verify → /rtr → /final` and replaces the per-stage "wait for HC" pauses with exactly **two gates**:
+
+1. **Plan approval** — after `/cplan` *and* the Reviewer's (Codex) pass over the plan, `/ship` stops and waits for the HC to approve the plan (or pick a different option). **To keep the build phase in clean context, the HC should start a fresh session (or `/compact`) after approving and resume with `/impl NNN`** — the plan is durably on the issue, so the reset loses nothing and keeps the build out of the degraded long-context zone.
+2. **Merge** — after `/final` posts the SOW with green CI and no open P0/P1, `/ship` stops. The HC merges. `/ship` never merges itself.
+
+Everything in between runs autonomously, **plus** unconditional emergency stops: a required check or CI failure that can't be auto-resolved, a discovery that the change is ecosystem-propagating in a way the plan didn't anticipate (gemspec runtime dependency, breaking component API, design-token value change, gem packaging), or an architectural/ambiguous review comment. On any of those, `/ship` halts and asks rather than guessing.
+
+**Context hygiene — subagent offloading.** `/ship`'s three heaviest operations are dispatched to subagents whose context is discarded, so the orchestrator keeps only a compact structured summary: `/assess` codebase exploration → a read-only `Explore` subagent (exploration-summary); the `/impl` code + test/lint/fix loop → a `general-purpose` subagent in the shared worktree (check-result; the orchestrator reconciles git state, then commits/pushes/opens the PR without reloading the diff); the `/verify` full-diff review → a read-only `general-purpose` subagent (drift-report). Both required checks and the `.claude/rules/testing.md` definition of done run **inside** the subagent at full strength.
+
+**External review without Actions.** This engine has no Codex GitHub Actions (`.github/workflows/` contains only `ci.yml`), so `/ship` invokes Codex directly — on the plan before gate 1 and on the PR diff during Phase 2. If no second model is reachable, the run stops and asks the HC rather than logging an unverified pass.
+
+**Identifiers:** `/ship NNN` takes the **issue** id. `/impl` opens a PR with a *different* number; the PR-scoped stages (`/verify`, `/rtr`, `/final`, `gh pr checks`) operate on that **PR number**. To resume mid-lifecycle, invoke the underlying stage command directly — `/impl NNN` (issue) or `/verify <PR_NUMBER>` / `/rtr <PR_NUMBER>` (PR).
+
+**Eligibility mirrors the ecosystem-propagation rule:** use `/ship` for component variants, spec/preview backfills, refactors within existing component APIs, well-understood fixes, and docs/config maintenance. For changes that propagate to all four consuming apps — gemspec runtime dependencies, breaking component API changes, design-token value changes — run the stages manually and synchronously.
+
 ## Command Mapping
 
 | Stage | Command | Purpose |
@@ -162,6 +179,7 @@ AC posts a reference link on the original issue pointing to the SOW on the PR.
 | 4 — Verify | `/verify` | PR self-review against the plan |
 | 5 — Deliver | `/final` | SOW generation and merge preparation |
 | 5 — Deliver (support) | `/rtr` | Respond to Reviewer comments by severity |
+| Full hands-off run | `/ship` | Sequences all stages with two human gates |
 | Supporting | `/orch` | Multi-agent orchestration for large changes |
 | Supporting | `/explore` | Codebase research for a topic |
 | Supporting | `/dep-review` | Dependency update PR review |
