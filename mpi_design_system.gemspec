@@ -20,8 +20,12 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = ">= 3.4"
 
+  # Runtime dependencies are forced into every consuming app's bundle, so this
+  # set is kept deliberately minimal (see .claude/rules/dependencies.md).
+  # Bootstrap is intentionally NOT here: nothing in the engine loads the Ruby
+  # `bootstrap` gem — consuming apps compile Bootstrap SCSS against their own npm
+  # `bootstrap` package via a dart-sass `--load-path` (Issue #103, Work item 2).
   spec.add_dependency "rails", ">= 8.1"
   spec.add_dependency "view_component", ">= 3.0"
   spec.add_dependency "stimulus-rails"
-  spec.add_dependency "bootstrap", "~> 5.3"
 end

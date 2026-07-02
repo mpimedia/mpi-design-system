@@ -1,0 +1,14 @@
+// Compat fixture — modern Sass-module consumer path.
+//
+// Proves an app can adopt MPI values via `@use` and feed them into its OWN
+// Bootstrap configuration WITHOUT importing the engine's Bootstrap (no
+// double-compile). `@use … as *` brings the $mpi-* values into scope; the app
+// then maps them onto Bootstrap's `!default` variables before importing
+// Bootstrap once. Compiled by the `build:css:compat` yarn script. (Issue #103.)
+@use "mpi_design_system/tokens_values" as *;
+
+$primary: $mpi-primary;
+$success: $mpi-success;
+$body-color: $mpi-text;
+
+@import "bootstrap/scss/bootstrap";
