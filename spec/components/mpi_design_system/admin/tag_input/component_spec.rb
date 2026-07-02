@@ -95,7 +95,7 @@ RSpec.describe MpiDesignSystem::Admin::TagInput::Component, type: :component do
   it "renders dropdown hidden by default" do
     render_inline(described_class.new(available_tags: available_tags))
 
-    expect(page).to have_css("div[data-mpi--tag-input-target='dropdown'][style*='display: none']", visible: :hidden)
+    expect(page).to have_css("div[data-mpi--tag-input-target='dropdown'][style*='margin-top: 4px; display: none']", visible: :hidden)
   end
 
   it "renders selected tag chips with correct colors" do

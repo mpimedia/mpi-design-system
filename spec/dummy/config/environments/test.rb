@@ -39,4 +39,12 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Render ViewComponent previews through a bare, asset-free layout during tests so
+  # the preview-render sweep (spec/components/previews/preview_rendering_spec.rb) does
+  # not depend on the gitignored Propshaft asset bundle
+  # (spec/dummy/app/assets/builds/*, built only for feature specs). This keeps the
+  # sweep hermetic and order-independent. Development Lookbook is unaffected — it runs
+  # in the development environment and keeps the default (application) preview layout.
+  config.view_component.previews.default_layout = "component_preview"
 end

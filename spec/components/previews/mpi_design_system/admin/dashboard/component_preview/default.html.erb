@@ -31,15 +31,15 @@
   ]
 ) do |dashboard| %>
   <% dashboard.with_stat_card do %>
-    <%= render MpiDesignSystem::Admin::StatCard::Component.new(label: "Total Contacts", value: "2,307", trend: "+12%", trend_direction: :up) %>
+    <%= render MpiDesignSystem::Admin::StatCard::Component.new(label: "Total Contacts", value: "2,307", trend_text: "+12%", trend_direction: :up) %>
   <% end %>
   <% dashboard.with_stat_card do %>
-    <%= render MpiDesignSystem::Admin::StatCard::Component.new(label: "Engagements This Week", value: "47", trend: "+8%", trend_direction: :up) %>
+    <%= render MpiDesignSystem::Admin::StatCard::Component.new(label: "Engagements This Week", value: "47", trend_text: "+8%", trend_direction: :up) %>
   <% end %>
   <% dashboard.with_stat_card do %>
-    <%= render MpiDesignSystem::Admin::StatCard::Component.new(label: "Avg. Data Quality", value: "72%", trend: "+3%", trend_direction: :up) %>
+    <%= render MpiDesignSystem::Admin::StatCard::Component.new(label: "Avg. Data Quality", value: "72%", trend_text: "+3%", trend_direction: :up) %>
   <% end %>
   <% dashboard.with_stat_card do %>
-    <%= render MpiDesignSystem::Admin::StatCard::Component.new(label: "Follow-ups Due", value: "12", trend: "-2", trend_direction: :down) %>
+    <%= render MpiDesignSystem::Admin::StatCard::Component.new(label: "Follow-ups Due", value: "12", trend_text: "-2", trend_direction: :down) %>
   <% end %>
 <% end %>
