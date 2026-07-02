@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Only enforce branch protection for AI Contributors (ACs).
+# Human Contributors (HCs) can push to main freely.
+#
+# Known AC environment variables:
+#   CLAUDE_CODE  — Claude Code (Anthropic)
+#   CODEX        — Codex CLI (OpenAI)
+#   GITHUB_COPILOT_AGENT — GitHub Copilot coding agent
+#
+# Fallback: non-interactive shells (no TTY) are also treated as ACs,
+# catching any future AC tools we haven't explicitly listed.
+IS_AC=false
+[[ -n "${CLAUDE_CODE:-}" ]] && IS_AC=true
+[[ -n "${CODEX:-}" ]] && IS_AC=true
+[[ -n "${GITHUB_COPILOT_AGENT:-}" ]] && IS_AC=true
+[[ ! -t 0 ]] && IS_AC=true
+
+if [[ "$IS_AC" == "false" ]]; then
+  exit 0
+fi
+
+ACTION="${1:-change}"
+CURRENT_BRANCH="${2:-$(git rev-parse --abbrev-ref HEAD)}"
+PROTECTED_BRANCHES=("main" "master" "develop")
+
+if [[ "$CURRENT_BRANCH" == "HEAD" ]]; then
+  # Detached HEAD states are not protected by branch name.
+  exit 0
+fi
+
+for branch in "${PROTECTED_BRANCHES[@]}"; do
+  if [[ "$CURRENT_BRANCH" == "$branch" ]]; then
+    cat >&2 <<EOF
+Blocked: cannot ${ACTION} on protected branch '${CURRENT_BRANCH}'.
+
+Create and switch to a feature branch first:
+  git checkout -b feature/<short-description>
+EOF
+    exit 2
+  fi
+done
+
+exit 0
