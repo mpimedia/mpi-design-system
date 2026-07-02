@@ -7,6 +7,9 @@ require File.expand_path("dummy/config/environment", __dir__)
 require "rspec/rails"
 require "view_component/test_helpers"
 require "capybara/rspec"
+require "capybara/rails"
+
+Dir[File.expand_path("support/**/*.rb", __dir__)].each { |file| require file }
 
 RSpec.configure do |config|
   config.include ViewComponent::TestHelpers, type: :component

@@ -1,0 +1,5 @@
+<div class="d-flex gap-2 flex-wrap">
+  <% badges.each do |badge| %>
+    <%= render MpiDesignSystem::Admin::Badge::Component.new(**badge) %>
+  <% end %>
+</div>

@@ -13,7 +13,7 @@ This is **Stage 1** of the MPI Development Lifecycle (see `docs/standards/develo
    - Start with `CLAUDE.md` and `AGENTS.md` for engine conventions
    - Read the component catalog if the issue touches UI: `catalog/elements/`, `catalog/components/`, `catalog/patterns/`, `catalog/layouts/`
    - Read token documentation if the issue touches visual values: `tokens/colors.md`, `tokens/typography.md`, `tokens/spacing.md`, `tokens/bootstrap-overrides.md`
-4. **Explore the codebase** — read the files and systems that would be affected. Trace components (`app/components/admin/`), Stimulus controllers (`app/javascript/mpi_design_system/controllers/`), SCSS tokens (`app/assets/stylesheets/mpi_design_system/`), specs, and Lookbook previews. Focus on understanding the current state.
+4. **Explore the codebase** — read the files and systems that would be affected. Trace components (`app/components/mpi_design_system/admin/`), Stimulus controllers (`app/javascript/mpi_design_system/controllers/`), SCSS tokens (`app/assets/stylesheets/mpi_design_system/`), specs, and Lookbook previews. Focus on understanding the current state.
 5. **Check test coverage** for affected areas — look at existing component specs in `spec/components/` to understand what's covered and what gaps a change might introduce
 6. **Identify project-specific concerns**:
    - Does this add a component? → Check the catalog first — does an existing component or variant already cover it?
@@ -61,7 +61,7 @@ Use this template for the GitHub comment:
 ### Systems Affected
 | System | Files/Areas | Impact |
 |--------|-------------|--------|
-| [e.g., Components] | [e.g., `app/components/admin/badge/`] | [e.g., New variant] |
+| [e.g., Components] | [e.g., `app/components/mpi_design_system/admin/badge/`] | [e.g., New variant] |
 
 ### Complexity: [Small | Medium | Large]
 - [Key factors driving complexity]

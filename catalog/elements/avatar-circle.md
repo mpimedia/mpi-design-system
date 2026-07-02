@@ -50,15 +50,15 @@ Circular avatar displaying a contact's initials on a deterministic background co
 ## Props / API
 
 ```ruby
-# Admin::AvatarCircle::Component
-class Admin::AvatarCircle::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::AvatarCircle::Component
+class MpiDesignSystem::Admin::AvatarCircle::Component < ViewComponent::Base
   # @param name [String] Contact's full name (used for initials + color hash)
   # @param size [Symbol] :sm, :md (default), :lg, :xl
   # @param href [String] Optional link URL
 end
 
-# Admin::AvatarStack::Component
-class Admin::AvatarStack::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::AvatarStack::Component
+class MpiDesignSystem::Admin::AvatarStack::Component < ViewComponent::Base
   # @param names [Array<String>] List of contact names
   # @param max [Integer] Maximum visible avatars before "+N" (default: 4)
   # @param size [Symbol] :sm, :md (default)

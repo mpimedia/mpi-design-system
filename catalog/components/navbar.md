@@ -62,8 +62,8 @@ Other section sub-navs will be documented as their designs are finalized.
 ## Props / API
 
 ```ruby
-# Admin::NavBar::Component
-class Admin::NavBar::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::NavBar::Component
+class MpiDesignSystem::Admin::NavBar::Component < ViewComponent::Base
   # @param current_section [Symbol] :dashboard, :content, :crm, :rights_avails, :releases, :screenings
   # @param current_subsection [Symbol] Section-specific (e.g., :contacts, :accounts for CRM)
   # @param user_name [String] Current user name (for avatar)

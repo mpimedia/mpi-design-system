@@ -18,7 +18,7 @@ Defines how an AI Contributor (AC) works from problem definition through deliver
 
 **AC produces:**
 - Summary of the problem and its impact
-- Research into the engine: components (`app/components/admin/`), Stimulus controllers (`app/javascript/mpi_design_system/controllers/`), SCSS tokens, specs, Lookbook previews, and the catalog (`catalog/`) and token docs (`tokens/`)
+- Research into the engine: components (`app/components/mpi_design_system/admin/`), Stimulus controllers (`app/javascript/mpi_design_system/controllers/`), SCSS tokens, specs, Lookbook previews, and the catalog (`catalog/`) and token docs (`tokens/`)
 - Catalog check — does an existing component or variant already cover the need?
 - Consuming-app impact — component API changes affect Markaz, SFA, Garden, and Harvest; gem packaging changes are checked against the gemspec `files` glob
 - 2-3 options with trade-offs, not just one recommendation

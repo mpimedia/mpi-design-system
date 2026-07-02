@@ -5,6 +5,10 @@ Rails.application.routes.draw do
 
   mount MpiDesignSystem::Engine => "/mpi_design_system"
 
+  # Demo page exercised by the tag_input browser (Selenium) feature spec — it
+  # renders a real MpiDesignSystem::Admin::TagInput::Component so Stimulus boots.
+  get "tag_input_demo" => "tag_input_demo#show"
+
   if Rails.env.development?
     mount Lookbook::Engine, at: "/lookbook"
     root to: redirect("/lookbook")

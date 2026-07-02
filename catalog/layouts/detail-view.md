@@ -70,8 +70,8 @@ Two-panel detail page layout used for contact and account detail views. Left pan
 ## Props / API
 
 ```ruby
-# Admin::DetailView::Component
-class Admin::DetailView::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::DetailView::Component
+class MpiDesignSystem::Admin::DetailView::Component < ViewComponent::Base
   # @param variant [Symbol] :contact (default), :account
   #
   # Renders panels via slots:
@@ -80,11 +80,11 @@ class Admin::DetailView::Component < ViewComponent::Base
 end
 
 # Left panel content is composed of sub-components:
-# - Admin::AvatarCircle::Component (64px variant)
-# - Admin::TagChip::Component (for tag chips)
-# - Admin::Badge::Component (for auto-groups)
+# - MpiDesignSystem::Admin::AvatarCircle::Component (64px variant)
+# - MpiDesignSystem::Admin::TagChip::Component (for tag chips)
+# - MpiDesignSystem::Admin::Badge::Component (for auto-groups)
 # Right panel uses:
-# - Admin::EngagementTimeline::Component (full variant)
+# - MpiDesignSystem::Admin::EngagementTimeline::Component (full variant)
 ```
 
 ## Bootstrap Classes

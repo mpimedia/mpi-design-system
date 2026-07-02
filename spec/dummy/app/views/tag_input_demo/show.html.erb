@@ -1,0 +1,15 @@
+<% content_for :title, "Tag Input Demo" %>
+
+<main class="container py-4">
+  <h1 class="h4 mb-3">Tag Input Demo</h1>
+
+  <%= render MpiDesignSystem::Admin::TagInput::Component.new(
+        available_tags: [
+          { label: "VIP", group: :buyers },
+          { label: "Priority", group: :sellers },
+          { label: "TIFF 2026", group: :festivals },
+          { label: "Cannes", group: :festivals }
+        ],
+        name: "contact[tags][]"
+      ) %>
+</main>

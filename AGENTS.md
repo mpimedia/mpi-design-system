@@ -22,9 +22,9 @@ yarn build:css             # Build CSS
 
 ```bash
 bundle exec rspec                                          # All tests
-bundle exec rspec spec/components/admin/badge/             # Directory
-bundle exec rspec spec/components/admin/badge/component_spec.rb      # Single file
-bundle exec rspec spec/components/admin/badge/component_spec.rb:42   # Single line
+bundle exec rspec spec/components/mpi_design_system/admin/badge/             # Directory
+bundle exec rspec spec/components/mpi_design_system/admin/badge/component_spec.rb      # Single file
+bundle exec rspec spec/components/mpi_design_system/admin/badge/component_spec.rb:42   # Single line
 ```
 
 - RSpec with ViewComponent test helpers
@@ -66,7 +66,7 @@ When reviewing code, check for:
 - Accessibility violations (missing ARIA attributes, poor contrast)
 
 ### P1 — Should Fix
-- Pattern violations (components not following `Admin::Name::Component` convention)
+- Pattern violations (components not following `MpiDesignSystem::Admin::Name::Component` convention)
 - Missing tests for new components
 - Incorrect Bootstrap class usage
 - Missing responsive behavior
@@ -90,7 +90,7 @@ When multiple agents work on the same feature:
 ### Component Structure
 
 ```
-app/components/admin/
+app/components/mpi_design_system/admin/
 ├── badge/
 │   ├── component.rb           # Ruby logic (inherits ViewComponent::Base)
 │   └── component.html.erb     # ERB template

@@ -11,14 +11,31 @@ Applies to: `app/components/**`, `app/javascript/**`, `app/assets/**`
 
 ## ViewComponent Conventions
 
-- Components follow the `Admin::Name::Component` pattern:
-  `app/components/admin/<name>/component.rb` + `component.html.erb`
+- Components follow the `MpiDesignSystem::Admin::Name::Component` pattern:
+  `app/components/mpi_design_system/admin/<name>/component.rb` + `component.html.erb`
 - Components inherit directly from `ViewComponent::Base`. There is **no**
   `ApplicationComponent` base class in this engine — do not reference or invent one
-- Every component ships with a spec (`spec/components/admin/<name>/component_spec.rb`)
-  and a Lookbook preview (`spec/components/previews/admin/<name>/component_preview.rb`)
-- Validate params in the component and fall back to safe defaults (e.g. `Admin::Badge::Component`
+- Every component ships with a spec (`spec/components/mpi_design_system/admin/<name>/component_spec.rb`)
+  and a Lookbook preview (`spec/components/previews/mpi_design_system/admin/<name>/component_preview.rb`)
+- Validate params in the component and fall back to safe defaults (e.g. `MpiDesignSystem::Admin::Badge::Component`
   maps an unknown color to `primary`) — never let bad input render broken markup
+
+## Renaming a Component or Namespace
+
+A component or namespace rename is not finished when the constants resolve — two blind spots
+routinely survive a constant-only sweep and ship green:
+
+- **Path strings, not just constants.** Old paths also live in lowercase string literals a
+  `grep 'Admin::'` never sees: `render_with_template(template: "…")`, `render partial: "…"`,
+  Lookbook `@display`/template annotations, and asset paths. After renaming, grep the old
+  *path fragment* (e.g. `admin/`) separately from the old *constant*, and confirm with a full
+  preview render sweep (see `.claude/rules/testing.md`). Zeitwerk rewires constant→path but
+  will not flag a hard-coded template string pointing at the moved directory.
+- **The repo's own docs, not just code.** Sweep `CLAUDE.md`, `AGENTS.md`, `.claude/rules/**`,
+  `catalog/**`, `references/**`, and `docs/standards/**` for the old token too — leaving the
+  convention documented one way while the code does another tells the next agent to re-create
+  the old pattern. (Reference: #103 renamed `Admin::` → `MpiDesignSystem::Admin::`; the catalog
+  and standards docs had to be swept in the same change.)
 
 ## Component Catalog First
 
@@ -47,7 +64,7 @@ If a catalog entry exists, implement to that spec. If not, raise it with the HC 
 
 - Controllers live in `app/javascript/mpi_design_system/controllers/`
 - Every controller must be registered in `controllers/index.js` inside
-  `registerMpiControllers(application)` (e.g. `application.register("tag-input", TagInputController)`)
+  `registerMpiControllers(application)` (e.g. `application.register("mpi--tag-input", TagInputController)`)
   and exported from that file — consuming apps call `registerMpiControllers` to wire up
   all engine controllers at once
 - The top-level `app/javascript/mpi_design_system/index.js` re-exports

@@ -46,8 +46,8 @@ These are configurable quick-access saved searches, not hardcoded.
 ## Props / API
 
 ```ruby
-# Admin::EmptyState::Component
-class Admin::EmptyState::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::EmptyState::Component
+class MpiDesignSystem::Admin::EmptyState::Component < ViewComponent::Base
   # @param icon [String] Bootstrap Icon class (e.g., "bi-search", "bi-inbox")
   # @param heading [String] Heading text
   # @param description [String] Description text

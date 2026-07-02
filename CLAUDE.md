@@ -42,8 +42,8 @@ bin/dev
 # Tests
 bundle exec rspec                              # All tests
 bundle exec rspec spec/components/             # Directory
-bundle exec rspec spec/components/admin/badge/component_spec.rb      # Single file
-bundle exec rspec spec/components/admin/badge/component_spec.rb:42   # Single line
+bundle exec rspec spec/components/mpi_design_system/admin/badge/component_spec.rb      # Single file
+bundle exec rspec spec/components/mpi_design_system/admin/badge/component_spec.rb:42   # Single line
 
 # Linting
 bundle exec rubocop        # Check all files
@@ -97,7 +97,7 @@ app/
 │   │   ├── application.scss          # Main engine stylesheet
 │   │   └── _tokens.scss              # Design token overrides
 │   └── images/mpi_design_system/
-├── components/admin/                  # ViewComponents (Admin::Name::Component)
+├── components/mpi_design_system/admin/  # ViewComponents (MpiDesignSystem::Admin::Name::Component)
 │   ├── badge/
 │   │   ├── component.rb
 │   │   └── component.html.erb
@@ -124,7 +124,7 @@ spec/
 
 ## Component Conventions
 
-- Components follow `Admin::Name::Component` pattern at `app/components/admin/`
+- Components follow `MpiDesignSystem::Admin::Name::Component` pattern at `app/components/mpi_design_system/admin/`
 - Each component has `component.rb` (Ruby logic) and `component.html.erb` (template)
 - Use Bootstrap 5 classes for all styling — no custom CSS unless absolutely necessary
 - Use SCSS design tokens from `app/assets/stylesheets/mpi_design_system/_tokens.scss`

@@ -38,8 +38,8 @@ Card component for displaying an individual engagement entry in the CRM engageme
 ## Props / API
 
 ```ruby
-# Admin::EngagementCard::Component
-class Admin::EngagementCard::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::EngagementCard::Component
+class MpiDesignSystem::Admin::EngagementCard::Component < ViewComponent::Base
   # @param engagement_type [Symbol] :email, :meeting, :call, :note
   # @param time [String] Display time (e.g., "10:42 AM")
   # @param subject [String] Engagement subject line

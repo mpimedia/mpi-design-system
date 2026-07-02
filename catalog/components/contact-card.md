@@ -40,8 +40,8 @@ Displayed in a responsive grid: 3 columns on desktop, 2 on tablet, 1 on mobile.
 ## Props / API
 
 ```ruby
-# Admin::ContactCard::Component
-class Admin::ContactCard::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::ContactCard::Component
+class MpiDesignSystem::Admin::ContactCard::Component < ViewComponent::Base
   # @param name [String] Contact full name
   # @param initials [String] Two-letter initials for avatar
   # @param avatar_color [String] Hex color for avatar background (deterministic from name hash)

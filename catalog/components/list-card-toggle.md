@@ -51,8 +51,8 @@ View switcher toolbar that appears above list/table content in CRM views. Contai
 ## Props / API
 
 ```ruby
-# Admin::ListCardToggle::Component
-class Admin::ListCardToggle::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::ListCardToggle::Component
+class MpiDesignSystem::Admin::ListCardToggle::Component < ViewComponent::Base
   # @param result_count [Integer] Total number of results
   # @param result_label [String] Contextual label (e.g., "contacts", "accounts")
   # @param active_view [Symbol] :list (default), :card
