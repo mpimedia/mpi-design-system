@@ -64,8 +64,8 @@ Pill-shaped badges used for status indicators, counts, and labels across all MPI
 ## Props / API
 
 ```ruby
-# Admin::Badge::Component
-class Admin::Badge::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::Badge::Component
+class MpiDesignSystem::Admin::Badge::Component < ViewComponent::Base
   # @param label [String] Badge text
   # @param color [Symbol] :primary, :success, :danger, :warning, :secondary
   # @param variant [Symbol] :filled (default), :outline, :tag_group

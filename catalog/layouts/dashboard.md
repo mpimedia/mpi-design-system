@@ -83,8 +83,8 @@ CRM dashboard layout showing a personalized greeting, stat cards row, recent act
 ## Props / API
 
 ```ruby
-# Admin::Dashboard::Component
-class Admin::Dashboard::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::Dashboard::Component
+class MpiDesignSystem::Admin::Dashboard::Component < ViewComponent::Base
   # @param user_name [String] Current user's first name
   # @param greeting_time [Symbol] :morning, :afternoon, :evening
   # @param current_date [Date] Today's date for display

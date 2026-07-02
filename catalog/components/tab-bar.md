@@ -48,8 +48,8 @@ Horizontal tab navigation with optional counts, used for switching between conte
 ## Props / API
 
 ```ruby
-# Admin::TabBar::Component
-class Admin::TabBar::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::TabBar::Component
+class MpiDesignSystem::Admin::TabBar::Component < ViewComponent::Base
   # @param tabs [Array<Hash>] Tab definitions:
   #   [{ label: "Metadata", href: "#", active: true },
   #    { label: "Archive Files", href: "#", count: 47 },

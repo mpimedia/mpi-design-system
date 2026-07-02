@@ -36,8 +36,8 @@ Table row component for the CRM contacts list view. Displays a contact's avatar 
 ## Props / API
 
 ```ruby
-# Admin::ContactListRow::Component
-class Admin::ContactListRow::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::ContactListRow::Component
+class MpiDesignSystem::Admin::ContactListRow::Component < ViewComponent::Base
   # @param contact [Contact] Contact record
   # @param avatar_color [String] Hex color from deterministic hash
   # @param initials [String] Two-character initials

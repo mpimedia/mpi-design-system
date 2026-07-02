@@ -47,8 +47,8 @@ Color-coded tag chips for CRM contact and account classification. Each of the 7 
 ## Props / API
 
 ```ruby
-# Admin::TagChip::Component
-class Admin::TagChip::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::TagChip::Component
+class MpiDesignSystem::Admin::TagChip::Component < ViewComponent::Base
   # @param label [String] Tag display text (group name or specific tag name)
   # @param group [Symbol] :distribution, :outreach, :press_festival, :vendors,
   #   :finance, :production, :internal

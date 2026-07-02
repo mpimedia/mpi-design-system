@@ -46,8 +46,8 @@ Global application frame used on every page of every MPI app. Provides the Nexus
 ## Props / API
 
 ```ruby
-# Admin::AppShell::Component
-class Admin::AppShell::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::AppShell::Component
+class MpiDesignSystem::Admin::AppShell::Component < ViewComponent::Base
   # @param current_section [Symbol] :dashboard, :content, :crm, :rights_avails, :releases, :screenings
   # @param current_subsection [Symbol] Section-specific (e.g., :contacts, :accounts for CRM)
   # @param user_name [String] Current user name (for avatar)

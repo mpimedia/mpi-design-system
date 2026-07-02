@@ -2,9 +2,9 @@
 # Individual component previews should inherit from this class.
 #
 # Example:
-#   class Admin::Badge::ComponentPreview < ApplicationComponentPreview
+#   class MpiDesignSystem::Admin::Badge::ComponentPreview < ApplicationComponentPreview
 #     def default
-#       render Admin::Badge::Component.new(label: "New", color: :primary)
+#       render MpiDesignSystem::Admin::Badge::Component.new(label: "New", color: :primary)
 #     end
 #   end
 class ApplicationComponentPreview < ViewComponent::Preview

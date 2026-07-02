@@ -46,8 +46,8 @@ Top-level metric card for dashboards. Displays an ALL-CAPS label, a large number
 ## Props / API
 
 ```ruby
-# Admin::StatCard::Component
-class Admin::StatCard::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::StatCard::Component
+class MpiDesignSystem::Admin::StatCard::Component < ViewComponent::Base
   # @param label [String] Metric label (displayed ALL-CAPS)
   # @param value [String] Formatted metric value (e.g., "2,307", "47")
   # @param trend_text [String] Trend description (e.g., "34 this month")

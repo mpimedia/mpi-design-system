@@ -36,8 +36,8 @@ Chronological list of engagement entries displayed in a contact's detail view ri
 ## Props / API
 
 ```ruby
-# Admin::EngagementTimeline::Component
-class Admin::EngagementTimeline::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::EngagementTimeline::Component
+class MpiDesignSystem::Admin::EngagementTimeline::Component < ViewComponent::Base
   # @param engagements [Array<Hash>] Each: { type: Symbol, date: String, time: String,
   #   timezone: String, subject: String, excerpt: String, creator_name: String }
   # @param variant [Symbol] :full (default), :compact

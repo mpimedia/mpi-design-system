@@ -57,8 +57,8 @@ Two separate components for CRM data quality reporting. The **DataQualityDashboa
 ## Props / API
 
 ```ruby
-# Admin::DataQualityDashboard::Component (CRM-wide)
-class Admin::DataQualityDashboard::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::DataQualityDashboard::Component (CRM-wide)
+class MpiDesignSystem::Admin::DataQualityDashboard::Component < ViewComponent::Base
   # @param overall_score [Integer] 0-100 percentage
   # @param overall_tier [Symbol] :poor, :fair, :good, :excellent
   # @param grade_distribution [Hash] { excellent: Integer, good: Integer, fair: Integer, poor: Integer }
@@ -68,8 +68,8 @@ class Admin::DataQualityDashboard::Component < ViewComponent::Base
   # @param priority_fixes [Array<Hash>] Each: { contact: Contact, missing_fields: Array, score: Integer, last_active: String }
 end
 
-# Admin::DataQualityPanel::Component (Per-contact)
-class Admin::DataQualityPanel::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::DataQualityPanel::Component (Per-contact)
+class MpiDesignSystem::Admin::DataQualityPanel::Component < ViewComponent::Base
   # @param score [Integer] 0-100 percentage
   # @param tier [Symbol] :poor, :fair, :good, :excellent
   # @param fields_complete [Integer] Number of complete fields

@@ -2,20 +2,19 @@ Orchestrate a multi-agent strategy for implementing issue #$ARGUMENTS.
 
 ## Prerequisites
 
-- An implementation plan must already exist on the issue (run `/project:cplan` first)
-- An agent strategy recommendation should exist (run `/project:esti` first, or this command will generate one)
+- An implementation plan must already exist on the issue (run `/cplan` first — agent strategy is included in the plan)
 
 ## Steps
 
 1. **Read the issue, plan, and agent estimate** using `gh issue view $ARGUMENTS --comments`
 
 2. **Identify parallelizable work streams**:
-   - Group tasks by file/system independence (components vs specs vs docs)
+   - Group tasks by file/system independence (components vs Stimulus controllers vs SCSS vs specs vs docs)
    - Identify hard dependencies (shared code before dependent components)
    - Flag shared state conflicts (two agents editing the same file)
 
 3. **Design the worktree layout** (if parallel agents are warranted):
-   - Create a worktree for each independent work stream using `wt create <branch-name>`
+   - Create a worktree for each independent work stream using `git worktree add <path> -b <branch-name>`
    - Name branches descriptively: `feature/NNN-components`, `feature/NNN-specs`, `feature/NNN-docs`
    - Define the merge order (which branch merges first, rebasing strategy)
 
@@ -29,7 +28,7 @@ Orchestrate a multi-agent strategy for implementing issue #$ARGUMENTS.
 
 5. **Create coordination instructions**:
    - Which agent starts first (if there's a dependency)
-   - How agents communicate shared interfaces (e.g., "Agent B expects Agent A to create `app/components/admin/foo/component.rb`")
+   - How agents communicate shared interfaces (e.g., "Agent B expects Agent A to create `app/components/mpi_design_system/admin/foo/component.rb`")
    - Conflict resolution: if two agents need the same file, one owns it and the other waits
 
 6. **Post the orchestration plan** as a comment on the issue using `gh issue comment $ARGUMENTS --body "..."`
@@ -74,3 +73,15 @@ Orchestrate a multi-agent strategy for implementing issue #$ARGUMENTS.
 ```
 
 Also display the plan in the conversation for HC review before execution.
+
+## Agent Responsibilities
+
+- **Main agent** — owns the integration branch, merges all streams, runs full test suite after integration, creates the PR
+- **Background agents** — own their assigned files exclusively, run pre-commit checks on their scope, push to their stream branch when done
+- All agents must follow `.claude/rules/` (frontend.md, testing.md, self-review.md, etc.)
+- Each agent must run `bundle exec rubocop -a` and `bundle exec rspec` (scoped to their files) before committing
+- **Main agent** runs both checks on the full suite after integration: `bundle exec rubocop -a`, `bundle exec rspec`
+
+## Attribution
+
+Include `— Claude Code (Fable 5)` (or current model) at the bottom of any GitHub comments.

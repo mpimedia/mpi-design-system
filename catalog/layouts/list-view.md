@@ -62,8 +62,8 @@ When search or advanced filters are applied, active filter pills appear (per Fil
 ## Props / API
 
 ```ruby
-# Admin::ListView::Component
-class Admin::ListView::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::ListView::Component
+class MpiDesignSystem::Admin::ListView::Component < ViewComponent::Base
   # @param entity_type [Symbol] :contacts, :accounts, :engagements
   # @param groups [Array<Hash>] Each: { name: String, count: Integer, color: String, selected: Boolean }
   # @param sub_groups [Array<Hash>] Each: { name: String, selected: Boolean } (shown when a group is selected)

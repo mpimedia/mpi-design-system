@@ -33,16 +33,35 @@ jobs:
         run: bin/rubocop -f github
 
   test:
-    name: Test (RSpec, eager-load)
+    name: Test (RSpec, eager-load + browser)
     runs-on: ubuntu-latest
     env:
       # The dummy app sets `config.eager_load = ENV["CI"].present?`, so CI=true
       # eager-loads every component and preview constant — the structural safety
       # net that catches a broken constant/path anywhere in the engine.
       CI: "true"
+      # This job builds the esbuild/dart-sass bundle below, so the feature spec's
+      # in-process fallback build (spec/support/capybara.rb) is a no-op here.
+      MDS_ASSETS_PREBUILT: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      # The browser (Selenium) feature spec renders a real page that boots
+      # Stimulus, so the gitignored esbuild/dart-sass bundle must be built before
+      # RSpec runs. Chrome + chromedriver ship preinstalled on ubuntu-latest and
+      # selenium-webdriver's Selenium Manager resolves them — no extra action needed.
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version-file: ".tool-versions"
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install JS dependencies
+        run: yarn install --immutable
+      - name: Build JS bundle
+        run: yarn build
+      - name: Build CSS bundle
+        run: yarn build:css
       - name: Set up Ruby
         uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1
         with:
