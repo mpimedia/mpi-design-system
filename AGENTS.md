@@ -22,9 +22,9 @@ yarn build:css             # Build CSS
 
 ```bash
 bundle exec rspec                                          # All tests
-bundle exec rspec spec/components/admin/badge/             # Directory
-bundle exec rspec spec/components/admin/badge/component_spec.rb      # Single file
-bundle exec rspec spec/components/admin/badge/component_spec.rb:42   # Single line
+bundle exec rspec spec/components/mpi_design_system/admin/badge/             # Directory
+bundle exec rspec spec/components/mpi_design_system/admin/badge/component_spec.rb      # Single file
+bundle exec rspec spec/components/mpi_design_system/admin/badge/component_spec.rb:42   # Single line
 ```
 
 - RSpec with ViewComponent test helpers
@@ -90,7 +90,7 @@ When multiple agents work on the same feature:
 ### Component Structure
 
 ```
-app/components/admin/
+app/components/mpi_design_system/admin/
 ├── badge/
 │   ├── component.rb           # Ruby logic (inherits ViewComponent::Base)
 │   └── component.html.erb     # ERB template

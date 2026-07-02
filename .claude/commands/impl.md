@@ -10,7 +10,7 @@ This is **Stage 3** of the MPI Development Lifecycle (see `docs/standards/develo
    - Write or modify code following patterns in `CLAUDE.md` and `.claude/rules/frontend.md`
    - Write or update specs following the testing strategy defined in the plan and `.claude/rules/testing.md`
    - Read existing code in the relevant area before writing — discover patterns from the codebase
-   - Use ViewComponent conventions (`Admin::Name::Component` pattern, `component.rb` + `component.html.erb`)
+   - Use ViewComponent conventions (`MpiDesignSystem::Admin::Name::Component` pattern, `component.rb` + `component.html.erb`)
    - Follow Bootstrap 5 classes for all styling; use design tokens from `_tokens.scss`, never arbitrary values
    - Use Stimulus controllers for interactive behavior, exported via `app/javascript/mpi_design_system/index.js`
    - Add a Lookbook preview for every new component (`spec/components/previews/`)

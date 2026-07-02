@@ -71,8 +71,8 @@ Dots use the tag group primary colors from `tokens/colors.md`:
 ## Props / API
 
 ```ruby
-# Admin::DataTable::Component
-class Admin::DataTable::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::DataTable::Component
+class MpiDesignSystem::Admin::DataTable::Component < ViewComponent::Base
   # @param columns [Array<Hash>] Column definitions:
   #   [{ key: :name, label: "Name", sortable: true },
   #    { key: :tags, label: "Tags" },

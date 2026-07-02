@@ -69,8 +69,8 @@ Two filter bar patterns used in CRM list views. Group filter chips provide tag-g
 ## Props / API
 
 ```ruby
-# Admin::FilterChipBar::Component
-class Admin::FilterChipBar::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::FilterChipBar::Component
+class MpiDesignSystem::Admin::FilterChipBar::Component < ViewComponent::Base
   # @param groups [Array<Hash>] Group chip data:
   #   [{ label: "All", count: 2307 },
   #    { label: "Distribution", count: 342, group: :distribution, selected: true }]

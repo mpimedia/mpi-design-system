@@ -52,8 +52,8 @@ Standard buttons using MPI's confirmed color palette, built on Bootstrap 5 `.btn
 ## Props / API
 
 ```ruby
-# Admin::ActionButton::Component
-class Admin::ActionButton::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::ActionButton::Component
+class MpiDesignSystem::Admin::ActionButton::Component < ViewComponent::Base
   # @param label [String] Button text
   # @param color [Symbol] :primary (default), :success, :danger, :warning, :secondary
   # @param variant [Symbol] :filled (default), :outline

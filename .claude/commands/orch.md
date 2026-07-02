@@ -28,7 +28,7 @@ Orchestrate a multi-agent strategy for implementing issue #$ARGUMENTS.
 
 5. **Create coordination instructions**:
    - Which agent starts first (if there's a dependency)
-   - How agents communicate shared interfaces (e.g., "Agent B expects Agent A to create `app/components/admin/foo/component.rb`")
+   - How agents communicate shared interfaces (e.g., "Agent B expects Agent A to create `app/components/mpi_design_system/admin/foo/component.rb`")
    - Conflict resolution: if two agents need the same file, one owns it and the other waits
 
 6. **Post the orchestration plan** as a comment on the issue using `gh issue comment $ARGUMENTS --body "..."`

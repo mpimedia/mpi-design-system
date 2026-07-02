@@ -40,8 +40,8 @@ Page navigation for list views. Shows a "Showing X–Y of Z results" summary on 
 ## Props / API
 
 ```ruby
-# Admin::Pagination::Component
-class Admin::Pagination::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::Pagination::Component
+class MpiDesignSystem::Admin::Pagination::Component < ViewComponent::Base
   # @param current_page [Integer] Current active page (1-based)
   # @param total_pages [Integer] Total number of pages
   # @param total_count [Integer] Total number of records

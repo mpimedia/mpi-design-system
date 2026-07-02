@@ -13,7 +13,7 @@ These two are the engine's complete required-check set. App repos in the MPI sui
 
 ## ViewComponents
 
-- [ ] Components follow the `Admin::Name::Component` pattern at `app/components/admin/`
+- [ ] Components follow the `MpiDesignSystem::Admin::Name::Component` pattern at `app/components/mpi_design_system/admin/`
 - [ ] Each component is a `component.rb` (Ruby logic) + `component.html.erb` (template) pair
 - [ ] Slots use `renders_one` / `renders_many`
 - [ ] Conditional logic lives in the Ruby class, not the template
@@ -83,7 +83,7 @@ When triaging review findings, classify each issue by severity. These definition
 
 ### P1 — Should Fix (request changes; merge after fix)
 
-- Pattern violations (components not following the `Admin::Name::Component` convention)
+- Pattern violations (components not following the `MpiDesignSystem::Admin::Name::Component` convention)
 - Missing tests for new components
 - Incorrect Bootstrap class usage
 - Missing responsive behavior

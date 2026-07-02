@@ -38,8 +38,8 @@ Search input with icon prefix, used for filtering lists, contacts, and content t
 ## Props / API
 
 ```ruby
-# Admin::SearchBar::Component
-class Admin::SearchBar::Component < ViewComponent::Base
+# MpiDesignSystem::Admin::SearchBar::Component
+class MpiDesignSystem::Admin::SearchBar::Component < ViewComponent::Base
   # @param placeholder [String] Placeholder text (default: "Search...")
   # @param value [String] Current search value
   # @param name [String] Input name attribute (default: "q")
