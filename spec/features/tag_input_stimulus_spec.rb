@@ -33,6 +33,15 @@ RSpec.describe "TagInput Stimulus controller", type: :feature, js: true do
       fill_tag_input("VIP")
       expect(page).to have_css("[role='option']", text: "VIP")
     end
+
+    it "keeps the suggestion dropdown hidden on initial load" do
+      visit "/tag_input_demo"
+      expect(page).to have_css("[data-controller='mpi--tag-input']")
+      display = page.evaluate_script(
+        "getComputedStyle(document.querySelector(\"[data-mpi--tag-input-target='dropdown']\")).display"
+      )
+      expect(display).to eq("none")
+    end
   end
 
   describe "adding a tag" do

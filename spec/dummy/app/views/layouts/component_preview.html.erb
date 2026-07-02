@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Component Preview</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%#
+      Deliberately asset-free. The preview-render sweep
+      (spec/components/previews/preview_rendering_spec.rb) renders every Lookbook
+      example through this layout to prove no preview raises. It must not depend on
+      the Propshaft-served esbuild/dart-sass bundle (spec/dummy/app/assets/builds/*,
+      which is gitignored and only built for feature specs), so the sweep stays
+      hermetic and order-independent. Scoped to the test environment via
+      config.view_component.previews.default_layout in config/environments/test.rb,
+      so the development Lookbook UI keeps rendering previews in the full,
+      asset-loaded application layout.
+    %>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>
