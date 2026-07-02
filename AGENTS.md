@@ -102,62 +102,27 @@ app/components/mpi_design_system/admin/
 
 ### Stimulus Controllers
 
-Engine exports controllers via `app/javascript/mpi_design_system/`:
-
-```js
-import { registerMpiControllers } from "mpi_design_system"
-registerMpiControllers(application)
-```
-
-> **Note:** The bare `"mpi_design_system"` import requires an esbuild alias in the consuming app's `esbuild.config.js`:
-> ```js
-> alias: { 'mpi_design_system': path.resolve(__dirname, 'path/to/mpi_design_system/app/javascript/mpi_design_system') }
-> ```
-> See this repo's `esbuild.config.js` for a working example.
+The engine exports its Stimulus controllers from `app/javascript/mpi_design_system/`. A
+consuming app aliases the bare `"mpi_design_system"` specifier to that directory in esbuild,
+then calls `registerMpiControllers(application)` to register them all at once.
 
 ### Design Tokens
 
-SCSS tokens live in `app/assets/stylesheets/mpi_design_system/`. There are two entry points for the two Sass consumption models — both resolve through a dart-sass `--load-path=<gem>/app/assets/stylesheets`:
+SCSS tokens live in `app/assets/stylesheets/mpi_design_system/`, with two entry points:
+`tokens` (legacy `@import`, maps the MPI palette onto Bootstrap's variables) and
+`tokens_values` (modern `@use`, dependency-free values only). Both resolve through a
+dart-sass `--load-path`.
 
-- **Legacy `@import` apps** — import `tokens` before Bootstrap; it maps the MPI palette onto Bootstrap's variables:
-  ```scss
-  @import "mpi_design_system/tokens";
-  @import "bootstrap/scss/bootstrap";
-  ```
-- **Modern Sass-module apps** — `@use` the dependency-free values module and feed the palette into your own Bootstrap config, so the engine's Bootstrap is not double-compiled against your app's `bootstrap@5.3.x`:
-  ```scss
-  @use "mpi_design_system/tokens_values" as mpi;
-  $primary: mpi.$mpi-primary;
-  @import "bootstrap/scss/bootstrap";
-  ```
+### Engine Integration — Install Contract
 
-### Engine Integration
+The engine ships its JS and SCSS as **source** (no Rails asset-pipeline initializer — there
+is nothing to auto-mount). A consuming app wires up the gem, the esbuild alias, and the
+dart-sass `--load-path`.
 
-The engine ships its JS and SCSS as **source** (no Rails asset-pipeline initializer — there is nothing to auto-mount). A consuming app wires up three things:
-
-```ruby
-# Gemfile
-gem 'mpi_design_system', git: 'git@github.com:mpimedia/mpi-design-system.git'
-```
-
-```js
-// esbuild.config.js — alias the bare specifier to the gem's JS source
-alias: { 'mpi_design_system': path.resolve(__dirname, 'path/to/mpi_design_system/app/javascript/mpi_design_system') }
-```
-
-```js
-// application.js
-import { registerMpiControllers } from "mpi_design_system"
-registerMpiControllers(application)
-```
-
-```bash
-# CSS build — add the gem's stylesheets dir to the sass load path
-sass app/assets/stylesheets/application.scss:app/assets/builds/application.css \
-  --load-path=node_modules --load-path=path/to/mpi_design_system/app/assets/stylesheets
-```
-
-Then import tokens in `application.scss` using one of the two models above.
+> **The canonical, self-contained install instructions live in [`README.md`](README.md)** —
+> Gemfile line, esbuild alias, `registerMpiControllers`, dart-sass `--load-path`, and both
+> token entry points, with every path resolved via `bundle show mpi_design_system`. README
+> is the single source of truth; do not duplicate the install steps here.
 
 ## Agent Attribution (Required — No Exceptions)
 
