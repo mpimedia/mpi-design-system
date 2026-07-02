@@ -24,6 +24,21 @@ Applies to: `spec/**`
   first — CI builds them and sets `MDS_ASSETS_PREBUILT=1`; locally `spec/support/capybara.rb`
   builds them on demand. Reserve the browser for genuine JS behavior; do not reach for it
   when a `render_inline` assertion suffices. (Reference: the `mpi--tag-input` feature spec, #103.)
+- **The preview-render sweep must stay asset-free.** `render_preview` renders through a layout,
+  and the dummy app's application layout calls `stylesheet_link_tag` / `javascript_include_tag`
+  — Propshaft raises on those when the gitignored `spec/dummy/app/assets/builds/*` bundle is
+  absent (it is built only for feature specs). So the sweep
+  (`spec/components/previews/preview_rendering_spec.rb`) renders through a bare, asset-free
+  layout (`spec/dummy/app/views/layouts/component_preview.html.erb`) scoped to the test env via
+  `config.view_component.previews.default_layout` in `spec/dummy/config/environments/test.rb`.
+  Keep it that way — do not "fix" a sweep failure by building assets, which recouples a
+  unit-level render gate to the asset pipeline; development Lookbook keeps the full application
+  layout. (#111.)
+- **Prove hidden-on-load with computed style, not `visible: :hidden`.** Capybara's
+  `have_css(..., visible: :hidden)` can false-pass on an empty/zero-size element even when the
+  CSS meant to hide it was dropped. To prove an element is actually hidden in a browser spec,
+  read the computed style — `page.evaluate_script("getComputedStyle(el).display")` — as the
+  `mpi--tag-input` feature spec does. (#111.)
 
 ## Layout
 
@@ -61,11 +76,13 @@ No component is complete until its spec covers:
 6. **A matching Lookbook preview** exists and actually **renders** — not merely eager-loads.
    Eager-load loads the preview *constant* but never renders it, so a missing template
    (`render_with_template(template: "…")`) or a bad component kwarg ships green under a fully
-   passing suite. Verify by rendering every scenario, e.g.
-   `ViewComponent::Preview.all.each { |p| p.instance_methods(false).each { |s| render_preview(s, from: p) } }`
-   — a sweep like this caught two preview defects the 500-example suite missed during the
-   #103 rename. (An enforcing spec for this gate lands with the #111 preview fixes, once every
-   scenario renders green.)
+   passing suite. This gate is enforced by `spec/components/previews/preview_rendering_spec.rb`,
+   which renders every Lookbook scenario and fails if any raises:
+   `ViewComponent::Preview.all.each { |p| p.examples.each { |s| render_preview(s, from: p) } }`
+   — the sweep that caught two preview defects the 500-example suite missed during the #103
+   rename (#111). It enumerates `preview.examples` (ViewComponent's own
+   `public_instance_methods(false)`, which excludes private preview helpers) and renders through
+   a bare, asset-free layout to stay hermetic (see **Stack**'s preview-sweep note).
 
 ## Naming Convention
 
