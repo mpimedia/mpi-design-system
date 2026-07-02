@@ -14,7 +14,7 @@ Same names, same numbers, same structure as Optimus. Engine-scoped wording *insi
 
 | Machinery | Files | Sync Rule |
 |-----------|-------|-----------|
-| Lifecycle commands | `.claude/commands/*.md` | Same command names, stage numbers, and document structure as Optimus. This repo's flat set: `assess`, `compare`, `cplan`, `dep-review`, `explore`, `final`, `impl`, `memory-review`, `orch`, `rtr`, `verify`. Step content is engine-scoped (components, previews, tokens — not app systems). |
+| Lifecycle commands | `.claude/commands/*.md` | Same command names, stage numbers, and document structure as Optimus. This repo's flat set: `assess`, `compare`, `cplan`, `dep-review`, `explore`, `final`, `impl`, `memory-review`, `orch`, `rtr`, `ship`, `verify`. Step content is engine-scoped (components, previews, tokens — not app systems). `ship` is ahead of the template: adopted from Markaz before Optimus carries it (see Upstream Findings Log) — when Optimus adopts `/ship`, converge on its version. |
 | `settings.json` structure | `.claude/settings.json` | The **attribution block** (commit trailer + PR footer strings), the **PreToolUse hook matcher** list (`Write\|Edit\|Bash(git commit:*)\|Bash(git push:*)\|Bash(git merge:*)\|Bash(git rebase:*)`), and the **enabledPlugins** scheme converge with Optimus. The plugin *list* is tailored to engine relevance: design/frontend-facing plugins kept, app/infra-only plugins dropped. |
 | Agent-layer branch hook | `.claude/hooks/enforce-branch-creation.sh` | Optimus's fail-closed variant. Logic changes sync from Optimus, not local edits. |
 | Git-layer branch guard | `.githooks/{pre-commit,pre-push,pre-merge-commit,pre-rebase}`, `bin/guard-protected-branch`, `bin/install-git-hooks` | Ported from Optimus; the AC-vs-HC detection logic must match the template. |
@@ -68,6 +68,7 @@ The standing record of findings *against the canonical template* that were delib
 | Date | Finding | Disposition | Evidence | Status |
 |------|---------|-------------|----------|--------|
 | 2026-07-01 | `bin/guard-protected-branch` (byte-identical Optimus port) intends to exempt Human Contributors via TTY detection (`[[ ! -t 0 ]]` fallback), but git >= 2.36 runs hooks with stdin attached to `/dev/null` — so through the git layer (`.githooks/*`) **every** invocation, human or AI, is classified as an AC and blocked on protected branches. Verified empirically on git 2.55 (scratch repo, hooks installed, AC env vars unset, real PTY: commit and push on `main` both blocked). Practical impact low: the flow is PR-based and HCs retain `git commit/push --no-verify`. The alternative fix (probing `/dev/tty`) risks silently exempting ACs. Found during Stage-4 verification of PR #108. | Accept-and-document; byte-identity with Optimus preserved | [PR #108 comment](https://github.com/mpimedia/mpi-design-system/pull/108#issuecomment-4860931688) | To raise upstream in Optimus |
+| 2026-07-01 | Optimus lacks the `/ship` streamlined-track command. It originated in Markaz (`markaz/.claude/commands/ship.md` + a "Automated / Streamlined Track" section in its lifecycle doc); this engine adopted it directly from Markaz (issue #112) — a Markaz → engine transfer that bypasses the normal Optimus → engine flow. The engine's copy is tailored (two required checks, ecosystem-propagation emergency stops, direct Codex invocation instead of the `codex-review`/`codex-plan-review` Actions this repo doesn't have). Until Optimus carries `/ship`, drift checks must not flag the engine's `ship.md` as local drift to delete. | Adopted locally from Markaz; template should adopt `/ship` so the suite converges on one canonical version | [Issue #112](https://github.com/mpimedia/mpi-design-system/issues/112) | To raise upstream in Optimus |
 
 ## Model Attribution Strings
 
@@ -88,7 +89,7 @@ mpi-design-system/
 │   ├── settings.json                  # Machinery (structure) — plugin list tailored
 │   ├── hooks/
 │   │   └── enforce-branch-creation.sh # Machinery — agent-layer branch protection
-│   ├── commands/                      # Machinery — 11 lifecycle/support commands
+│   ├── commands/                      # Machinery — 12 lifecycle/support commands
 │   ├── rules/                         # Domain content — engine-tailored rules
 │   └── projects.json                  # Machinery — MPI ecosystem registry
 ├── .githooks/                         # Machinery — git-layer branch protection
