@@ -5,6 +5,8 @@ All notable changes to `mpi_design_system` are documented here. The format is ba
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) (pre-1.0: minor bumps may
 include breaking changes).
 
+## [Unreleased]
+
 ## [0.2.0] - 2026-07-02
 
 First release cut to prepare the engine for its first real adoption (Harvest — see
