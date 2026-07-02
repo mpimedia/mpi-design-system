@@ -6,7 +6,6 @@ gem "puma", "~> 8"
 gem "propshaft", "~> 1"
 gem "jsbundling-rails", "~> 1"
 gem "cssbundling-rails", "~> 1"
-gem "bootstrap", "~> 5"
 gem "lookbook", "~> 2"
 gem "foreman", "~> 0"
 

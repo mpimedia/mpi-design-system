@@ -1,0 +1,13 @@
+// Compat fixture — proves the values module's `!default` flags let a modern
+// consumer override MPI tokens via `@use … with (…)`. Two things are asserted
+// by compiling this file: (1) it compiles at all — a `with ()` override of a
+// variable NOT declared `!default` is a hard Sass error, so success proves the
+// flags are present; (2) the overridden primary (#0a5c2e) reaches the compiled
+// CSS, proving the override wins over the default. (Issue #103, Work item 2.)
+@use "mpi_design_system/tokens_values" as mpi with (
+  $mpi-primary: #0A5C2E
+);
+
+$primary: mpi.$mpi-primary;
+
+@import "bootstrap/scss/bootstrap";

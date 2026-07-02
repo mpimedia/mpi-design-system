@@ -117,11 +117,23 @@ registerMpiControllers(application)
 
 ### Design Tokens
 
-SCSS tokens at `app/assets/stylesheets/mpi_design_system/_tokens.scss` override Bootstrap defaults before import.
+SCSS tokens live in `app/assets/stylesheets/mpi_design_system/`. There are two entry points for the two Sass consumption models — both resolve through a dart-sass `--load-path=<gem>/app/assets/stylesheets`:
+
+- **Legacy `@import` apps** — import `tokens` before Bootstrap; it maps the MPI palette onto Bootstrap's variables:
+  ```scss
+  @import "mpi_design_system/tokens";
+  @import "bootstrap/scss/bootstrap";
+  ```
+- **Modern Sass-module apps** — `@use` the dependency-free values module and feed the palette into your own Bootstrap config, so the engine's Bootstrap is not double-compiled against your app's `bootstrap@5.3.x`:
+  ```scss
+  @use "mpi_design_system/tokens_values" as mpi;
+  $primary: mpi.$mpi-primary;
+  @import "bootstrap/scss/bootstrap";
+  ```
 
 ### Engine Integration
 
-Consuming apps add the gem and register controllers:
+The engine ships its JS and SCSS as **source** (no Rails asset-pipeline initializer — there is nothing to auto-mount). A consuming app wires up three things:
 
 ```ruby
 # Gemfile
@@ -129,10 +141,23 @@ gem 'mpi_design_system', git: 'git@github.com:mpimedia/mpi-design-system.git'
 ```
 
 ```js
+// esbuild.config.js — alias the bare specifier to the gem's JS source
+alias: { 'mpi_design_system': path.resolve(__dirname, 'path/to/mpi_design_system/app/javascript/mpi_design_system') }
+```
+
+```js
 // application.js
 import { registerMpiControllers } from "mpi_design_system"
 registerMpiControllers(application)
 ```
+
+```bash
+# CSS build — add the gem's stylesheets dir to the sass load path
+sass app/assets/stylesheets/application.scss:app/assets/builds/application.css \
+  --load-path=node_modules --load-path=path/to/mpi_design_system/app/assets/stylesheets
+```
+
+Then import tokens in `application.scss` using one of the two models above.
 
 ## Agent Attribution (Required — No Exceptions)
 

@@ -1,0 +1,56 @@
+// MPI Design System — Token Values (Sass-module-friendly)
+//
+// Raw MPI brand/palette values with NO Bootstrap dependency. This is the entry
+// point for consuming apps on the modern Sass module system: `@use` it, then map
+// the values onto your OWN Bootstrap configuration — without importing the
+// engine's Bootstrap (which would double-compile Bootstrap against your app's
+// bootstrap@5.3.x). Every variable is `!default` so a `@use … with (…)` override
+// wins.
+//
+//   // modern (@use) consumer:
+//   @use "mpi_design_system/tokens_values" as mpi;
+//   $primary: mpi.$mpi-primary;
+//   @import "bootstrap/scss/bootstrap";
+//
+// Apps on the legacy pipeline should import `tokens` instead, which layers the
+// Bootstrap variable overrides on top of these values. See AGENTS.md for both
+// install paths. (Issue #103, Work item 2.)
+
+// Brand colors
+$mpi-primary: #2E75B6 !default;
+$mpi-brand-navy: #1B2A4A !default;
+$mpi-brand-accent: #4EA8DE !default;
+
+// Semantic colors (raw values; `tokens` maps these onto Bootstrap's $primary etc.)
+$mpi-success: #22A06B !default;
+$mpi-warning: #D4772C !default;
+// $danger is intentionally omitted — the palette uses Bootstrap's default (#DC3545).
+
+// Neutral colors
+$mpi-text: $mpi-brand-navy !default;
+$mpi-text-muted: #6C757D !default;
+$mpi-border: #DEE2E6 !default;
+$mpi-background: #F5F7FA !default;
+$mpi-surface: #FFFFFF !default;
+
+// Tag group colors (CRM)
+$mpi-tag-buyers: #E8733A !default;
+$mpi-tag-buyers-bg: #FEF3EC !default;
+$mpi-tag-press: #2DA67E !default;
+$mpi-tag-press-bg: #ECF8F4 !default;
+$mpi-tag-festivals: #2E75B6 !default;
+$mpi-tag-festivals-bg: #EBF3FB !default;
+$mpi-tag-sellers: #8B5CF6 !default;
+$mpi-tag-sellers-bg: #F3EFFE !default;
+$mpi-tag-institutional: #D97706 !default;
+$mpi-tag-institutional-bg: #FEF9EC !default;
+$mpi-tag-organizations: #6366F1 !default;
+$mpi-tag-organizations-bg: #EEEFFE !default;
+$mpi-tag-internal: #64748B !default;
+$mpi-tag-internal-bg: #F1F5F9 !default;
+
+// Engagement type colors (CRM)
+$mpi-engagement-email: #2E75B6 !default;
+$mpi-engagement-meeting: #8B5CF6 !default;
+$mpi-engagement-call: #16A34A !default;
+$mpi-engagement-note: #E8913A !default;

@@ -85,3 +85,11 @@ jobs:
         run: yarn install --immutable
       - name: Build JS bundle
         run: yarn build
+      # Proves the SCSS token contract compiles for BOTH consumer models — the
+      # legacy `@import "mpi_design_system/tokens"` path (mirrors spec/dummy) and
+      # the modern `@use "mpi_design_system/tokens_values"` path that feeds the
+      # MPI palette into an app's own Bootstrap without double-compiling it.
+      # Asserts the primary color (#2e75b6) reaches the compiled CSS in each.
+      # (Issue #103, Work item 2.)
+      - name: SCSS token compatibility (legacy @import + modern @use)
+        run: yarn build:css:compat
