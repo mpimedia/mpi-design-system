@@ -76,14 +76,31 @@ RSpec.describe MpiDesignSystem::Admin::BreadcrumbNav::Component, type: :componen
     expect(rendered_content).not_to match(/#[0-9A-Fa-f]{6}\b/)
   end
 
-  # Guards the deliberate absence in the template: these elements must inherit the consumer's
+  # Bootstrap's text-color utilities, enumerated deliberately. A `[class*='text-']` substring
+  # match would be simpler but overreaches — it also rejects legitimate non-color utilities
+  # (text-decoration-none, text-wrap, text-truncate), so it would block valid future changes.
+  let(:bootstrap_text_color_classes) do
+    %w[
+      text-primary text-secondary text-success text-danger text-warning text-info
+      text-light text-dark text-body text-muted text-white text-black
+      text-body-secondary text-body-tertiary text-body-emphasis
+      text-primary-emphasis text-secondary-emphasis text-success-emphasis
+      text-danger-emphasis text-warning-emphasis text-info-emphasis
+      text-light-emphasis text-dark-emphasis text-black-50 text-white-50
+    ]
+  end
+
+  # Guards the deliberate absence in the template: these two elements must inherit the consumer's
   # --bs-link-color / --bs-body-color. A future `text-primary` here would silently re-pin the
-  # palette and undo #124 while every other assertion above still passed.
+  # palette and undo #124 while every other assertion in this file still passed.
   it "pins no color class on the elements that must inherit the consumer palette" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).to have_no_css("a[class*='text-primary'], a[class*='text-body']")
-    expect(page).to have_no_css("span.fw-semibold[class*='text-']")
+    link_classes = page.find("a")[:class].split
+    title_classes = page.find("span.fw-semibold")[:class].split
+
+    expect(link_classes & bootstrap_text_color_classes).to be_empty
+    expect(title_classes & bootstrap_text_color_classes).to be_empty
   end
 
   it "escapes HTML-special characters in the current title" do
