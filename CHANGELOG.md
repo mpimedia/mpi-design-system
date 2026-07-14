@@ -7,6 +7,13 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-14
+
+Tokenizes `Admin::EmptyState::Component` — the first component change driven by real
+adoption feedback (Harvest `#736`, epic `harvest#692` Phase 5). Removes the inline-hex
+seam the component shipped with and makes its heading level configurable so consumers can
+compose it under their own section headings.
+
 ### Added
 - **`Admin::EmptyState::Component` gains a `heading_level:` parameter** (`:h1`–`:h6`,
   default `:h3`; invalid values fall back to `:h3`). Consumers can place the empty state
