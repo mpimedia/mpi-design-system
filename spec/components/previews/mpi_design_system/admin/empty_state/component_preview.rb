@@ -34,4 +34,15 @@ class MpiDesignSystem::Admin::EmptyState::ComponentPreview < ApplicationComponen
       description: "Engagements will appear here once recorded."
     )
   end
+
+  # @label Nested heading (:h5)
+  # Empty state composed under an existing section heading — a consumer passes the level
+  # that keeps the document outline monotonic (e.g. :h5 beneath a show-page <h4>).
+  def nested_heading
+    render MpiDesignSystem::Admin::EmptyState::Component.new(
+      icon: "bi-people",
+      heading: "No associated users found",
+      heading_level: :h5
+    )
+  end
 end
