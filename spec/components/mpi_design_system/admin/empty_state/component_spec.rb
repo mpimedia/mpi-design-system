@@ -72,7 +72,7 @@ RSpec.describe MpiDesignSystem::Admin::EmptyState::Component, type: :component d
 
     expect(page).to have_css(".col-6", count: 2)
     expect(page).to have_css("a[href='/search?q=distribution']")
-    expect(page).to have_css("div.small.fw-semibold.text-primary", text: "Distribution")
+    expect(page).to have_css("div.small.fw-semibold.text-primary-emphasis", text: "Distribution")
     expect(page).to have_css("div.small.text-muted", text: "Follow-up candidates")
     # The 2-card cluster is width-capped and centered via the grid (replacing the old
     # inline `max-width: 600px; margin: 0 auto` on the row).

@@ -31,7 +31,7 @@
           <% @shortcuts.each do |shortcut| %>
             <div class="col-6">
               <a href="<%= shortcut[:href] %>" class="shortcut-card d-block h-100 p-3 rounded-3 border bg-body text-decoration-none text-start">
-                <div class="small fw-semibold text-primary"><%= shortcut[:title] %></div>
+                <div class="small fw-semibold text-primary-emphasis"><%= shortcut[:title] %></div>
                 <% if shortcut[:description] %>
                   <div class="small text-muted"><%= shortcut[:description] %></div>
                 <% end %>
