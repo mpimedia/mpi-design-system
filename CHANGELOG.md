@@ -7,6 +7,14 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-14
+
+Tokenizes `Admin::BreadcrumbNav::Component` — the second component change driven by real
+adoption feedback (Harvest `#738`, epic `harvest#692` Phase 3), following the same
+Bootstrap-utility approach `EmptyState` took in v0.3.0. Removes the last inline-hex seam
+standing between the breadcrumb and consumer-configured palettes, and marks the
+current-page element with `aria-current="page"`.
+
 ### Changed
 - **`Admin::BreadcrumbNav::Component` is now class/token-based.** Replaced every inline
   `style=` attribute and literal hex color (`#2E75B6`, `#6C757D`, `#1B2A4A`) with Bootstrap
