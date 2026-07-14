@@ -19,10 +19,13 @@ include breaking changes).
   attribute and literal hex color (`#F5F7FA`, `#1B2A4A`, `#4EA8DE`, `#6C757D`, `#DEE2E6`,
   `#2E75B6`) with Bootstrap 5.3 utility classes that resolve against each consumer's
   configured palette (`bg-body-tertiary`, `text-primary`, `text-muted`, `rounded-3`, `p-5`,
-  `fs-1`, `fs-5`, `fw-semibold`, `border`, `bg-white`, `text-decoration-none`, …), mirroring
-  the already class-based `Badge`. No consumer-visible API change beyond the additive
-  `heading_level:` parameter. Consuming specs that asserted the inline-hex seam (e.g.
-  `div[style*='#F5F7FA']`) must re-point onto the class markers. (#121, harvest#736)
+  `fs-1`, `fs-5`, `fw-semibold`, `border`, `bg-body`, `text-decoration-none`, …), mirroring
+  the already class-based `Badge`. Shortcut cards use the color-mode-aware `bg-body` (not a
+  fixed `bg-white`) so they stay legible under Bootstrap dark mode, and the description /
+  shortcut-cluster measures that were inline `max-width`s are now held by the responsive
+  grid. No consumer-visible API change beyond the additive `heading_level:` parameter.
+  Consuming specs that asserted the inline-hex seam (e.g. `div[style*='#F5F7FA']`) must
+  re-point onto the class markers. (#121, harvest#736)
 
 ## [0.2.0] - 2026-07-02
 

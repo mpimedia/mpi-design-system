@@ -7,7 +7,9 @@ RSpec.describe MpiDesignSystem::Admin::EmptyState::Component, type: :component d
     render_inline(described_class.new(heading: "No contacts found", description: "Try adjusting your filters"))
 
     expect(page).to have_css("h3.fs-5.fw-semibold", text: "No contacts found")
-    expect(page).to have_css("p.small.text-muted", text: "Try adjusting your filters")
+    # Description is held to a centered, width-capped measure via the responsive grid
+    # (replacing the old inline `max-width: 420px; margin: 0 auto`).
+    expect(page).to have_css(".row.justify-content-center > p.small.text-muted.col-xl-6", text: "Try adjusting your filters")
   end
 
   it "renders a class-based container with no inline styles or literal hex" do
@@ -72,18 +74,24 @@ RSpec.describe MpiDesignSystem::Admin::EmptyState::Component, type: :component d
     expect(page).to have_css("a[href='/search?q=distribution']")
     expect(page).to have_css("div.small.fw-semibold.text-primary", text: "Distribution")
     expect(page).to have_css("div.small.text-muted", text: "Follow-up candidates")
+    # The 2-card cluster is width-capped and centered via the grid (replacing the old
+    # inline `max-width: 600px; margin: 0 auto` on the row).
+    expect(page).to have_css(".row.justify-content-center > .col-lg-8 > .row.g-3[aria-label='Quick access shortcuts']")
   end
 
-  it "shortcut cards are links with text-decoration none" do
+  it "shortcut cards are color-mode-aware links with no underline" do
     shortcuts = [ { title: "Recent", description: "Last 7 days", href: "/recent" } ]
     render_inline(described_class.new(heading: "Search", shortcuts: shortcuts))
 
-    expect(page).to have_css("a.text-decoration-none.border.bg-white[href='/recent']")
+    # `bg-body` (not fixed `bg-white`) so the card and its `text-muted` copy stay
+    # legible when a consumer enables Bootstrap's dark color mode.
+    expect(page).to have_css("a.text-decoration-none.border.bg-body[href='/recent']")
   end
 
-  it "does not render shortcut section when shortcuts are empty" do
-    render_inline(described_class.new(heading: "Empty"))
+  it "does not render the shortcut section when shortcuts are empty" do
+    render_inline(described_class.new(heading: "Empty", description: "Nothing here yet"))
 
-    expect(page).not_to have_css(".row")
+    expect(page).to have_no_css("[aria-label='Quick access shortcuts']")
+    expect(page).to have_no_css(".shortcut-card")
   end
 end

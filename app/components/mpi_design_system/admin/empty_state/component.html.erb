@@ -8,7 +8,9 @@
   <%= content_tag @heading_level, @heading, class: "fs-5 fw-semibold mb-2" %>
 
   <% if @description %>
-    <p class="small text-muted mb-3"><%= @description %></p>
+    <div class="row justify-content-center">
+      <p class="col-12 col-md-8 col-xl-6 small text-muted mb-3"><%= @description %></p>
+    </div>
   <% end %>
 
   <% if show_action? %>
@@ -23,17 +25,21 @@
   <% end %>
 
   <% if show_shortcuts? %>
-    <div class="row g-3 mt-3 justify-content-center" aria-label="Quick access shortcuts">
-      <% @shortcuts.each do |shortcut| %>
-        <div class="col-6">
-          <a href="<%= shortcut[:href] %>" class="shortcut-card d-block h-100 p-3 rounded-3 border bg-white text-decoration-none text-start">
-            <div class="small fw-semibold text-primary"><%= shortcut[:title] %></div>
-            <% if shortcut[:description] %>
-              <div class="small text-muted"><%= shortcut[:description] %></div>
-            <% end %>
-          </a>
+    <div class="row justify-content-center mt-3">
+      <div class="col-12 col-md-10 col-lg-8">
+        <div class="row g-3" aria-label="Quick access shortcuts">
+          <% @shortcuts.each do |shortcut| %>
+            <div class="col-6">
+              <a href="<%= shortcut[:href] %>" class="shortcut-card d-block h-100 p-3 rounded-3 border bg-body text-decoration-none text-start">
+                <div class="small fw-semibold text-primary"><%= shortcut[:title] %></div>
+                <% if shortcut[:description] %>
+                  <div class="small text-muted"><%= shortcut[:description] %></div>
+                <% end %>
+              </a>
+            </div>
+          <% end %>
         </div>
-      <% end %>
+      </div>
     </div>
   <% end %>
 </div>
