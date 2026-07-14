@@ -1,10 +1,14 @@
-<nav aria-label="Breadcrumb" style="<%= container_styles %>">
-  <a href="<%= @back_path %>" style="<%= back_link_styles %>" aria-label="Back to <%= @back_label %>">
+<%# The back link and current title carry no text-* color class on purpose: they inherit
+    --bs-link-color ($link-color, default $primary) and --bs-body-color ($body-color -> $mpi-text)
+    so the component resolves against each consumer's configured palette rather than a constant.
+    Adding `text-primary`/`text-body` here would re-pin the color and break that. (#124) %>
+<nav aria-label="Breadcrumb" class="d-flex align-items-center gap-2 py-2 small">
+  <a href="<%= @back_path %>" class="d-inline-flex align-items-center gap-1 fw-medium text-decoration-none" aria-label="Back to <%= @back_label %>">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
       <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
     </svg>
     <%= @back_label %>
   </a>
-  <span style="<%= separator_styles %>" aria-hidden="true">/</span>
-  <span style="<%= title_styles %>"><%= @current_title %></span>
+  <span class="small text-body-secondary" aria-hidden="true">/</span>
+  <span class="fw-semibold" aria-current="page"><%= @current_title %></span>
 </nav>

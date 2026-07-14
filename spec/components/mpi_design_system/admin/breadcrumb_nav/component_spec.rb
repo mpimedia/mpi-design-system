@@ -36,16 +36,60 @@ RSpec.describe MpiDesignSystem::Admin::BreadcrumbNav::Component, type: :componen
     expect(page).to have_css("span[aria-hidden='true']", text: "/")
   end
 
-  it "renders current page title in bold navy" do
+  it "renders the current page title as class-based semibold text" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).to have_css("span[style*='color: #1B2A4A'][style*='font-weight: 600']",
-                             text: "Email: Follow-up on screening")
+    expect(page).to have_css("span.fw-semibold", text: "Email: Follow-up on screening")
   end
 
-  it "renders back link in primary blue" do
+  it "marks the current page title with aria-current" do
     render_inline(described_class.new(**default_params))
 
-    expect(page).to have_css("a[style*='color: #2E75B6']")
+    expect(page).to have_css("span[aria-current='page']", text: "Email: Follow-up on screening")
+  end
+
+  it "renders a class-based container" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_css("nav.d-flex.align-items-center.gap-2.py-2.small")
+  end
+
+  it "renders a class-based back link" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_css("a.d-inline-flex.align-items-center.gap-1.fw-medium.text-decoration-none")
+  end
+
+  it "renders a class-based separator" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_css("span.small.text-body-secondary", text: "/")
+  end
+
+  # The whole point of #124: no inline styling and no hardcoded palette survives anywhere.
+  # The hex guard is deliberately broader than the [style] guard — it catches a literal
+  # leaking back in through any attribute (fill, stroke, a data-*), not just style=.
+  it "renders with no inline styles and no literal hex anywhere" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_no_css("[style]")
+    expect(rendered_content).not_to match(/#[0-9A-Fa-f]{6}\b/)
+  end
+
+  # Guards the deliberate absence in the template: these elements must inherit the consumer's
+  # --bs-link-color / --bs-body-color. A future `text-primary` here would silently re-pin the
+  # palette and undo #124 while every other assertion above still passed.
+  it "pins no color class on the elements that must inherit the consumer palette" do
+    render_inline(described_class.new(**default_params))
+
+    expect(page).to have_no_css("a[class*='text-primary'], a[class*='text-body']")
+    expect(page).to have_no_css("span.fw-semibold[class*='text-']")
+  end
+
+  it "escapes HTML-special characters in the current title" do
+    render_inline(described_class.new(**default_params.merge(current_title: "Tom & Jerry <script>")))
+
+    expect(page).to have_css("span.fw-semibold", text: "Tom & Jerry <script>")
+    expect(rendered_content).to include("Tom &amp; Jerry &lt;script&gt;")
   end
 end
