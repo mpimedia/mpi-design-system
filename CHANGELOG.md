@@ -7,6 +7,41 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Changed
+- **`Admin::BreadcrumbNav::Component` is now class/token-based.** Replaced every inline
+  `style=` attribute and literal hex color (`#2E75B6`, `#6C757D`, `#1B2A4A`) with Bootstrap
+  5.3 utility classes, mirroring the already-tokenized `EmptyState` (#121) and `Badge`.
+  Removed the `container_styles`, `back_link_styles`, `separator_styles`, and `title_styles`
+  private methods. The public API (`back_path:`, `back_label:`, `current_title:`) is
+  unchanged — no consumer break. (#124, harvest#738 — epic harvest#692 Phase 3)
+
+  The back link and current title deliberately carry **no** color class: they inherit
+  `--bs-link-color` (`$link-color`, default `$primary`) and `--bs-body-color`
+  (`$body-color` → `$mpi-text`), so the component resolves against each consumer's
+  configured palette instead of a constant — and stays color-mode-adaptive for free.
+
+  Three deliberate deltas, all accepted rather than shipped quietly:
+  - **Container padding is `py-2` (`.5rem`/8px) against the previous 12px.** Bootstrap's
+    spacer scale is 4/8/16/24/48; 12px is not expressible without custom SCSS, which would
+    require every consumer to opt into importing an engine stylesheet.
+  - **The separator color changes.** `text-body-secondary` is `rgba($body-color, .75)`, not
+    `#6C757D`. Against the engine's navy `$body-color` it composites to a navy-tinted gray —
+    on-brand, and measurably better: **4.53:1 (WCAG AA)** on a `#c2c2c2` header versus
+    `#6C757D`'s 2.63:1 (fail).
+  - **The separator is ≈12.25px, not exactly 12px.** Nested `.small` compounds (`.875em` of
+    the nav's already-`.875em`), landing near — but not on — the original value.
+
+  Sizing is now **relative rather than fixed**: `gap-2`/`gap-1` are `rem`-based and `.small`
+  is `em`-based, so the 8px/4px/14px equivalences above hold against a 16px root and an
+  unscaled parent. This is the intended trade — it's what lets the component respond to a
+  consumer's type scale instead of pinning pixels — but it is a behavioral change from the
+  fixed-pixel inline styles, not a pure refactor.
+
+### Added
+- **`Admin::BreadcrumbNav::Component` marks its current-page element with `aria-current="page"`.**
+  The breadcrumb's current title now announces as the current page to assistive technology.
+  (#124)
+
 ## [0.3.0] - 2026-07-14
 
 Tokenizes `Admin::EmptyState::Component` — the first component change driven by real
