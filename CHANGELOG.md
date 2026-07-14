@@ -7,6 +7,23 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Added
+- **`Admin::EmptyState::Component` gains a `heading_level:` parameter** (`:h1`–`:h6`,
+  default `:h3`; invalid values fall back to `:h3`). Consumers can place the empty state
+  under an existing section heading without a backward heading-level jump (e.g. `:h5`
+  beneath a show-page `<h4>`). The visual size is held constant (`fs-5`) regardless of the
+  chosen semantic level. (#121, harvest#736 — epic harvest#692 Phase 5)
+
+### Changed
+- **`Admin::EmptyState::Component` is now class/token-based.** Replaced every inline `style=`
+  attribute and literal hex color (`#F5F7FA`, `#1B2A4A`, `#4EA8DE`, `#6C757D`, `#DEE2E6`,
+  `#2E75B6`) with Bootstrap 5.3 utility classes that resolve against each consumer's
+  configured palette (`bg-body-tertiary`, `text-primary`, `text-muted`, `rounded-3`, `p-5`,
+  `fs-1`, `fs-5`, `fw-semibold`, `border`, `bg-white`, `text-decoration-none`, …), mirroring
+  the already class-based `Badge`. No consumer-visible API change beyond the additive
+  `heading_level:` parameter. Consuming specs that asserted the inline-hex seam (e.g.
+  `div[style*='#F5F7FA']`) must re-point onto the class markers. (#121, harvest#736)
+
 ## [0.2.0] - 2026-07-02
 
 First release cut to prepare the engine for its first real adoption (Harvest — see
