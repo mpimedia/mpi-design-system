@@ -20,10 +20,11 @@ Applies to: `app/components/**`, `app/javascript/**`, `app/assets/**`
 - Validate params in the component and fall back to safe defaults (e.g. `MpiDesignSystem::Admin::Badge::Component`
   maps an unknown color to `primary`) — never let bad input render broken markup
 
-## Renaming a Component or Namespace
+## Renaming a Component, Namespace, or Styling Convention
 
-A component or namespace rename is not finished when the constants resolve — two blind spots
-routinely survive a constant-only sweep and ship green:
+A component/namespace rename — or a change to a styling convention (e.g. a Bootstrap class
+pattern) — is not finished when the constants resolve or the component renders. Blind spots
+routinely survive a narrow sweep and ship green:
 
 - **Path strings, not just constants.** Old paths also live in lowercase string literals a
   `grep 'Admin::'` never sees: `render_with_template(template: "…")`, `render partial: "…"`,
@@ -36,6 +37,13 @@ routinely survive a constant-only sweep and ship green:
   convention documented one way while the code does another tells the next agent to re-create
   the old pattern. (Reference: #103 renamed `Admin::` → `MpiDesignSystem::Admin::`; the catalog
   and standards docs had to be swept in the same change.)
+- **A styling-convention change is a rename too — grep the pattern, not the lines you know.**
+  When you change a Bootstrap class convention (e.g. `bg-#{color}` + `text-white`/`text-dark`
+  → `text-bg-#{color}`), `git grep` the *old class pattern* across the whole repo — specs,
+  `catalog/**`, and `.claude/rules/**` included — rather than editing a known list of line
+  numbers; a line-scoped sweep misses second occurrences in the same file. (Reference: #128
+  tokenized Badge's filled contrast; the external review caught a retired `bg-warning` +
+  `text-dark` example still in `.claude/rules/testing.md` that a line-scoped sweep skipped.)
 
 ## Component Catalog First
 
@@ -75,8 +83,9 @@ If a catalog entry exists, implement to that spec. If not, raise it with the HC 
 
 - All interactive elements keyboard-accessible
 - Appropriate ARIA roles and labels (e.g. Badge adds `aria-label` for its count)
-- Contrast: 4.5:1 for normal text, 3:1 for large text — pair light backgrounds with dark
-  text classes (e.g. `bg-warning` with `text-dark`)
+- Contrast: 4.5:1 for normal text, 3:1 for large text — prefer Bootstrap's `text-bg-*`
+  utilities, which derive an accessible foreground automatically (e.g. `text-bg-warning`
+  yields dark text), rather than hand-pairing a background with a `text-*` class
 - Visible focus indicators on every focusable element
 
 ## Anti-Patterns

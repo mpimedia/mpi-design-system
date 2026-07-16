@@ -46,8 +46,7 @@ module MpiDesignSystem
         def variant_classes
           case @variant
           when :filled
-            text_class = @color == :warning ? "text-dark" : "text-white"
-            [ "bg-#{@color}", text_class ]
+            [ "text-bg-#{@color}" ]
           when :outline
             [ "border", "border-#{@color}", "text-#{@color}", "bg-transparent" ]
           when :tag_group

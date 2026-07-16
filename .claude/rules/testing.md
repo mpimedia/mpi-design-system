@@ -72,7 +72,7 @@ No component is complete until its spec covers:
 4. **Edge cases** — missing/invalid params (e.g. an invalid color falls back to the
    default), empty or nil content, empty collections
 5. **Accessibility assertions where relevant** — `aria-label`s, roles, and
-   contrast-pairing classes (e.g. `bg-warning` renders with `text-dark`)
+   derived contrast classes (e.g. `text-bg-warning` yields dark text for AA contrast)
 6. **A matching Lookbook preview** exists and actually **renders** — not merely eager-loads.
    Eager-load loads the preview *constant* but never renders it, so a missing template
    (`render_with_template(template: "…")`) or a bad component kwarg ships green under a fully
@@ -94,7 +94,7 @@ RSpec.describe MpiDesignSystem::Admin::Badge::Component, type: :component do
     it "falls back to the primary color" do
       render_inline(described_class.new(label: "Test", color: :invalid))
 
-      expect(page).to have_css("span.badge.bg-primary")
+      expect(page).to have_css("span.badge.text-bg-primary")
     end
   end
 end
