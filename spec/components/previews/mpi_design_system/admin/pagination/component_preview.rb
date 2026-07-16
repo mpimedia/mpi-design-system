@@ -44,4 +44,16 @@ class MpiDesignSystem::Admin::Pagination::ComponentPreview < ApplicationComponen
       url_builder: ->(page) { "?page=#{page}" }
     )
   end
+
+  # @label Windowed (many pages)
+  def windowed
+    render MpiDesignSystem::Admin::Pagination::Component.new(
+      current_page: 20,
+      total_pages: 47,
+      total_count: 1175,
+      per_page: 25,
+      url_builder: ->(page) { "?page=#{page}" },
+      max_links: 7
+    )
+  end
 end

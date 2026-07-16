@@ -7,6 +7,25 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-16
+
+Adds opt-in link **windowing** to `Admin::Pagination`, driven by the first real high-page-count
+adoption (Harvest's admin log/audit tables — `harvest#769`, epic `harvest#692`). The component
+previously rendered *every* page number — fine for small CRM lists, but it dumps thousands of
+links on deep tables. The default is unchanged (all pages shown), so existing consumers are
+unaffected.
+
+### Added
+- **`Admin::Pagination::Component` accepts `max_links:`** (default `nil`) — the maximum number of
+  numeric page links to show before truncating a run with a non-interactive `…` gap. Page 1 and
+  the last page are always visible; the window stays centered on the current page (values `< 5`
+  are treated as `5`, and even values round down to odd for symmetry). `nil`, `0`, or a value
+  `>= total_pages` renders every page — the prior behavior. (harvest#769, epic harvest#692)
+
+### Changed
+- **The pagination button row now wraps (`flex-wrap`)** so a windowed row degrades gracefully on
+  narrow viewports instead of forcing horizontal overflow. (harvest#769)
+
 ## [0.4.1] - 2026-07-16
 
 Patch release delivering the `Admin::Badge` filled-contrast fix, so consumers (Harvest —

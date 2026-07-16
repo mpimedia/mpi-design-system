@@ -2,7 +2,7 @@
   <div class="d-flex align-items-center justify-content-between">
     <span style="<%= results_text_styles %>"><%= results_text %></span>
 
-    <div class="d-flex align-items-center gap-1">
+    <div class="d-flex align-items-center flex-wrap gap-1">
       <% if show_prev? %>
         <a href="<%= page_url(@current_page - 1) %>"
            style="<%= page_btn_styles %>"
@@ -13,7 +13,9 @@
       <% end %>
 
       <% pages.each do |page_num| %>
-        <% if page_num == @current_page %>
+        <% if page_num == :gap %>
+          <span class="text-body-secondary" style="<%= gap_styles %>" aria-hidden="true">&hellip;</span>
+        <% elsif page_num == @current_page %>
           <span style="<%= page_btn_styles(active: true) %>" aria-current="page" aria-label="Page <%= page_num %>">
             <%= page_num %>
           </span>
