@@ -48,9 +48,10 @@ class MpiDesignSystem::Admin::Pagination::Component < ViewComponent::Base
   # @param per_page [Integer] Records per page (default: 25)
   # @param url_builder [Proc] Lambda that builds page URLs: ->(page) { "?page=#{page}" }
   # @param turbo_frame [String] Turbo Frame target for page loads
-  # @param max_links [Integer, nil] Max numeric page links before truncating with a
-  #   gap (…). First and last page are always shown. nil (default) shows every page
-  #   — unchanged for CRM. Set it (e.g. 7) on high-page-count lists (audit/log tables).
+  # @param max_links [Integer, nil] Max page slots (numeric links + gap markers) before
+  #   the middle truncates with a … gap. First and last page always show, so 7 slots on a
+  #   middle page is 5 numbers + 2 gaps. nil (default) shows every page — unchanged for CRM.
+  #   Set it (e.g. 7) on high-page-count lists (audit/log tables); values < 5 clamp to 5.
 end
 ```
 

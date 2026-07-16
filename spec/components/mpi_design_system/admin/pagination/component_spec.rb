@@ -124,6 +124,12 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
       expect(page).not_to have_css("span[aria-hidden='true']")
     end
 
+    it "clamps a below-minimum max_links (0/negative) to a five-slot window, not show-all" do
+      render_inline(described_class.new(current_page: 20, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 0))
+
+      expect(rendered_series).to eq([ "1", :gap, "20", :gap, "47" ])
+    end
+
     it "windows a middle page symmetrically with gaps on both sides" do
       render_inline(described_class.new(current_page: 20, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 7))
 

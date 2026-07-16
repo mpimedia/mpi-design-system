@@ -10,11 +10,13 @@ module MpiDesignSystem
         # @param per_page [Integer] Records per page (default: 25)
         # @param url_builder [Proc] Lambda that builds page URLs: ->(page) { "?page=#{page}" }
         # @param turbo_frame [String] Turbo Frame target for page loads
-        # @param max_links [Integer, nil] Max numeric page links to show before truncating
-        #   with a gap (first and last are always shown). nil (default) shows every page —
-        #   unchanged behavior for existing consumers. A value < 5 is treated as 5; even
+        # @param max_links [Integer, nil] Max page *slots* to render — numeric links and gap
+        #   (…) markers combined — before the middle is truncated. First and last page are
+        #   always shown, so e.g. 7 slots on a middle page is 5 numbers + 2 gaps. nil
+        #   (default) shows every page, the only "unlimited" value — unchanged behavior for
+        #   existing consumers. Any value < 5 (including 0 / negative) is treated as 5; even
         #   values round down to the nearest odd so the window stays symmetric around the
-        #   current page. Ignored when it is >= total_pages (all pages fit, no gap).
+        #   current page. A value >= total_pages renders all pages (they all fit, no gap).
         def initialize(current_page:, total_pages:, total_count:, per_page: 25, url_builder: nil, turbo_frame: nil, max_links: nil)
           @total_pages = [ total_pages, 1 ].max
           @current_page = [ [ current_page, 1 ].max, @total_pages ].min
@@ -92,13 +94,12 @@ module MpiDesignSystem
 
         # The ordered list of page links to render: Integers, with :gap sentinels where a
         # run of pages is truncated. First and last page are always present. Returns every
-        # page (no gaps) when max_links is nil or wide enough to fit them all.
+        # page (no gaps) when max_links is nil or wide enough to fit them all. `slots` counts
+        # total rendered entries (numbers + gaps), matching the max_links contract.
         def pages
           return (1..@total_pages).to_a if @max_links.nil?
 
           slots = @max_links.to_i
-          return (1..@total_pages).to_a if slots <= 0 || slots >= @total_pages
-
           slots = 5 if slots < 5
           slots -= 1 if slots.even?
           return (1..@total_pages).to_a if slots >= @total_pages
