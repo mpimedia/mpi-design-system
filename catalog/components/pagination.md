@@ -48,6 +48,10 @@ class MpiDesignSystem::Admin::Pagination::Component < ViewComponent::Base
   # @param per_page [Integer] Records per page (default: 25)
   # @param url_builder [Proc] Lambda that builds page URLs: ->(page) { "?page=#{page}" }
   # @param turbo_frame [String] Turbo Frame target for page loads
+  # @param max_links [Integer, nil] Max page slots (numeric links + gap markers) before
+  #   the middle truncates with a … gap. First and last page always show, so 7 slots on a
+  #   middle page is 5 numbers + 2 gaps. nil (default) shows every page — unchanged for CRM.
+  #   Set it (e.g. 7) on high-page-count lists (audit/log tables); values < 5 clamp to 5.
 end
 ```
 
@@ -81,7 +85,8 @@ end
 
 - **Use** below DataTable on all paginated list views
 - **Use** Turbo Frame navigation for page changes (no full page reload)
-- **Do not** show ellipsis (...) for now — show all page numbers (page counts are typically small in CRM)
+- **Default** shows all page numbers (page counts are typically small in CRM) — no ellipsis
+- **On high-page-count lists** (e.g. audit/log tables, first adopted in `harvest#769`), pass `max_links:` to window the numbers with a `…` gap; first and last page stay visible
 - **Do not** add a per-page selector unless explicitly requested
 - The results text always shows even on single-page results ("Showing 1–6 of 6 results")
 - Page buttons should be links (`<a>`) for proper URL state and back button support

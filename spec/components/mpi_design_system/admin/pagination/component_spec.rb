@@ -99,4 +99,72 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
 
     expect(page).to have_css("a[data-turbo-frame='contacts_list']")
   end
+
+  describe "windowing (max_links)" do
+    # The ordered sequence of rendered page items: numeric page labels in document order,
+    # with :gap for each non-interactive ellipsis. Excludes the prev/next arrows (their
+    # aria-labels are "Previous page" / "Next page", not "Page N").
+    def rendered_series
+      page.all("[aria-label^='Page '], span[aria-hidden='true']").map do |el|
+        el["aria-hidden"] == "true" ? :gap : el.text.strip
+      end
+    end
+
+    it "renders every page (no gap) when max_links is nil — unchanged default" do
+      render_inline(described_class.new(current_page: 3, total_pages: 6, total_count: 150, url_builder: url_builder, max_links: nil))
+
+      expect(rendered_series).to eq(%w[1 2 3 4 5 6])
+      expect(page).not_to have_css("span[aria-hidden='true']")
+    end
+
+    it "renders every page when total_pages <= max_links" do
+      render_inline(described_class.new(current_page: 2, total_pages: 5, total_count: 120, url_builder: url_builder, max_links: 7))
+
+      expect(rendered_series).to eq(%w[1 2 3 4 5])
+      expect(page).not_to have_css("span[aria-hidden='true']")
+    end
+
+    it "clamps a below-minimum max_links (0/negative) to a five-slot window, not show-all" do
+      render_inline(described_class.new(current_page: 20, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 0))
+
+      expect(rendered_series).to eq([ "1", :gap, "20", :gap, "47" ])
+    end
+
+    it "windows a middle page symmetrically with gaps on both sides" do
+      render_inline(described_class.new(current_page: 20, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 7))
+
+      expect(rendered_series).to eq([ "1", :gap, "19", "20", "21", :gap, "47" ])
+    end
+
+    it "windows a near-first page with a single trailing gap" do
+      render_inline(described_class.new(current_page: 2, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 7))
+
+      expect(rendered_series).to eq([ "1", "2", "3", "4", "5", :gap, "47" ])
+    end
+
+    it "windows a near-last page with a single leading gap" do
+      render_inline(described_class.new(current_page: 46, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 7))
+
+      expect(rendered_series).to eq([ "1", :gap, "43", "44", "45", "46", "47" ])
+    end
+
+    it "keeps first and last present and truncates the interior (deep-table regression guard)" do
+      render_inline(described_class.new(current_page: 20, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 7))
+
+      expect(page).to have_css("[aria-label='Page 1']")
+      expect(page).to have_css("[aria-label='Page 47']")
+      expect(page).to have_css("span[aria-current='page']", text: "20")
+      # interior pages far from the window are NOT rendered — the whole point of windowing
+      expect(page).not_to have_css("[aria-label='Page 5']")
+      expect(page).not_to have_css("[aria-label='Page 35']")
+    end
+
+    it "renders the gap as a non-interactive ellipsis (no href)" do
+      render_inline(described_class.new(current_page: 20, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 7))
+
+      gap = page.first("span[aria-hidden='true']")
+      expect(gap.text.strip).to eq("…")
+      expect(page).not_to have_css("a[aria-hidden='true']")
+    end
+  end
 end

@@ -10,13 +10,21 @@ module MpiDesignSystem
         # @param per_page [Integer] Records per page (default: 25)
         # @param url_builder [Proc] Lambda that builds page URLs: ->(page) { "?page=#{page}" }
         # @param turbo_frame [String] Turbo Frame target for page loads
-        def initialize(current_page:, total_pages:, total_count:, per_page: 25, url_builder: nil, turbo_frame: nil)
+        # @param max_links [Integer, nil] Max page *slots* to render — numeric links and gap
+        #   (…) markers combined — before the middle is truncated. First and last page are
+        #   always shown, so e.g. 7 slots on a middle page is 5 numbers + 2 gaps. nil
+        #   (default) shows every page, the only "unlimited" value — unchanged behavior for
+        #   existing consumers. Any value < 5 (including 0 / negative) is treated as 5; even
+        #   values round down to the nearest odd so the window stays symmetric around the
+        #   current page. A value >= total_pages renders all pages (they all fit, no gap).
+        def initialize(current_page:, total_pages:, total_count:, per_page: 25, url_builder: nil, turbo_frame: nil, max_links: nil)
           @total_pages = [ total_pages, 1 ].max
           @current_page = [ [ current_page, 1 ].max, @total_pages ].min
           @total_count = total_count
           @per_page = per_page
           @url_builder = url_builder || ->(page) { "?page=#{page}" }
           @turbo_frame = turbo_frame
+          @max_links = max_links
         end
 
         private
@@ -55,6 +63,19 @@ module MpiDesignSystem
           styles.join("; ")
         end
 
+        # Non-interactive ellipsis between truncated page runs — sized to align with the
+        # page buttons but carries no border/background (color comes from text-body-secondary).
+        def gap_styles
+          [
+            "width: 32px",
+            "height: 32px",
+            "font-size: 13px",
+            "display: inline-flex",
+            "align-items: center",
+            "justify-content: center"
+          ].join("; ")
+        end
+
         def page_url(page)
           @url_builder.call(page)
         end
@@ -71,8 +92,37 @@ module MpiDesignSystem
           @turbo_frame ? { turbo_frame: @turbo_frame } : {}
         end
 
+        # The ordered list of page links to render: Integers, with :gap sentinels where a
+        # run of pages is truncated. First and last page are always present. Returns every
+        # page (no gaps) when max_links is nil or wide enough to fit them all. `slots` counts
+        # total rendered entries (numbers + gaps), matching the max_links contract.
         def pages
-          (1..@total_pages).to_a
+          return (1..@total_pages).to_a if @max_links.nil?
+
+          slots = @max_links.to_i
+          slots = 5 if slots < 5
+          slots -= 1 if slots.even?
+          return (1..@total_pages).to_a if slots >= @total_pages
+
+          half  = (slots - 1) / 2
+          start = if @current_page <= half + 1
+                    1
+          elsif @current_page >= @total_pages - half
+                    @total_pages - slots + 1
+          else
+                    @current_page - half
+          end
+
+          series = (start...(start + slots)).to_a
+          if series.first != 1
+            series[0] = 1
+            series[1] = :gap unless series[1] == 2
+          end
+          if series.last != @total_pages
+            series[-1] = @total_pages
+            series[-2] = :gap unless series[-2] == @total_pages - 1
+          end
+          series
         end
       end
     end
