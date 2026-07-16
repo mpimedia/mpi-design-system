@@ -94,7 +94,7 @@ RSpec.describe MpiDesignSystem::Admin::Badge::Component, type: :component do
     it "falls back to the primary color" do
       render_inline(described_class.new(label: "Test", color: :invalid))
 
-      expect(page).to have_css("span.badge.bg-primary")
+      expect(page).to have_css("span.badge.text-bg-primary")
     end
   end
 end

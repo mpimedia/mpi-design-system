@@ -19,7 +19,7 @@ Pill-shaped badges used for status indicators, counts, and labels across all MPI
 
 | Variant | Description |
 |---|---|
-| **Filled** | Solid background with white text. Used for status indicators (Active, Overdue) |
+| **Filled** | Solid background with a Bootstrap-computed foreground (light or dark, whichever meets WCAG-AA contrast — not always white). Used for status indicators (Active, Overdue) |
 | **Outline** | Transparent background with colored border and text. Used for secondary emphasis |
 | **Tag Group** | Colored text on light background. Used for CRM tag group labels (Buyer, Press, etc.) |
 | **With Count** | Filled badge with an inline number (e.g., "Contacts 24") |
@@ -80,13 +80,16 @@ end
 
 - `badge` — base class
 - `rounded-pill` — pill shape (or global override)
-- `bg-primary`, `bg-success`, `bg-danger`, `bg-warning`, `bg-secondary` — filled variants
+- `text-bg-primary`, `text-bg-success`, `text-bg-danger`, `text-bg-warning`, `text-bg-secondary` — filled variants (each pairs the background with a Bootstrap-computed accessible foreground)
 - `border` — outline variant base
 - Custom inline styles for tag group color pairs
 
 ## Accessibility
 
 - Ensure 4.5:1 contrast ratio on all text/background combinations
+- Filled badges derive their foreground via Bootstrap's `text-bg-*` utilities, so every
+  semantic color meets WCAG AA automatically (previously `success` paired a hardcoded
+  `text-white` for only 3.33:1 — see #128)
 - All tag group color pairs have been verified for WCAG AA compliance
 - Use `aria-label` when badge text alone is insufficient context (e.g., a count badge)
 

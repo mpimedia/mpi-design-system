@@ -75,8 +75,9 @@ If a catalog entry exists, implement to that spec. If not, raise it with the HC 
 
 - All interactive elements keyboard-accessible
 - Appropriate ARIA roles and labels (e.g. Badge adds `aria-label` for its count)
-- Contrast: 4.5:1 for normal text, 3:1 for large text — pair light backgrounds with dark
-  text classes (e.g. `bg-warning` with `text-dark`)
+- Contrast: 4.5:1 for normal text, 3:1 for large text — prefer Bootstrap's `text-bg-*`
+  utilities, which derive an accessible foreground automatically (e.g. `text-bg-warning`
+  yields dark text), rather than hand-pairing a background with a `text-*` class
 - Visible focus indicators on every focusable element
 
 ## Anti-Patterns

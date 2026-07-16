@@ -207,6 +207,6 @@ RSpec.describe MpiDesignSystem::Admin::AccountDetailPanel::Component, type: :com
   it "defaults invalid account_type_color to primary" do
     render_inline(described_class.new(name: "Test", account_type: "Custom", account_type_color: :invalid))
 
-    expect(page).to have_css("span.badge.bg-primary", text: "Custom")
+    expect(page).to have_css("span.badge.text-bg-primary", text: "Custom")
   end
 end
