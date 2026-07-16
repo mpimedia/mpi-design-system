@@ -7,6 +7,21 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-07-16
+
+Patch release delivering the `Admin::Badge` filled-contrast fix, so consumers (Harvest —
+epic `harvest#692`) can retire the copied 3.33:1 badge instead of patching it downstream.
+Badge-fix-only — the sole change on `main` since v0.4.0.
+
+### Fixed
+- **`Admin::Badge::Component` filled variant now derives its foreground via Bootstrap's
+  `text-bg-*` utility instead of a hand-maintained `text-white`/`text-dark` table.** The
+  `:success` badge rendered white on `$mpi-success` (`#22A06B`) at **3.33:1**, failing WCAG
+  AA; it now derives `#000` at **6.31:1**. `:primary`/`:secondary`/`:danger` are unchanged
+  (white); `:warning` shifts from `#212529` to `#000` (both AA-pass) and its special-case is
+  removed. The public API (constructor, accepted colors) is unchanged, so consumers inherit
+  the fix on upgrade with no code change. (#128, #129 — harvest#692)
+
 ## [0.4.0] - 2026-07-14
 
 Tokenizes `Admin::BreadcrumbNav::Component` — the second component change driven by real
