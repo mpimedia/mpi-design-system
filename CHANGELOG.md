@@ -7,6 +7,8 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-07-17
+
 ### Added
 - **`Admin::TableForIndex::Component` + `Admin::TableForIndexColumn::Component`** — a neutral,
   slot/block-based admin index & association listing table, generalizing the byte-identical

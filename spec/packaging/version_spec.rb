@@ -5,11 +5,12 @@ require "spec_helper"
 # Guards the released version constant. PR4 of #103 cut v0.2.0 (first adoption-ready
 # release); v0.3.0 (#121) tokenizes Admin::EmptyState; v0.4.0 (#124) tokenizes
 # Admin::BreadcrumbNav; v0.4.1 (#128) fixes Admin::Badge filled contrast; v0.5.0 adds
-# opt-in Admin::Pagination link windowing (harvest#769). This spec fails if the constant
-# regresses, keeping lib/mpi_design_system/version.rb in lockstep with CHANGELOG.md and
-# the git tag.
+# opt-in Admin::Pagination link windowing (harvest#769); v0.6.0 (#134) adds the
+# slot/block-based Admin::TableForIndex with batch selection + Ransack-free sortable
+# headers (harvest#692). This spec fails if the constant regresses, keeping
+# lib/mpi_design_system/version.rb in lockstep with CHANGELOG.md and the git tag.
 RSpec.describe "MpiDesignSystem::VERSION" do
-  it "is 0.5.0" do
-    expect(MpiDesignSystem::VERSION).to eq("0.5.0")
+  it "is 0.6.0" do
+    expect(MpiDesignSystem::VERSION).to eq("0.6.0")
   end
 end
