@@ -1,0 +1,21 @@
+<% content_for :title, "Batch Actions Demo" %>
+
+<% row = Struct.new(:id, :name, keyword_init: true) %>
+<% rows = [
+     row.new(id: 1, name: "Acme Corporation"),
+     row.new(id: 2, name: "Globex"),
+     row.new(id: 3, name: "Initech")
+   ] %>
+
+<main class="container py-4">
+  <h1 class="h4 mb-3">Batch Actions Demo</h1>
+
+  <%# The consuming app owns the <form>; the gem ships the mpi--batch-actions controller. %>
+  <form action="#" data-controller="mpi--batch-actions">
+    <%= render MpiDesignSystem::Admin::TableForIndex::Component.new(data: rows, batch: true) do |table| %>
+      <% table.with_batch_action_button(:archive, label: "Archive selected") %>
+      <% table.with_column("ID") { |record| record.id.to_s } %>
+      <% table.with_column("Name") { |record| record.name } %>
+    <% end %>
+  </form>
+</main>

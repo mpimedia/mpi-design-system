@@ -9,6 +9,11 @@ Rails.application.routes.draw do
   # renders a real MpiDesignSystem::Admin::TagInput::Component so Stimulus boots.
   get "tag_input_demo" => "tag_input_demo#show"
 
+  # Demo page exercised by the batch-actions browser feature spec — renders a real
+  # MpiDesignSystem::Admin::TableForIndex with batch: true so the mpi--batch-actions
+  # Stimulus controller boots and drives the checkbox/action-button state.
+  get "batch_actions_demo" => "batch_actions_demo#show"
+
   if Rails.env.development?
     mount Lookbook::Engine, at: "/lookbook"
     root to: redirect("/lookbook")

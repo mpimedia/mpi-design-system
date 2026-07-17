@@ -1,0 +1,4 @@
+<%= render MpiDesignSystem::Admin::TableForIndex::Component.new(data: [], title: "Organizations") do |table| %>
+  <% table.with_column("ID") { |record| record.id.to_s } %>
+  <% table.with_column("Name") { |record| record.name } %>
+<% end %>

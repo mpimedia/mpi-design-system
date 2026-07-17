@@ -1,1 +1,1 @@
-export { registerMpiControllers, TagInputController } from "./controllers"
+export { registerMpiControllers, TagInputController, BatchActionsController } from "./controllers"

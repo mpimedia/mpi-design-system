@@ -1,0 +1,7 @@
+<%# Disabled by default (fail-safe): the mpi--batch-actions controller enables it once a row
+    is selected. If the JS is absent or late, the button stays disabled rather than submitting
+    the form with no ids[]. %>
+<button class="btn btn-primary" type="submit" name="<%= @action %>" disabled
+        data-mpi--batch-actions-target="actionButton">
+  <%= @label %>
+</button>

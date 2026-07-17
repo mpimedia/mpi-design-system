@@ -1,0 +1,23 @@
+<button class="btn btn-primary" type="button" name="<%= @action %>" disabled
+        data-mpi--batch-actions-target="actionButton"
+        data-bs-toggle="modal" data-bs-target="#<%= @modal_id %>">
+  <%= @label %>
+</button>
+
+<div id="<%= @modal_id %>" class="modal fade" tabindex="-1" aria-labelledby="<%= @title_id %>" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header text-bg-primary" data-bs-theme="dark">
+        <h5 class="modal-title" id="<%= @title_id %>"><%= @label %></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <%= content %>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" name="<%= @action %>" class="btn btn-primary"><%= @label %></button>
+      </div>
+    </div>
+  </div>
+</div>

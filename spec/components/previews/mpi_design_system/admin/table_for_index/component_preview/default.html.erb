@@ -1,0 +1,12 @@
+<% row = Struct.new(:id, :name, :active, :updated_at, keyword_init: true) %>
+<% rows = [
+     row.new(id: 1, name: "Acme Corporation", active: true, updated_at: Time.utc(2026, 7, 1)),
+     row.new(id: 2, name: "Globex", active: false, updated_at: Time.utc(2026, 6, 15))
+   ] %>
+
+<%= render MpiDesignSystem::Admin::TableForIndex::Component.new(data: rows) do |table| %>
+  <% table.with_column("ID", align: :end, width: :sm) { |record| record.id.to_s } %>
+  <% table.with_column("Name") { |record| record.name } %>
+  <% table.with_column("Active", value: :active, cell: :boolean, align: :center) %>
+  <% table.with_column("Updated", value: :updated_at, cell: :date) %>
+<% end %>

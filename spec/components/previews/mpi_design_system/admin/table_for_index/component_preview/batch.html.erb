@@ -1,0 +1,18 @@
+<% row = Struct.new(:id, :name, keyword_init: true) %>
+<% rows = [
+     row.new(id: 1, name: "Acme Corporation"),
+     row.new(id: 2, name: "Globex")
+   ] %>
+
+<%# The consuming app owns the <form> (submit URL + data-controller); the gem ships the
+    mpi--batch-actions controller and the checkbox/button UI. %>
+<form action="#" method="post" data-controller="mpi--batch-actions">
+  <%= render MpiDesignSystem::Admin::TableForIndex::Component.new(data: rows, batch: true) do |table| %>
+    <% table.with_batch_action_button(:archive, label: "Archive selected") %>
+    <% table.with_batch_action_modal_button(:assign, label: "Assign…") do %>
+      <p class="mb-0">Modal body — extra fields the operator fills in before submitting.</p>
+    <% end %>
+    <% table.with_column("ID") { |record| record.id.to_s } %>
+    <% table.with_column("Name") { |record| record.name } %>
+  <% end %>
+</form>
