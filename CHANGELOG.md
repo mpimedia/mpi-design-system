@@ -7,6 +7,31 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Added
+- **`Admin::TableForIndex::Component` + `Admin::TableForIndexColumn::Component`** — a neutral,
+  slot/block-based admin index & association listing table, generalizing the byte-identical
+  local `Admin::TableForIndex` shared by the MPI apps (Optimus/Garden/Harvest) into the design
+  system (harvest#692). The block column form — `table.with_column(header) { |record| … }` — is
+  the default escape hatch, so cells can be arbitrary host HTML (links, `mail_to`, action
+  buttons, badges) and the gem takes **no** Ransack/Pundit/Pagy/route-helper dependency. Headers
+  accept a plain string or pre-rendered HTML (e.g. a Ransack `sort_link`) verbatim. Opt-in,
+  presentation-only column keywords layer on top — `align:`/`nowrap:`/`width:` (whitelisted
+  Bootstrap utilities) and `cell: :text|:boolean|:date` (`:boolean` renders the filled `Badge`).
+  Empty collections render the shipped `EmptyState` with a title-derived heading and a
+  monotonic heading level (`:h5` under a `title:` section, `:h3` for a bare index). Styled with
+  Bootstrap utilities only — no inline hex.
+- **First-class sortable headers (Ransack-free)** — a column opts in with `sortable:`/`sort_key:`,
+  and the table renders the clickable header, caret, and `aria-sort` from a host-supplied
+  `sort_url: ->(key, dir) { … }` lambda plus `current_sort_key:`/`current_sort_dir:`. The gem
+  never imports a sort backend. A pre-rendered `sort_link` passed as the header still works, so
+  consumers adopt mechanically first and opt into first-class sorting later.
+- **Batch selection** — opt-in via `batch:` (checkbox toggle + per-row `ids[]` column) plus the
+  `Admin::BatchActionButton` / `Admin::BatchActionModalButton` slot components, driven by a new
+  `mpi--batch-actions` Stimulus controller (generalized from SFA's working implementation) that
+  `registerMpiControllers` registers. The consuming app owns the `<form>` (submit URL + route +
+  authorization); the gem owns the checkbox UI, the button/modal slots, and the controller
+  behavior. (harvest#692, folds in harvest#768's dead-code cleanup on the consumer side.)
+
 ## [0.5.0] - 2026-07-16
 
 Adds opt-in link **windowing** to `Admin::Pagination`, driven by the first real high-page-count

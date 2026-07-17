@@ -1,0 +1,75 @@
+<%# Batch toolbar — only when a batch-action slot is filled AND there are rows to act on.
+    Uses the slot? predicate, never a bare `||`: renders_many returns [] (truthy), so a bare
+    guard renders an empty band on every table (harvest#765). %>
+<% if rows.any? && (batch_action_buttons? || batch_action_modal_buttons?) %>
+  <section class="batch-actions pb-3 d-flex flex-row gap-3">
+    <% batch_action_buttons.each do |button| %><%= button %><% end %>
+    <% batch_action_modal_buttons.each do |button| %><%= button %><% end %>
+  </section>
+<% end %>
+
+<section>
+  <% if @title %>
+    <h4 class="title-header"><%= @title %></h4>
+  <% end %>
+
+  <% if rows.any? %>
+    <table class="table table-striped table-hover table-sm">
+      <thead class="table-dark">
+        <tr>
+          <% if @batch %>
+            <th>
+              <input type="checkbox" name="toggle"
+                     data-mpi--batch-actions-target="toggleCheckbox"
+                     data-action="change->mpi--batch-actions#toggleCheckboxes">
+            </th>
+          <% end %>
+
+          <% columns.each do |column| %>
+            <% if sortable?(column) %>
+              <th class="<%= column.th_classes %>" aria-sort="<%= aria_sort(column) %>">
+                <a href="<%= sort_href(column) %>" class="link-light text-decoration-none">
+                  <%= column.header %><span aria-hidden="true"> <%= sort_glyph(column) %></span>
+                </a>
+              </th>
+            <% else %>
+              <th class="<%= column.th_classes %>"><%= column.header %></th>
+            <% end %>
+          <% end %>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% rows.each do |record| %>
+          <tr>
+            <% if @batch %>
+              <td>
+                <input type="checkbox" name="ids[]" value="<%= record.id %>"
+                       data-mpi--batch-actions-target="checkbox"
+                       data-action="change->mpi--batch-actions#checkCheckboxes">
+              </td>
+            <% end %>
+
+            <% columns.each do |column| %>
+              <td class="<%= column.td_classes %>">
+                <% if column.block? %>
+                  <%= capture(record, &column.td_block) %>
+                <% elsif column.cell_type == :boolean %>
+                  <%= render boolean_badge(column.value_for(record)) %>
+                <% elsif column.cell_type == :date %>
+                  <%= column.formatted_date(record) %>
+                <% else %>
+                  <%= column.value_for(record) %>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <%= render MpiDesignSystem::Admin::EmptyState::Component.new(
+      heading: empty_heading, icon: @empty_icon, heading_level: empty_heading_level
+    ) %>
+  <% end %>
+</section>

@@ -1,0 +1,17 @@
+<% row = Struct.new(:id, :name, :updated_at, keyword_init: true) %>
+<% rows = [
+     row.new(id: 1, name: "Acme Corporation", updated_at: Time.utc(2026, 7, 1)),
+     row.new(id: 2, name: "Globex", updated_at: Time.utc(2026, 6, 15))
+   ] %>
+
+<%# The host owns the sort backend: sort_url builds the href, the gem renders the caret + aria-sort. %>
+<%= render MpiDesignSystem::Admin::TableForIndex::Component.new(
+      data: rows,
+      sort_url: ->(key, dir) { "?sort=#{key}&dir=#{dir}" },
+      current_sort_key: :name,
+      current_sort_dir: :asc
+    ) do |table| %>
+  <% table.with_column("ID") { |record| record.id.to_s } %>
+  <% table.with_column("Name", value: :name, sortable: true, sort_key: :name) %>
+  <% table.with_column("Updated", value: :updated_at, cell: :date, sortable: true, sort_key: :updated_at) %>
+<% end %>
