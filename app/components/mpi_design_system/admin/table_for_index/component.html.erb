@@ -18,8 +18,8 @@
       <thead class="table-dark">
         <tr>
           <% if @batch %>
-            <th>
-              <input type="checkbox" name="toggle"
+            <th scope="col">
+              <input type="checkbox" name="toggle" aria-label="Select all rows"
                      data-mpi--batch-actions-target="toggleCheckbox"
                      data-action="change->mpi--batch-actions#toggleCheckboxes">
             </th>
@@ -27,13 +27,13 @@
 
           <% columns.each do |column| %>
             <% if sortable?(column) %>
-              <th class="<%= column.th_classes %>" aria-sort="<%= aria_sort(column) %>">
+              <th scope="col" class="<%= column.th_classes %>" aria-sort="<%= aria_sort(column) %>">
                 <a href="<%= sort_href(column) %>" class="link-light text-decoration-none">
                   <%= column.header %><span aria-hidden="true"> <%= sort_glyph(column) %></span>
                 </a>
               </th>
             <% else %>
-              <th class="<%= column.th_classes %>"><%= column.header %></th>
+              <th scope="col" class="<%= column.th_classes %>"><%= column.header %></th>
             <% end %>
           <% end %>
         </tr>
@@ -45,6 +45,7 @@
             <% if @batch %>
               <td>
                 <input type="checkbox" name="ids[]" value="<%= record.id %>"
+                       aria-label="<%= batch_row_label(record) %>"
                        data-mpi--batch-actions-target="checkbox"
                        data-action="change->mpi--batch-actions#checkCheckboxes">
               </td>

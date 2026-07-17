@@ -142,6 +142,28 @@ RSpec.describe MpiDesignSystem::Admin::TableForIndex::Component, type: :componen
       expect(page).to have_css("tbody td input[name='ids[]'][value='2']")
     end
 
+    it "gives every checkbox an accessible name and marks header cells as column scope" do
+      render_inline(described_class.new(data: rows, batch: true)) do |table|
+        table.with_column("Name") { |record| record.name }
+      end
+
+      expect(page).to have_css("input[name='toggle'][aria-label='Select all rows']")
+      expect(page).to have_css("input[name='ids[]'][value='1'][aria-label='Select row 1']")
+      expect(page).to have_css("input[name='ids[]'][value='2'][aria-label='Select row 2']")
+      # Every header cell (batch checkbox column + data columns) is scope="col".
+      expect(page).to have_css("thead th", count: 2)
+      expect(page).to have_css("thead th[scope='col']", count: 2)
+    end
+
+    it "uses a batch_row_label proc for a record-specific accessible name" do
+      render_inline(described_class.new(data: rows, batch: true, batch_row_label: ->(r) { "Select #{r.name}" })) do |table|
+        table.with_column("Name") { |record| record.name }
+      end
+
+      expect(page).to have_css("input[name='ids[]'][value='1'][aria-label='Select Acme Corporation']")
+      expect(page).to have_css("input[name='ids[]'][value='2'][aria-label='Select Globex']")
+    end
+
     it "omits the checkbox column by default" do
       render_inline(described_class.new(data: rows)) do |table|
         table.with_column("Name") { |record| record.name }

@@ -14,4 +14,10 @@ RSpec.describe MpiDesignSystem::Admin::BatchActionButton::Component, type: :comp
 
     expect(page).to have_css("button[data-mpi--batch-actions-target='actionButton']")
   end
+
+  it "is disabled by default (fail-safe; the controller enables it on selection)" do
+    render_inline(described_class.new(:archive, label: "Archive selected"))
+
+    expect(page).to have_css("button[type='submit'][disabled]")
+  end
 end

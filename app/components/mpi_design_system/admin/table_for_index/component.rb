@@ -27,16 +27,19 @@ module MpiDesignSystem
         #   heading text and keeps the outline monotonic (:h5 under a title, :h3 for a bare index).
         # @param batch [Boolean] opt-in checkbox-selection column. Requires an app-supplied <form>
         #   carrying data-controller="mpi--batch-actions".
+        # @param batch_row_label [Proc, nil] ->(record) { accessible name } for each row's select
+        #   checkbox. Defaults to "Select row #{record.id}" — pass a proc for a meaningful name.
         # @param empty_heading [String, nil] override the derived empty-state heading.
         # @param empty_icon [String] Bootstrap icon for the empty state.
         # @param sort_url [Proc, nil] ->(key, dir) { host-built href } for first-class sortable columns.
         # @param current_sort_key [Symbol, String, nil] the currently-sorted key.
         # @param current_sort_dir [Symbol] :asc (default) or :desc.
-        def initialize(data:, title: nil, batch: false, empty_heading: nil, empty_icon: "bi-inbox",
-                       sort_url: nil, current_sort_key: nil, current_sort_dir: :asc)
+        def initialize(data:, title: nil, batch: false, batch_row_label: nil, empty_heading: nil,
+                       empty_icon: "bi-inbox", sort_url: nil, current_sort_key: nil, current_sort_dir: :asc)
           @data = data
           @title = title
           @batch = batch
+          @batch_row_label = batch_row_label
           @empty_heading = empty_heading
           @empty_icon = empty_icon
           @sort_url = sort_url
@@ -86,6 +89,12 @@ module MpiDesignSystem
           return "↕" unless current?(column) # ↕ inactive
 
           @current_sort_dir == :asc ? "↑" : "↓" # ↑ / ↓
+        end
+
+        def batch_row_label(record)
+          return @batch_row_label.call(record) if @batch_row_label
+
+          "Select row #{record.id}"
         end
 
         def boolean_badge(value)

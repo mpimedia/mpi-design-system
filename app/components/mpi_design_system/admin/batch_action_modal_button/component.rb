@@ -16,6 +16,10 @@ module MpiDesignSystem
         def initialize(action, label:)
           @action = action
           @label = label
+          # Unique per instance so two tables exposing the same action on one page don't
+          # collide, and so the dialog gets an accessible name via aria-labelledby.
+          @modal_id = "mpi-batch-modal-#{action}-#{SecureRandom.hex(4)}"
+          @title_id = "#{@modal_id}-title"
         end
       end
     end
