@@ -88,6 +88,14 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
     [ measured, resolved[:foreground], resolved[:background] ]
   end
 
+  def border_color_of(selector)
+    page.evaluate_script(
+      "(() => { const e = document.querySelector(#{selector.to_json}); " \
+      "if (!e) throw new Error('no element matched'); " \
+      "return getComputedStyle(e).borderTopColor; })()"
+    )
+  end
+
   def computed(selector, property)
     key = property == "color" ? :foreground : :background
 
@@ -231,6 +239,128 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
 
       expect(measured).to be >= 4.5,
         "dark-mode avatar #{foreground} on #{background} = #{measured.round(2)}:1"
+    end
+  end
+
+  # Pagination (#149) — the Track 2 pilot conversion. Every example asserts the PAINTED
+  # value as well as the ratio, because a ratio alone is a false green here: if a utility
+  # stopped applying, the element falls back to inherited body text, which passes AA in
+  # both modes (#1B2A4A on #FFFFFF = 14.22:1, #DEE2E6 on #212529 = 11.85:1). Only the
+  # painted value distinguishes "the utility resolved" from "something else was readable".
+  #
+  # The expected values below were measured against the compiled bundle, not derived by
+  # hand. Note `--bs-body-color` maps to MPI navy, so light mode paints the exact #1B2A4A
+  # the retired inline style pinned.
+  describe "Pagination" do
+    {
+      "light" => {
+        root: "#pagination",
+        results_text: "#122F49",
+        surface: "#FFFFFF",
+        body_text: "#1B2A4A",
+        # text-body-secondary is rgba(body-color, .75); these are the composited values.
+        gap_text: "#545F77",
+        border: "rgb(222, 226, 230)"
+      },
+      "dark" => {
+        root: "#dark-pagination",
+        results_text: "#82ACD3",
+        surface: "#212529",
+        body_text: "#DEE2E6",
+        gap_text: "#AFB3B7",
+        border: "rgb(73, 80, 87)"
+      }
+    }.each do |mode, expected|
+      context "in #{mode} mode" do
+        let(:root) { expected[:root] }
+
+        # The example that would have caught the 3.185:1 defect the issue's literal
+        # `text-primary` mapping would have shipped.
+        it "paints the results text from the colour-mode-aware emphasis token above the AA floor" do
+          measured, foreground, background = ratio_for("#{root} .text-primary-emphasis")
+
+          expect(foreground).to eq(expected[:results_text])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} results text #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        it "paints the active page pill from the primary token with a derived foreground" do
+          measured, foreground, background = ratio_for("#{root} [aria-current='page']")
+
+          # Theme colours themselves do not flip under data-bs-theme — only the
+          # subtle/emphasis derivatives do — so the pill is MPI primary in both modes.
+          expect(background).to eq("#2E75B6")
+          expect(foreground).to eq("#FFFFFF")
+          expect(measured).to be >= 4.5,
+            "#{mode} active pill #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        # If `.text-body` stopped applying, this anchor would paint Bootstrap's link
+        # colour instead — #2E75B6 in light, which still clears 4.5:1 on white. The
+        # foreground assertion is what catches that; the ratio never would.
+        it "paints an inactive page button on the adaptive body surface above the AA floor" do
+          measured, foreground, background = ratio_for("#{root} a[aria-label='Page 1']")
+
+          expect(foreground).to eq(expected[:body_text])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} inactive button #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        it "paints the truncation gap marker above the AA floor" do
+          measured, foreground, background = ratio_for("#{root} span[aria-hidden='true']")
+
+          # Without the foreground assertion this passes in light mode on inherited
+          # body text (#1B2A4A on #FFFFFF = 14.22:1) even if text-body-secondary
+          # stopped applying — the same false green the block header describes.
+          expect(foreground).to eq(expected[:gap_text])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} gap marker #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        it "tracks the colour mode with its separator and button borders" do
+          expect(border_color_of("#{root} nav[aria-label='Pagination']")).to eq(expected[:border])
+          expect(border_color_of("#{root} a[aria-label='Page 1']")).to eq(expected[:border])
+        end
+
+        # `.border` and `.border-primary` are both !important at identical specificity,
+        # so which one paints is decided by stylesheet source order — exactly the kind
+        # of "which wins" question this browser layer exists to answer rather than
+        # assume. The retired literal was an explicit `border: 1px solid #2E75B6`.
+        it "paints the active pill border from the primary token, not the adaptive one" do
+          expect(border_color_of("#{root} [aria-current='page']")).to eq("rgb(46, 117, 182)")
+        end
+      end
+    end
+
+    # The conversion is live on a Harvest production page, so light mode must be
+    # visually identical to the literals it replaced, not merely accessible.
+    it "reproduces the retired geometry literals exactly in light mode" do
+      styles = page.evaluate_script(<<~JS)
+        (() => {
+          const btn = document.querySelector("#pagination a[aria-label='Page 1']");
+          const nav = document.querySelector("#pagination nav[aria-label='Pagination']");
+          const cs = getComputedStyle(btn);
+          return {
+            radius: cs.borderTopLeftRadius,
+            width: cs.borderTopWidth,
+            style: cs.borderTopStyle,
+            decoration: cs.textDecorationLine,
+            navWidth: getComputedStyle(nav).borderTopWidth,
+          };
+        })()
+      JS
+
+      # `rounded` resolves to the consumer's $border-radius token; under this engine's
+      # configuration that is Bootstrap's 0.375rem = the retired literal 6px.
+      expect(styles["radius"]).to eq("6px")
+      expect(styles["width"]).to eq("1px")
+      expect(styles["style"]).to eq("solid")
+      # Was `text-decoration: none` inline; without the utility Bootstrap underlines links.
+      expect(styles["decoration"]).to eq("none")
+      expect(styles["navWidth"]).to eq("1px")
     end
   end
 

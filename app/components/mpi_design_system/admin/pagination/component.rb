@@ -40,27 +40,31 @@ module MpiDesignSystem
         end
 
         def results_text_styles
-          "font-size: 13px; color: #2E75B6;"
+          "font-size: 13px;"
         end
 
-        def page_btn_styles(active: false)
-          styles = [
+        # Geometry only. Every colour now comes from a Bootstrap utility class so the bar
+        # tracks `data-bs-theme` instead of pinning a light palette (#149). 32px/13px/500
+        # have no Bootstrap equivalent and stay inline deliberately.
+        def page_btn_styles
+          [
             "width: 32px",
             "height: 32px",
-            "border-radius: 6px",
             "font-size: 13px",
             "font-weight: 500",
             "display: inline-flex",
             "align-items: center",
-            "justify-content: center",
-            "text-decoration: none"
-          ]
-          if active
-            styles.concat([ "background: #2E75B6", "color: #fff", "border: 1px solid #2E75B6" ])
-          else
-            styles.concat([ "background: #fff", "color: #1B2A4A", "border: 1px solid #DEE2E6" ])
-          end
-          styles.join("; ")
+            "justify-content: center"
+          ].join("; ")
+        end
+
+        # `rounded` adopts the consumer's `$border-radius` token rather than pinning 6px —
+        # identical to the retired literal under this engine's configuration (only
+        # `$badge-border-radius` is overridden), and more correct for a design system.
+        def page_btn_classes(active: false)
+          shared = "border rounded text-decoration-none"
+
+          active ? "#{shared} text-bg-primary border-primary" : "#{shared} bg-body text-body"
         end
 
         # Non-interactive ellipsis between truncated page runs — sized to align with the

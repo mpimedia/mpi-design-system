@@ -11,13 +11,23 @@ Page navigation for list views. Shows a "Showing X–Y of Z results" summary on 
 ## Design Decisions
 
 - **Layout:** Left-aligned results text + right-aligned page buttons (flexbox `justify-content-between`)
-- **Results text:** "Showing X–Y of Z results" in primary blue (`#2E75B6`), 13px
-- **Page buttons:** 32×32px, `border-radius: 6px`, border `#DEE2E6`
-- **Active page:** Filled primary blue (`#2E75B6`) background with white text
+- **Theme-adaptive (#149):** the bar pins no colour. Every colour resolves from a Bootstrap
+  semantic utility, so the component follows `data-bs-theme` and the consuming app's mapped
+  `$primary` rather than a hardcoded light palette
+- **Results text:** "Showing X–Y of Z results" in `text-primary-emphasis`, 13px. Deliberately
+  **not** `text-primary` — measured at 3.19:1 against Bootstrap's dark body, below the AA floor
+- **Page buttons:** 32×32px (inline), `rounded` + `border`
+- **Active page:** `text-bg-primary` — Bootstrap derives the foreground with `color-contrast()`
+  rather than pinning white by hand, giving 4.84:1 on the MPI primary. (`color-contrast()` is
+  best-effort: it returns the highest-contrast candidate and only `@warn`s if none clears the
+  floor. Every MPI theme colour clears it today — `danger` `#DC3545` is the tightest, at
+  4.53:1 on white — and `bin/verify-contrast-oracle` checks Bootstrap and the Ruby helper
+  still agree in CI.)
+- **Inactive page:** `bg-body text-body`, so it tracks the surface it sits on
 - **Arrow buttons:** `→` and `←` characters (not chevron icons)
 - **First page:** No left arrow shown (arrow is absent, not disabled)
 - **Last page:** No right arrow shown
-- **Separator:** Top border (`#DEE2E6`) above the pagination bar
+- **Separator:** `border-top` above the pagination bar
 
 ## Variants
 
@@ -32,10 +42,14 @@ Page navigation for list views. Shows a "Showing X–Y of Z results" summary on 
 
 | State | Element | Description |
 |---|---|---|
-| Default | Page button | White background, gray border, dark text |
-| Hover | Page button | Blue border (`#2E75B6`), blue text |
-| Active | Page button | Filled blue background, white text, blue border |
-| Disabled | Arrow button | Light gray text (`#CED4DA`), `cursor: not-allowed` |
+| Default | Page button | `bg-body text-body border` — body surface, body text, adaptive border |
+| Active | Page button | `text-bg-primary border-primary` — filled primary, derived foreground |
+| Gap | Ellipsis marker | `text-body-secondary`, `aria-hidden="true"`, non-interactive |
+
+**No hover or disabled state.** The component renders no hover treatment, and it *omits*
+arrows on the first and last page rather than disabling them — so there is no disabled
+arrow to style. Earlier revisions of this entry documented both; they described a mockup,
+not the component. (#149)
 
 ## Props / API
 
@@ -59,27 +73,58 @@ end
 
 - `d-flex`, `align-items-center`, `justify-content-between` — layout
 - `gap-1` — spacing between page buttons
-- Custom `.page-btn` (32×32px, border-radius 6px)
 - `border-top` — separator above pagination
+- `text-primary-emphasis` — results text
+- `text-bg-primary border border-primary rounded` — active page
+- `bg-body text-body border rounded text-decoration-none` — inactive pages and arrows
+- `text-body-secondary` — truncation gap marker
 
 ## Key Styles
 
+All colour comes from the utilities above. What remains inline is geometry with no
+Bootstrap equivalent — `rounded` and `text-decoration-none` replaced the two declarations
+that did have one:
+
 ```css
-.showing-text { font-size: 13px; color: #2E75B6; }
-.page-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid #DEE2E6; font-size: 13px; font-weight: 500; }
-.page-btn.active { background: #2E75B6; color: #fff; border-color: #2E75B6; }
-.page-btn:hover { border-color: #2E75B6; color: #2E75B6; }
-.page-btn.disabled { color: #CED4DA; cursor: not-allowed; }
+/* the complete set of inline styles the component emits */
+.showing-text { font-size: 13px; }
+.page-btn     { width: 32px; height: 32px; font-size: 13px; font-weight: 500;
+                display: inline-flex; align-items: center; justify-content: center; }
+.gap          { width: 32px; height: 32px; font-size: 13px;
+                display: inline-flex; align-items: center; justify-content: center; }
+nav           { padding-top: 12px; }  /* off Bootstrap's 4/8/16/24/48 spacer scale */
 ```
+
+Measured against the compiled bundle (`spec/features/contrast_spec.rb` asserts each):
+
+| Element | Light | Dark |
+|---|---|---|
+| Results text | `#122F49` on `#FFFFFF` — 13.74:1 | `#82ACD3` on `#212529` — 6.46:1 |
+| Active page | `#FFFFFF` on `#2E75B6` — 4.84:1 | `#FFFFFF` on `#2E75B6` — 4.84:1 |
+| Inactive page | `#1B2A4A` on `#FFFFFF` — 14.22:1 | `#DEE2E6` on `#212529` — 11.85:1 |
+| Border / separator | `#DEE2E6` | `#495057` |
+
+Under default configuration the light-mode **page buttons and separator** are pixel-identical
+to the literals this replaced: `--bs-body-color` is mapped to MPI navy, `--bs-border-color` is
+`#DEE2E6`, and `rounded` resolves to 6px. These now resolve from `$body-bg`, `$body-color`,
+`$border-color` and `$border-radius`, which a consuming app may override — the bar following
+that override is the intent, not a regression. The **results text is the one deliberate change
+under default configuration** — `#2E75B6` (4.84:1) darkens to `#122F49` (13.74:1), because
+`text-primary` measures 3.19:1 against Bootstrap's dark body and cannot be used on an
+adaptive surface.
 
 ## Accessibility
 
 - Wrap in `<nav aria-label="Pagination">`
 - Current page: `aria-current="page"`
 - Arrow buttons: `aria-label="Previous page"` / `aria-label="Next page"`
-- Disabled arrows: `aria-disabled="true"`
+- Unavailable arrows are **omitted**, not marked `aria-disabled` — there is no disabled
+  control in the accessibility tree to announce
+- Gap marker: `aria-hidden="true"` — decorative, and skipped by screen readers
 - Page buttons: `aria-label="Page N"`
 - Results text provides context for screen readers
+- Contrast holds in both colour modes because no foreground is pinned beside a variable
+  background — see the measured table above, asserted in `spec/features/contrast_spec.rb`
 
 ## Usage Guidelines
 

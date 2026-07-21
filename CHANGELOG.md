@@ -7,6 +7,37 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Changed
+- **`Admin::Pagination::Component` is theme-adaptive** — the bar no longer pins a light
+  palette in inline styles. Every colour now resolves from a Bootstrap semantic utility, so
+  the component follows `data-bs-theme` and the consuming app's mapped `$primary`: the top
+  rule is `border-top`, the results text `text-primary-emphasis`, the active page
+  `text-bg-primary border border-primary rounded`, and inactive pages and arrows
+  `bg-body text-body border rounded`. `border-radius: 6px` and `text-decoration: none` moved
+  to `rounded` / `text-decoration-none`; the surviving inline styles are geometry only
+  (32px box, 13px text, the nav's 12px top padding — 12px is off Bootstrap's spacer scale).
+  **For a consumer that does not remap Bootstrap's defaults, the light-mode page buttons and
+  separator are pixel-identical** to the literals they replace — `--bs-body-color` is mapped
+  to MPI navy `#1B2A4A`, `--bs-border-color` is `#DEE2E6`, and `rounded` resolves to 6px.
+  Note the change in kind, though: these values now come from `$body-bg`, `$body-color`,
+  `$border-color` and `$border-radius`, which are **yours to override**. An app that maps
+  them — say `$body-bg: $mpi-background` — will see the bar follow, which is the intent.
+  The one deliberate change under default configuration is the results text, which darkens
+  from `#2E75B6` (4.84:1) to `#122F49` (13.74:1) — a contrast improvement. Dark mode is new
+  behaviour rather than changed behaviour.
+
+  The results text uses `text-primary-emphasis` rather than the `text-primary` the issue
+  specified: measured against the compiled bundle, `text-primary` paints `#2E75B6` on
+  Bootstrap's dark body for **3.19:1**, below the 4.5:1 AA floor — the same defect
+  `6062954` already fixed once in `EmptyState`. `text-primary-emphasis` measures 13.74:1
+  light and 6.46:1 dark.
+
+  No public API change: the three affected helpers are private, and no consumer couples to
+  the component's colours. `spec/features/contrast_spec.rb` now proves the claim in a real
+  browser — asserting the painted value as well as the ratio, because inherited body text
+  clears AA in both modes and would make a ratio-only assertion a false green.
+  (#149 — Track 2 phase 1, epic #147)
+
 ## [0.7.0] - 2026-07-21
 
 ### Added

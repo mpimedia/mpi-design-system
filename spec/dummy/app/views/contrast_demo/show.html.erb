@@ -56,6 +56,19 @@
         ) %>
   </section>
 
+  <%# Pagination carries no pinned palette after #149 — every colour resolves from a
+      Bootstrap utility, so the same markup is rendered again inside #dark-mode below and
+      the spec measures what each mode actually paints. %>
+  <section id="pagination" class="mb-4">
+    <%= render MpiDesignSystem::Admin::Pagination::Component.new(
+          current_page: 20,
+          total_pages: 47,
+          total_count: 1175,
+          url_builder: ->(page) { "/contacts?page=#{page}" },
+          max_links: 7
+        ) %>
+  </section>
+
   <%# Same components under Bootstrap's dark colour mode. ActiveFilterBar pins a
       light background, so a theme-aware foreground would render light-on-light
       (1.16:1) unless the component pins its colour mode too. (#130) %>
@@ -71,6 +84,15 @@
             groups: [ { label: "All", count: 100 } ],
             active_filters: [ { category: "Tag", value: "Acquisitions", remove_url: "#" } ],
             clear_all_url: "#"
+          ) %>
+    </div>
+    <div id="dark-pagination" class="mb-3">
+      <%= render MpiDesignSystem::Admin::Pagination::Component.new(
+            current_page: 20,
+            total_pages: 47,
+            total_count: 1175,
+            url_builder: ->(page) { "/contacts?page=#{page}" },
+            max_links: 7
           ) %>
     </div>
     <div id="dark-avatars">
