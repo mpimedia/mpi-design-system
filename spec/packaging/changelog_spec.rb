@@ -19,8 +19,13 @@ require "spec_helper"
 # - "when the release section is absent" is the decoy that proves the guard above
 #   is not itself vacuous. Its fixture reproduces #127's exact shape — a historical
 #   release section present while the current version appears only as prose and as
-#   a link reference — and it mutates the guard directly, asserting the rejections
-#   that `Regexp.escape` and the `(?:[ \t]|$)` boundary are there to produce.
+#   a link reference — so it pins *version discrimination*: a guard matching any
+#   release heading passes the real file but fails here.
+# - "with a heading that only resembles the release heading" pins the remaining
+#   three elements of the pattern, which a fixture with no release section cannot
+#   reach: drop `Regexp.escape`, the `(?:[ \t]|$)` boundary, or the `^` anchor and
+#   one of its examples reddens. Each element the comment below calls load-bearing
+#   has an example that fails when it is removed — that is the whole point of #127.
 # - "defines a link reference for every bracketed heading" catches the broken
 #   link-reference block #127 also repaired: only `[0.2.0]:` was defined, so six
 #   bracketed headings rendered as literal text on GitHub and RubyDoc.
@@ -44,11 +49,13 @@ require "spec_helper"
 #
 # Known limits, all accepted:
 #
-# 1. This is a lexical scan, not a Markdown parser, so a fenced code block is
-#    invisible to it. A fenced `## [0.6.0]` would satisfy the release guard; a
-#    fenced column-zero `[x]: url` would register as a phantom definition and
-#    false-*red* the link-reference example. The latter is the likelier of the
-#    two — keep reference syntax inline-quoted mid-line, as the prose already does.
+# 1. This is a lexical scan, not a Markdown parser, so fenced code blocks are
+#    invisible to it and can fail in *either* direction. A fenced `## [0.6.0]`
+#    satisfies the release guard though it renders as code, not a heading. A fenced
+#    column-zero `[x]: url` registers as a definition — which false-*reds* the
+#    link-reference example when `x` has no heading, and false-*greens* it when it
+#    stands in for a real definition that was deleted. Keep reference syntax
+#    inline-quoted mid-line, as this file's prose already does.
 # 2. The definition pattern requires column zero and exact case. Markdown also
 #    permits up to three leading spaces and matches labels case-insensitively, so
 #    an indented or differently-cased definition would false-red here. That is
@@ -83,8 +90,9 @@ RSpec.describe "CHANGELOG.md" do
     # reference. The historical heading matters — without one the fixture would
     # only prove the guard wants a `## [...]` heading at all, which an
     # implementation matching *any* release heading would satisfy identically
-    # (see "Two False Greens" #1 in .claude/rules/testing.md). `0.0.1-decoy` is
-    # not a releasable version, so it can never collide with a future VERSION.
+    # (see "Two False Greens" #1 in .claude/rules/testing.md). `0.0.1-decoy` is a
+    # syntactically valid version (RubyGems reads it as 0.0.1.pre.decoy) but sorts
+    # below everything shipped, so colliding with VERSION would take a regression.
     #
     # The original assertion pinned the literal "0.2.0", so the substring form
     # below is a weak *dynamic* restatement of it, not the old code verbatim.
@@ -129,6 +137,11 @@ RSpec.describe "CHANGELOG.md" do
     it "rejects a heading whose version is a prefix of a longer token" do
       expect("## [#{MpiDesignSystem::VERSION}]-rc1 - 2026-01-01\n").not_to match(release_heading)
       expect("## [#{MpiDesignSystem::VERSION}]garbage\n").not_to match(release_heading)
+    end
+
+    it "rejects a mid-line or indented mention" do
+      expect("see ## [#{MpiDesignSystem::VERSION}] in history\n").not_to match(release_heading)
+      expect("  ## [#{MpiDesignSystem::VERSION}] - 2026-01-01\n").not_to match(release_heading)
     end
 
     it "still accepts the real heading forms" do
