@@ -59,6 +59,27 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
     expect(page).to have_css("span[aria-hidden='true'].text-body-secondary", text: "…")
   end
 
+  it "keeps the non-colour geometry that has no Bootstrap equivalent" do
+    render_inline(described_class.new(current_page: 20, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 7))
+
+    # Colour left these declarations; size did not. Nothing else pins them — the three
+    # guards below only assert what must be ABSENT from the inline styles, so removing
+    # a style helper outright would otherwise ship green with every example passing.
+    expect(page).to have_css("nav[aria-label='Pagination'][style*='padding-top: 12px']")
+    expect(page).to have_css(
+      "span.text-primary-emphasis[style*='font-size: 13px']",
+      text: "Showing 476–500 of 1175 results"
+    )
+    expect(page).to have_css(
+      "span[aria-current='page'][style*='width: 32px'][style*='height: 32px'][style*='font-weight: 500']",
+      text: "20"
+    )
+    expect(page).to have_css(
+      "span[aria-hidden='true'][style*='width: 32px'][style*='height: 32px']",
+      text: "…"
+    )
+  end
+
   it "does not show left arrow on first page" do
     render_inline(described_class.new(current_page: 1, total_pages: 3, total_count: 75, url_builder: url_builder))
 

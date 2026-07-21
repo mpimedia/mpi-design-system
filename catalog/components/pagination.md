@@ -42,7 +42,7 @@ Page navigation for list views. Shows a "Showing X–Y of Z results" summary on 
 
 | State | Element | Description |
 |---|---|---|
-| Default | Page button | `bg-body text-body border` — body surface, body text, adaptive border |
+| Default | Page button | `bg-body text-body` — body surface, body text, adaptive border |
 | Active | Page button | `text-bg-primary border-primary` — filled primary, derived foreground |
 | Gap | Ellipsis marker | `text-body-secondary`, `aria-hidden="true"`, non-interactive |
 
@@ -75,9 +75,12 @@ end
 - `gap-1` — spacing between page buttons
 - `border-top` — separator above pagination
 - `text-primary-emphasis` — results text
-- `text-bg-primary border border-primary rounded` — active page
-- `bg-body text-body border rounded text-decoration-none` — inactive pages and arrows
+- `border rounded text-decoration-none text-bg-primary border-primary` — active page
+- `border rounded text-decoration-none bg-body text-body` — inactive pages and arrows
 - `text-body-secondary` — truncation gap marker
+
+(The two page-button strings are quoted in the order the component emits them; both share
+the same `border rounded text-decoration-none` base.)
 
 ## Key Styles
 

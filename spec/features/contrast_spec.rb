@@ -335,8 +335,9 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
       end
     end
 
-    # The conversion is live on a Harvest production page, so light mode must be
-    # visually identical to the literals it replaced, not merely accessible.
+    # The conversion is live on a Harvest production page, so the geometry it replaced
+    # must come back byte-for-byte, not merely accessibly. (The results-text colour is
+    # the one deliberate light-mode change; it is asserted above, not here.)
     it "reproduces the retired geometry literals exactly in light mode" do
       styles = page.evaluate_script(<<~JS)
         (() => {
