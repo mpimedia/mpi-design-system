@@ -41,10 +41,10 @@ on where Bundler unpacks the gem.
 
 ```ruby
 # Gemfile
-gem "mpi_design_system", git: "git@github.com:mpimedia/mpi-design-system.git", tag: "v0.2.0"
+gem "mpi_design_system", git: "git@github.com:mpimedia/mpi-design-system.git", tag: "v0.7.0"
 ```
 
-Pin to a release tag (`tag: "v0.2.0"`) so upgrades are deliberate. Then:
+Pin to a release tag (`tag: "v0.7.0"`) so upgrades are deliberate. Then:
 
 ```bash
 bundle install
