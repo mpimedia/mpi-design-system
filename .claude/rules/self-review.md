@@ -22,6 +22,11 @@ HC the work is complete:
       (no invented colors, sizes, or spacing)?
 - [ ] **Accessibility pass** — keyboard access, ARIA roles/labels, 4.5:1 / 3:1 contrast,
       visible focus indicators
+- [ ] **Executed every check you wrote in prose** — a command, gate, or runbook step in a
+      PR description, comment, or doc is a check no suite will ever run for you. Paste it
+      into a shell, feed it the *failure* case, and confirm it aborts. Verifying only the
+      happy path cannot distinguish a working gate from one that always passes — see
+      `.claude/rules/testing.md` ("A check written in documentation is still a check")
 - [ ] **Both required checks green** — the engine has exactly two, and both must pass
       before any commit or push (no Brakeman or bundler-audit here):
       - `bundle exec rubocop -a` — zero offenses
