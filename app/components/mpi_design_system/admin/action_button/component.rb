@@ -22,7 +22,8 @@ module MpiDesignSystem
         # @param method [Symbol] HTTP method for Turbo (:get, :post, :put, :patch, :delete)
         # @param data [Hash] data-* attributes (Turbo/Stimulus)
         # @param classes_append [String, Array<String>] Extra layout utility classes (e.g. "float-end me-2")
-        # @param role [String] Optional ARIA role override (defaults to "button" for non-GET links)
+        # @param role [String, false] ARIA role — nil derives ("button" for non-GET links),
+        #   a String overrides, false suppresses the derived role entirely
         def initialize(label:, color: :primary, variant: :filled, size: :md, icon: nil,
                        icon_only: false, disabled: false, href: nil, method: nil, data: {},
                        classes_append: nil, role: nil)
@@ -83,14 +84,17 @@ module MpiDesignSystem
         # An href with :get (or no verb) is navigation and deliberately gets no role — consumers
         # such as Harvest pass method: :get on every navigation button. An explicit role: wins,
         # covering anchors driven by data: alone (data-bs-toggle / Stimulus) with no HTTP verb.
-        # role: is override-only: it can add or change a role, but cannot suppress the derived
-        # one, since a non-GET action link announced as a plain link is the bug this prevents.
+        # role: is three-state — nil derives, a String overrides, and false suppresses. The
+        # suppression case exists because role="button" tells assistive technology to expect
+        # Enter *and* Space activation, while a native anchor only activates on Enter; a
+        # consumer that wants to keep true link semantics needs a way to say so.
         #
         # The verb is normalized rather than compared raw, so a String ("delete") or a shouty
         # one ("DELETE") derives the role the same as :delete. Comparing raw would silently drop
         # the role — no error, just a missing a11y attribute. Never raises on odd input, per
         # `.claude/rules/frontend.md`: fall back to a safe default, don't blow up a render.
         def resolved_role
+          return nil if @role == false
           return @role if @role.present?
 
           "button" if @href && ACTION_METHODS.include?(@method.to_s.downcase.to_sym)

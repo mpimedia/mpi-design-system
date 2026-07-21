@@ -34,13 +34,29 @@ include breaking changes).
   `disabled:`. An `href:` with `method: :get` or no method is *navigation* and deliberately renders
   no role — Harvest passes `method: :get` on every navigation button (its `DEFAULT_METHOD` is
   `:get`), so gating on the mere presence of `method:` would have mislabelled every navigation link.
-  A new `role:` param overrides the derivation, covering anchors driven by `data:` alone
-  (`data-bs-toggle`, a Stimulus action) with no HTTP verb. (#136 — harvest#776, harvest#778)
+  A new `role:` param makes this three-state: `nil` derives, a String overrides (covering
+  anchors driven by `data:` alone — `data-bs-toggle`, a Stimulus action — with no HTTP verb),
+  and `false` suppresses. Suppression exists because `role="button"` tells assistive technology
+  to expect **Enter and Space** activation while a native `<a href>` activates on Enter only,
+  and this component ships no Space-key handler; the derived role is still the right default
+  (it matches Bootstrap's guidance for link-styled buttons), but a consumer that wants true
+  link semantics can now opt out. (#136 — harvest#776, harvest#778)
 - **`:info` joins the semantic color set** on `Admin::ActionButton`, `Admin::Badge`, and
   `Admin::AccountDetailPanel` (`account_type_color:`), rendering `btn-info` / `btn-outline-info` /
-  `text-bg-info`. `$info` is already aliased to `$mpi-primary` (`#2E75B6`) in `_tokens.scss`, so no
-  token or SCSS change was needed and the color inherits Bootstrap's derived foreground. Unknown
-  colors still coerce silently to `:primary` — unchanged. (#136 — harvest#776, harvest#778)
+  `text-bg-info` in MPI blue with Bootstrap's derived foreground. Unknown colors still coerce
+  silently to `:primary` — unchanged. (#136 — harvest#776, harvest#778)
+
+### Fixed
+- **`$mpi-info` is now a real token, so `:info` is MPI blue on *both* consumer paths.** The value
+  was previously hardcoded as `$info: $mpi-primary` in `_tokens.scss`, which covers only the legacy
+  `@import` pipeline. Modern Sass-module consumers (`@use "mpi_design_system/tokens_values"`) had no
+  `$mpi-info` to map at all, so Bootstrap's default cyan (`#0DCAF0`) reached `btn-info` /
+  `text-bg-info` — a color outside the MPI palette. `_tokens_values.scss` now declares
+  `$mpi-info: $mpi-primary !default` and `_tokens.scss` routes through it, so both pipelines emit
+  `--bs-info: #2E75B6`, and a `@use … with ($mpi-primary: …)` override carries through to info.
+  No rendered value changes for existing legacy consumers. The `build:css:compat` script now
+  asserts `--bs-info` on both compiled fixtures, so a future regression fails the build rather than
+  shipping cyan. (#136)
 
 ### Changed
 - **Visible design change:** avatars whose name hashes to one of the seven failing colours now

@@ -67,7 +67,8 @@ class MpiDesignSystem::Admin::ActionButton::Component < ViewComponent::Base
   # @param method [Symbol] HTTP method for Turbo (:get, :post, :put, :patch, :delete)
   # @param data [Hash] data-* attributes (Turbo/Stimulus)
   # @param classes_append [String, Array<String>] Extra layout utility classes (e.g. "float-end me-2")
-  # @param role [String] Optional ARIA role override (defaults to "button" for non-GET links)
+  # @param role [String, false] ARIA role — nil derives ("button" for non-GET links),
+  #   a String overrides, false suppresses the derived role entirely
 end
 ```
 
@@ -106,6 +107,11 @@ $warning: #D4772C;
   renders **no** role — it really is a link, and mislabelling it would hide that from screen
   reader users. Pass `role:` explicitly to override, e.g. for an anchor driven only by `data:`
   attributes (`data-bs-toggle`, a Stimulus action) with no HTTP verb
+- `role: false` suppresses the derived role. Reach for it when an action link should keep true
+  link semantics: `role="button"` tells assistive technology to expect **Enter and Space**
+  activation, but a native `<a href>` activates on Enter only, and this component ships no
+  Space-key handler. The derived role remains the right default — it matches Bootstrap's own
+  guidance for link-styled buttons — but a consumer that cares about the Space gap can opt out
 
 ## Usage Guidelines
 

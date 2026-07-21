@@ -202,6 +202,21 @@ RSpec.describe MpiDesignSystem::Admin::ActionButton::Component, type: :component
     end
   end
 
+  context "with role: false" do
+    it "suppresses the role derived for a non-GET link" do
+      render_inline(described_class.new(label: "Delete", href: "/contacts/1", method: :delete, role: false))
+
+      expect(page).to have_css("a.btn[href='/contacts/1']", text: "Delete")
+      expect(page).not_to have_css("a[role]")
+    end
+
+    it "leaves the rest of the action link intact" do
+      render_inline(described_class.new(label: "Delete", href: "/contacts/1", method: :delete, role: false))
+
+      expect(page).to have_css("a[data-turbo-method='delete']")
+    end
+  end
+
   context "with an unrecognized method" do
     it "renders without raising and derives no role" do
       expect {

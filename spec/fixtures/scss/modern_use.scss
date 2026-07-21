@@ -7,8 +7,13 @@
 // Bootstrap once. Compiled by the `build:css:compat` yarn script. (Issue #103.)
 @use "mpi_design_system/tokens_values" as *;
 
+// Map every token the palette defines — Bootstrap keeps its own default for any
+// omitted one, which is how $info silently shipped as Bootstrap cyan (#0DCAF0)
+// to modern consumers before $mpi-info existed. Mirrors the README snippet.
 $primary: $mpi-primary;
 $success: $mpi-success;
+$warning: $mpi-warning;
+$info: $mpi-info;
 $body-color: $mpi-text;
 
 @import "bootstrap/scss/bootstrap";
