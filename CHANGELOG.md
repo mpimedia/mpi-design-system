@@ -7,6 +7,8 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-07-21
+
 ### Changed
 - **`Admin::Pagination::Component` is theme-adaptive** — the bar no longer pins a light
   palette in inline styles. Every colour now resolves from a Bootstrap semantic utility, so
@@ -319,7 +321,8 @@ Initial internal version: the ViewComponent library, design tokens, Stimulus con
 and Lookbook previews, prior to the adoption-prep packaging corrections above. (No release
 tag was cut for 0.1.0.)
 
-[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.4.1...v0.5.0
