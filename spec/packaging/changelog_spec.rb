@@ -17,15 +17,10 @@ require "spec_helper"
 #   `MpiDesignSystem::VERSION`, so it re-aims itself at every release instead of
 #   rotting on a literal.
 # - "when the release section is absent" is the decoy that proves the guard above
-#   is not itself vacuous. It feeds a changelog that carries a historical release
-#   section while mentioning the current version *only* as prose and as a link
-#   reference — #127's exact shape — and shows the weak substring form accepting
-#   it while the anchored form rejects it. Two things keep the decoy honest: the
-#   positive `include` proves the version string really is in the fixture, so the
-#   `not_to match` is an absence with something pinning the presence ("Two False
-#   Greens" #2 in .claude/rules/testing.md); and the historical `## [0.0.1-decoy]`
-#   heading proves the guard discriminates on the *version* rather than merely
-#   demanding some release heading, which is False Green #1 in the same doc.
+#   is not itself vacuous. Its fixture reproduces #127's exact shape — a historical
+#   release section present while the current version appears only as prose and as
+#   a link reference — and it mutates the guard directly, asserting the rejections
+#   that `Regexp.escape` and the `(?:[ \t]|$)` boundary are there to produce.
 # - "defines a link reference for every bracketed heading" catches the broken
 #   link-reference block #127 also repaired: only `[0.2.0]:` was defined, so six
 #   bracketed headings rendered as literal text on GitHub and RubyDoc.
@@ -34,23 +29,26 @@ require "spec_helper"
 #
 # - `Regexp.escape` on the version — the dots are regex wildcards otherwise, so
 #   `0.6.0` would happily match `0X6Y0`.
-# - The `^` anchor rejects the link-reference block at the bottom of the file.
-#   Without it, `[0.6.0]: https://…` alone satisfies the guard — which is the
-#   second way the old substring form was vacuous.
+# - The `^` anchor rejects a *mid-line* or indented mention (`see ## [0.6.0] …`).
+#   Note it is the literal `## ` prefix, not the anchor, that rejects the
+#   link-reference block at the bottom of the file.
 # - The `(?:[ \t]|$)` boundary — without it, `## [0.6.0]garbage` and
 #   `## [0.6.0]-rc1` are accepted as the release heading.
 # - `[ \t]+` and NOT `\s+` in `reference_definitions` — `\s` crosses newlines in
 #   Ruby without /m, so a definition whose URL had been deleted (`[0.6.0]:`
 #   followed by a blank line) would false-green by consuming the newline and
-#   grabbing the next line's first character as its destination. Verified.
+#   grabbing the next line's first character as its destination.
 # - `^## \[([^\]]+)\]` deliberately does not capture the unbracketed `## 0.1.0`
 #   heading; no tag was ever cut for 0.1.0, so it is correct for it to have no
 #   link reference.
 #
 # Known limits, all accepted:
 #
-# 1. This is a lexical scan, not a Markdown parser. A fenced code block
-#    containing `## [0.6.0]` would satisfy the release-heading guard.
+# 1. This is a lexical scan, not a Markdown parser, so a fenced code block is
+#    invisible to it. A fenced `## [0.6.0]` would satisfy the release guard; a
+#    fenced column-zero `[x]: url` would register as a phantom definition and
+#    false-*red* the link-reference example. The latter is the likelier of the
+#    two — keep reference syntax inline-quoted mid-line, as the prose already does.
 # 2. The definition pattern requires column zero and exact case. Markdown also
 #    permits up to three leading spaces and matches labels case-insensitively, so
 #    an indented or differently-cased definition would false-red here. That is
@@ -117,7 +115,35 @@ RSpec.describe "CHANGELOG.md" do
     end
   end
 
+  # The decoy above proves the guard discriminates on the version. These pin the
+  # two remaining load-bearing elements of the pattern, which a fixture missing
+  # the release section cannot exercise: drop `Regexp.escape` and the first would
+  # match; drop the `(?:[ \t]|$)` boundary and the rest would.
+  context "with a heading that only resembles the release heading" do
+    let(:wildcard_version) { MpiDesignSystem::VERSION.gsub(".", "X") }
+
+    it "rejects a heading matched only by treating the version's dots as wildcards" do
+      expect("## [#{wildcard_version}] - 2026-01-01\n").not_to match(release_heading)
+    end
+
+    it "rejects a heading whose version is a prefix of a longer token" do
+      expect("## [#{MpiDesignSystem::VERSION}]-rc1 - 2026-01-01\n").not_to match(release_heading)
+      expect("## [#{MpiDesignSystem::VERSION}]garbage\n").not_to match(release_heading)
+    end
+
+    it "still accepts the real heading forms" do
+      expect("## [#{MpiDesignSystem::VERSION}] - 2026-01-01\n").to match(release_heading)
+      expect("## [#{MpiDesignSystem::VERSION}]\n").to match(release_heading)
+    end
+  end
+
   it "defines a link reference for every bracketed heading" do
+    # Pin the headings first: `match_array` alone is satisfied by [] == [], so on a
+    # changelog with no bracketed headings and no reference block it would pass
+    # green. Without this line the example leans on its sibling above to reject
+    # that file — an implicit cross-example dependency, and False Green #2.
+    expect(bracketed_headings).to include("Unreleased", MpiDesignSystem::VERSION)
+
     expect(reference_definitions).to match_array(bracketed_headings)
   end
 
