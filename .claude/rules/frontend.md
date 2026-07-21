@@ -86,6 +86,20 @@ If a catalog entry exists, implement to that spec. If not, raise it with the HC 
 - Contrast: 4.5:1 for normal text, 3:1 for large text — prefer Bootstrap's `text-bg-*`
   utilities, which derive an accessible foreground automatically (e.g. `text-bg-warning`
   yields dark text), rather than hand-pairing a background with a `text-*` class
+- **Never hardcode a foreground next to a variable background.** Where a component must emit
+  colour in an *inline style* and `text-bg-*` cannot reach, derive it with
+  `MpiDesignSystem::ColorContrast.accessible_foreground(background)` — the Ruby counterpart of
+  Bootstrap's `color-contrast()`. Pinning `color: #fff` beside a dynamic
+  `background-color` is the exact defect #130 fixed in `AvatarCircle`, where 7 of 10 palette
+  colours shipped below the AA floor (`#4EA8DE` at 2.63:1). Where the background *is* a theme
+  colour, use `text-bg-*` and let Bootstrap derive it — do not reach for the Ruby helper
+- **Audit `opacity`, not just `color:`.** A declared pair can be AA-clean and still fail once
+  faded: `ActiveFilterBar`'s remove button paired white with `opacity: 0.8`, compositing to an
+  effective `#D5E3F0` at 3.71:1. A sweep that reads only `color:` declarations will not see it
+- **Verify a contrast rule against an external oracle, never against itself.** A spec asserting
+  `ratio(bg, accessible_foreground(bg)) >= 4.5` calls the code under test on both sides — wrong
+  luminance math agrees with itself and still ships a failure. `bin/verify-contrast-oracle`
+  compiles Bootstrap's own `color-contrast()` over the palette in CI for exactly this reason
 - Visible focus indicators on every focusable element
 
 ## Anti-Patterns

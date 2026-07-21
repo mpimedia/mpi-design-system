@@ -29,4 +29,79 @@ RSpec.describe MpiDesignSystem::Admin::AvatarStack::Component, type: :component 
 
     expect(page).to have_css("div[aria-label='5 contacts, plus 2 more']")
   end
+
+  describe "edge cases" do
+    it "renders nothing but the group wrapper for an empty name list" do
+      render_inline(described_class.new(names: []))
+
+      expect(page).to have_css("div[role='group']")
+      expect(page).to have_no_css("span.rounded-circle")
+    end
+
+    it "labels an empty stack without raising" do
+      render_inline(described_class.new(names: []))
+
+      expect(page).to have_css("div[aria-label='0 contacts']")
+    end
+
+    it "falls back to md for an unknown size" do
+      render_inline(described_class.new(names: [ "Alice", "Bob", "Carol", "Dave", "Eve" ], max: 4, size: :enormous))
+
+      expect(page).to have_css("span[style*='width: 40px']", text: "+1")
+    end
+
+    it "renders every avatar when max exceeds the list length" do
+      render_inline(described_class.new(names: [ "Alice", "Bob" ], max: 10))
+
+      expect(page).to have_css("span.rounded-circle", count: 2)
+      expect(page).to have_no_text("+")
+    end
+  end
+
+  describe "overflow chip boundary" do
+    it "shows no chip when names exactly fill max" do
+      render_inline(described_class.new(names: [ "Alice", "Bob", "Carol", "Dave" ], max: 4))
+
+      expect(page).not_to have_text("+")
+    end
+
+    it "shows a +1 chip at one over max" do
+      render_inline(described_class.new(names: [ "Alice", "Bob", "Carol", "Dave", "Eve" ], max: 4))
+
+      expect(page).to have_text("+1")
+    end
+  end
+
+  # The "+N" chip hand-copied AvatarCircle's markup, including a pinned
+  # `color: #fff`, so it would not have inherited #130's fix. It is now derived
+  # from the same helper. This pair resolves to white (4.76:1) — unchanged
+  # visually, but it now tracks the background instead of assuming it.
+  describe "overflow chip contrast (#130)" do
+    let(:names) { [ "Alice", "Bob", "Carol", "Dave", "Eve", "Frank" ] }
+
+    it "renders the overflow chip with a derived foreground" do
+      render_inline(described_class.new(names: names, max: 4))
+
+      expect(page).to have_css("span[style*='background-color: #64748B'][style*='color: #fff']", text: "+2")
+    end
+
+    it "renders a pairing that clears the 4.5:1 AA floor" do
+      background = described_class::OVERFLOW_COLOR
+      foreground = MpiDesignSystem::ColorContrast.accessible_foreground(background)
+
+      expect(MpiDesignSystem::ColorContrast.ratio(background, foreground)).to be >= 4.5
+    end
+
+    it "keeps the white separator border, which is decorative rather than text" do
+      render_inline(described_class.new(names: names, max: 4))
+
+      expect(page).to have_css("span[style*='border: 2px solid #fff']", text: "+2")
+    end
+
+    it "renders the chip at the small size too" do
+      render_inline(described_class.new(names: names, max: 4, size: :sm))
+
+      expect(page).to have_css("span[style*='width: 28px'][style*='color: #fff']", text: "+2")
+    end
+  end
 end

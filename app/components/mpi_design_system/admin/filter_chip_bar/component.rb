@@ -22,13 +22,17 @@ module MpiDesignSystem
 
         private
 
+        # This component sets no background of its own, so a pinned foreground is
+        # only ever verified against an assumed one: `#6C757D` scored 4.69:1 on
+        # white but 4.37:1 on the app background (`$mpi-background`). Bootstrap's
+        # `.text-body-secondary` derives from `--bs-body-color` and clears AA on
+        # both (6.40:1 / 6.14:1). (#130)
         def label_styles
           [
             "font-size: 11px",
             "font-weight: 600",
             "text-transform: uppercase",
-            "letter-spacing: 0.06em",
-            "color: #6C757D"
+            "letter-spacing: 0.06em"
           ].join("; ")
         end
 
@@ -63,12 +67,11 @@ module MpiDesignSystem
           styles.join("; ")
         end
 
+        # Geometry only — background and foreground come from `.text-bg-primary`.
+        # Mirrors `ActiveFilterBar#pill_styles`, which renders the identical pill. (#130)
         def active_pill_styles
           [
             "padding: 4px 10px",
-            "border-radius: 999px",
-            "background: #2E75B6",
-            "color: #fff",
             "font-size: 12px",
             "font-weight: 500",
             "display: inline-flex",
@@ -78,10 +81,11 @@ module MpiDesignSystem
           ].join("; ")
         end
 
+        # Inherits the pill's derived foreground. The retired `opacity: 0.8` faded
+        # white to an effective #D5E3F0 — 3.71:1, an AA failure. (#130)
         def remove_btn_styles
           [
-            "color: #fff",
-            "opacity: 0.8",
+            "color: inherit",
             "background: none",
             "border: none",
             "padding: 0",
@@ -92,11 +96,11 @@ module MpiDesignSystem
         end
 
         def clear_all_styles
-          "font-size: 13px; color: #6C757D; text-decoration: none;"
+          "font-size: 13px; text-decoration: none;"
         end
 
         def reset_all_styles
-          "font-size: 12px; color: #6C757D; text-decoration: none;"
+          "font-size: 12px; text-decoration: none;"
         end
 
         def chip_label(chip)

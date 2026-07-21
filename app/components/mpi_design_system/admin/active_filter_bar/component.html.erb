@@ -1,8 +1,14 @@
 <% if show? %>
-  <div style="<%= bar_styles %>" role="toolbar" aria-label="Active filters">
-    <span style="<%= label_styles %>">Active:</span>
+  <%# `data-bs-theme="light"` scopes Bootstrap's colour mode to this bar.
+      `bar_styles` pins a light background ($mpi-background), while
+      `.text-body-secondary` resolves through `--bs-body-color` — which Bootstrap
+      flips to #dee2e6 under `data-bs-theme="dark"`. Pairing a theme-aware
+      foreground with a pinned background rendered light text on a light bar:
+      1.16:1. Pinning the surface means pinning its colour mode too. (#130) %>
+  <div style="<%= bar_styles %>" data-bs-theme="light" role="toolbar" aria-label="Active filters">
+    <span class="text-body-secondary" style="<%= label_styles %>">Active:</span>
     <% @filters.each do |filter| %>
-      <span style="<%= pill_styles %>">
+      <span class="rounded-pill text-bg-primary" style="<%= pill_styles %>">
         <%= pill_label(filter) %>
         <% if filter[:remove_url] %>
           <a href="<%= filter[:remove_url] %>"
@@ -15,7 +21,7 @@
       </span>
     <% end %>
     <% if @clear_all_url %>
-      <a href="<%= @clear_all_url %>" style="<%= clear_all_styles %>" aria-label="Clear all filters">Clear all</a>
+      <a href="<%= @clear_all_url %>" class="text-body-secondary" style="<%= clear_all_styles %>" aria-label="Clear all filters">Clear all</a>
     <% end %>
   </div>
 <% end %>

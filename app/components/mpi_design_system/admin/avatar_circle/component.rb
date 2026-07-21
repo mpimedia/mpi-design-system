@@ -13,6 +13,8 @@ module MpiDesignSystem
 
         COLORS = %w[#2E75B6 #8B5CF6 #E8733A #2DA67E #D97706 #6366F1 #DC3545 #4EA8DE #22A06B #64748B].freeze
 
+        PLACEHOLDER_COLOR = "#6C757D"
+
         VARIANTS = %i[default nav].freeze
 
         # @param name [String] Contact's full name (used for initials + color hash)
@@ -37,7 +39,11 @@ module MpiDesignSystem
           attrs = {
             class: css_classes,
             style: inline_styles,
-            aria: { label: @name || "Unknown contact" }
+            # Keyed off `placeholder?`, not `@name || …`: an empty or whitespace
+            # name is truthy in Ruby, so the fallback never fired and the avatar
+            # rendered `aria-label=""` — an unlabelled control for a screen reader,
+            # even though it visibly shows the placeholder icon. (#130)
+            aria: { label: placeholder? ? "Unknown contact" : @name }
           }
           attrs[:href] = @href if @href
           attrs
@@ -64,14 +70,23 @@ module MpiDesignSystem
             "height: #{size[:dimension]}px",
             "font-size: #{size[:font_size]}px",
             "background-color: #{background_color}",
-            "color: #fff",
+            "color: #{foreground_color}",
             "text-decoration: none",
             "line-height: 1"
           ].join("; ")
         end
 
         def background_color
-          placeholder? ? "#6C757D" : COLORS[@name.to_s.bytes.sum % COLORS.length]
+          placeholder? ? PLACEHOLDER_COLOR : COLORS[@name.to_s.bytes.sum % COLORS.length]
+        end
+
+        # Derived rather than pinned. `COLORS` mixes brand, semantic and tag-group
+        # tokens with a wide luminance spread, so no single foreground is accessible
+        # against all of them: white fails 7 of the 10, black fails the other 3.
+        # Deriving per background is what keeps every avatar at AA, and keeps it
+        # there if the palette ever changes. (#130)
+        def foreground_color
+          MpiDesignSystem::ColorContrast.accessible_foreground(background_color)
         end
 
         def initials

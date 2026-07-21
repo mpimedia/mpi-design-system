@@ -1,0 +1,260 @@
+# frozen_string_literal: true
+
+require "spec_helper"
+
+# Browser-level (real headless Chrome) proof that the derived foregrounds from
+# issue #130 actually LAND — measured as computed style against the real compiled
+# Bootstrap bundle.
+#
+# `render_inline` proves the ERB emits the right `class` and `style` attributes,
+# and the render specs already cover that. What it cannot prove is the cascade:
+#
+#   * `.text-bg-primary` sets `color` with `!important` from a stylesheet, while
+#     the pill also carries an inline `style` attribute. Inline styles normally
+#     beat stylesheet rules, so "which wins" is a real question, not a given.
+#   * The remove button is an `<a>` with inline `color: inherit`. An anchor does
+#     NOT inherit color by default — Bootstrap styles `a { color: var(--bs-link-color) }`.
+#     If `inherit` failed to win, the × would render link-blue on a blue pill: a
+#     contrast regression *introduced* by the fix, invisible to every render spec.
+#   * `.text-body-secondary` resolves through `--bs-secondary-color`, a variable
+#     chain that only exists at runtime.
+#
+# So this spec reads `getComputedStyle` and recomputes the WCAG ratio from what the
+# browser actually painted — following the computed-style precedent set by the
+# `mpi--tag-input` spec (see `.claude/rules/testing.md`).
+RSpec.describe "Derived foreground contrast", type: :feature, js: true do
+  # Resolves what a user actually SEES, which is not the same as the declared
+  # value in three ways this suite has to account for:
+  #
+  #   1. A colour may carry alpha. `.text-body-secondary` is
+  #      `rgba(<body-color>, .75)`, so reading the RGB channels and discarding
+  #      the alpha overstates contrast. Alpha is composited over the backdrop.
+  #   2. A background may be transparent, in which case the visible backdrop is
+  #      an ancestor's — so we walk up until we find an opaque one.
+  #   3. `opacity` on any ancestor fades the whole subtree. It is invisible to
+  #      the element's own computed `color`, which is how the retired
+  #      `opacity: 0.8` hid a 3.71:1 failure behind an AA-clean declaration.
+  RESOLVE_JS = <<~JS
+    (() => {
+      const parse = (value) => {
+        const parts = (value.match(/[\\d.]+/g) || []).map(Number);
+        return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+      };
+      const opaqueBackdrop = (node) => {
+        for (let el = node; el; el = el.parentElement) {
+          const bg = parse(getComputedStyle(el).backgroundColor);
+          if (bg.a === 1) return bg;
+        }
+        return { r: 255, g: 255, b: 255, a: 1 };
+      };
+      const over = (fg, bg) => ({
+        r: fg.r * fg.a + bg.r * (1 - fg.a),
+        g: fg.g * fg.a + bg.g * (1 - fg.a),
+        b: fg.b * fg.a + bg.b * (1 - fg.a),
+      });
+      const hex = (c) => '#' + [c.r, c.g, c.b]
+        .map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+
+      const el = document.querySelector(SELECTOR);
+      if (!el) return null;
+
+      let cumulativeOpacity = 1;
+      for (let n = el; n; n = n.parentElement) {
+        cumulativeOpacity *= parseFloat(getComputedStyle(n).opacity);
+      }
+
+      const backdrop = opaqueBackdrop(el);
+      const foreground = over(parse(getComputedStyle(el).color), backdrop);
+
+      return {
+        foreground: hex(foreground),
+        background: hex(backdrop),
+        cumulativeOpacity: cumulativeOpacity,
+      };
+    })()
+  JS
+
+  def resolve(selector)
+    result = page.evaluate_script(RESOLVE_JS.sub("SELECTOR", selector.to_json))
+    raise "no element matched #{selector}" if result.nil?
+
+    result.transform_keys(&:to_sym)
+  end
+
+  def ratio_for(selector)
+    resolved = resolve(selector)
+    measured = MpiDesignSystem::ColorContrast.ratio(resolved[:foreground], resolved[:background])
+
+    [ measured, resolved[:foreground], resolved[:background] ]
+  end
+
+  def computed(selector, property)
+    key = property == "color" ? :foreground : :background
+
+    resolve(selector).fetch(key)
+  end
+
+  before { visit "/contrast_demo" }
+
+  describe "AvatarCircle" do
+    MpiDesignSystem::Admin::AvatarCircle::Component::COLORS.each_with_index do |palette_color, index|
+      it "paints palette index #{index} (#{palette_color}) at or above the 4.5:1 AA floor" do
+        selector = "[data-avatar-index='#{index}'] .rounded-circle"
+
+        expect(page).to have_css(selector)
+        measured, foreground, background = ratio_for(selector)
+
+        # The browser must have painted the palette background we expect — otherwise
+        # a passing ratio could just mean the element rendered transparent.
+        expect(background).to eq(palette_color.upcase)
+        expect(measured).to be >= 4.5,
+          "expected AA contrast for #{foreground} on #{background}, got #{measured.round(2)}:1"
+      end
+    end
+
+    it "paints the placeholder above the AA floor" do
+      measured, _foreground, background = ratio_for("[data-avatar-placeholder] .rounded-circle")
+
+      expect(background).to eq("#6C757D")
+      expect(measured).to be >= 4.5
+    end
+
+    it "paints dark initials on the accent color that was the worst failure at 2.63:1" do
+      index = MpiDesignSystem::Admin::AvatarCircle::Component::COLORS.index("#4EA8DE")
+
+      expect(computed("[data-avatar-index='#{index}'] .rounded-circle", "color")).to eq("#000000")
+    end
+
+    it "keeps white where white already passed, so nothing changed unnecessarily" do
+      index = MpiDesignSystem::Admin::AvatarCircle::Component::COLORS.index("#2E75B6")
+
+      expect(computed("[data-avatar-index='#{index}'] .rounded-circle", "color")).to eq("#FFFFFF")
+    end
+  end
+
+  describe "AvatarStack overflow chip" do
+    it "paints the +N chip above the AA floor" do
+      measured, _foreground, background = ratio_for("#stack span[aria-hidden='true']")
+
+      expect(background).to eq(MpiDesignSystem::Admin::AvatarStack::Component::OVERFLOW_COLOR)
+      expect(measured).to be >= 4.5
+    end
+  end
+
+  # The load-bearing part of this spec. Everything below is about whether the
+  # cascade resolved, not whether the markup was emitted.
+  %w[#active-filter-bar #filter-chip-bar].each do |section|
+    describe "pill in #{section}" do
+      let(:pill) { "#{section} .text-bg-primary" }
+
+      it "paints the MPI primary background from the token, not a hardcoded literal" do
+        _measured, _foreground, background = ratio_for(pill)
+
+        expect(background).to eq("#2E75B6")
+      end
+
+      it "paints a pill foreground above the AA floor" do
+        measured, foreground, background = ratio_for(pill)
+
+        expect(measured).to be >= 4.5,
+          "expected AA contrast for #{foreground} on #{background}, got #{measured.round(2)}:1"
+      end
+
+      # The regression this whole spec exists to catch.
+      it "paints the remove button in the pill's own foreground, not Bootstrap's link color" do
+        pill_foreground = computed(pill, "color")
+        button_foreground = computed("#{pill} a", "color")
+
+        expect(button_foreground).to eq(pill_foreground)
+      end
+
+      it "paints the remove button above the AA floor against the pill" do
+        button_foreground = computed("#{pill} a", "color")
+        pill_background = computed(pill, "backgroundColor")
+        measured = MpiDesignSystem::ColorContrast.ratio(button_foreground, pill_background)
+
+        expect(measured).to be >= 4.5,
+          "expected AA contrast for #{button_foreground} on #{pill_background}, got #{measured.round(2)}:1"
+      end
+
+      # The retired `opacity: 0.8` composited white down to ~3.71:1. This checks
+      # CUMULATIVE opacity up the whole ancestor chain, not just the button's own:
+      # `opacity` on the pill (or any wrapper) would fade the × just as effectively
+      # while leaving the button's own computed value at 1.
+      it "paints the remove button at full opacity, ancestors included" do
+        expect(resolve("#{pill} a")[:cumulativeOpacity]).to eq(1.0)
+      end
+
+      it "paints the pill itself at full opacity, ancestors included" do
+        expect(resolve(pill)[:cumulativeOpacity]).to eq(1.0)
+      end
+    end
+  end
+
+  # Bootstrap 5.3 colour modes. `.text-body-secondary` resolves through
+  # `--bs-body-color`, which flips to #dee2e6 under `data-bs-theme="dark"`.
+  # ActiveFilterBar pins a LIGHT background, so without pinning its colour mode
+  # too the label rendered at 1.16:1 in dark mode — a regression introduced by
+  # the fix itself and invisible to a light-mode-only suite. (#130)
+  describe "under data-bs-theme='dark'" do
+    it "keeps the ActiveFilterBar label readable against its pinned light bar" do
+      foreground = computed("#dark-active-filter-bar .text-body-secondary", "color")
+      background = computed("#dark-active-filter-bar [role='toolbar']", "backgroundColor")
+
+      expect(background).to eq("#F5F7FA")
+      expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5,
+        "dark-mode label #{foreground} on pinned light bar #{background} = " \
+        "#{MpiDesignSystem::ColorContrast.ratio(foreground, background).round(2)}:1"
+    end
+
+    it "keeps the ActiveFilterBar pill readable" do
+      measured, foreground, background = ratio_for("#dark-active-filter-bar .text-bg-primary")
+
+      expect(measured).to be >= 4.5,
+        "dark-mode pill #{foreground} on #{background} = #{measured.round(2)}:1"
+    end
+
+    # FilterChipBar pins no background, so its muted text should track the dark
+    # surface rather than being pinned light — the opposite treatment, and correct
+    # for the same reason.
+    it "lets FilterChipBar's muted text follow the dark surface it sits on" do
+      foreground = computed("#dark-filter-chip-bar .text-body-secondary", "color")
+      background = computed("#dark-mode", "backgroundColor")
+
+      expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5,
+        "dark-mode label #{foreground} on #{background} = " \
+        "#{MpiDesignSystem::ColorContrast.ratio(foreground, background).round(2)}:1"
+    end
+
+    it "keeps avatar initials readable" do
+      measured, foreground, background = ratio_for("#dark-avatars .rounded-circle")
+
+      expect(measured).to be >= 4.5,
+        "dark-mode avatar #{foreground} on #{background} = #{measured.round(2)}:1"
+    end
+  end
+
+  describe "muted text" do
+    it "paints the ActiveFilterBar label above the AA floor against the bar" do
+      foreground = computed("#active-filter-bar .text-body-secondary", "color")
+      background = computed("#active-filter-bar [role='toolbar']", "backgroundColor")
+
+      expect(background).to eq("#F5F7FA")
+      expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5
+    end
+
+    it "paints the retired #6C757D nowhere in the bar" do
+      expect(computed("#active-filter-bar .text-body-secondary", "color")).not_to eq("#6C757D")
+    end
+
+    # FilterChipBar sets no background, so `resolve` walks up to whatever opaque
+    # surface it actually sits on — which is the point: a pinned foreground here
+    # would only ever be verified against an assumed backdrop.
+    it "paints the FilterChipBar labels above the AA floor against the page" do
+      measured, foreground, background = ratio_for("#filter-chip-bar .text-body-secondary")
+
+      expect(measured).to be >= 4.5,
+        "label #{foreground} on inherited backdrop #{background} = #{measured.round(2)}:1"
+    end
+  end
+end

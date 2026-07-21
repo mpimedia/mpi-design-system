@@ -1,7 +1,7 @@
 <div>
   <% if show_groups? %>
     <div class="d-flex align-items-center flex-wrap gap-2 mb-2" role="group" aria-label="Filter by group">
-      <span style="<%= label_styles %>">Groups:</span>
+      <span class="text-body-secondary" style="<%= label_styles %>">Groups:</span>
       <% @groups.each do |chip| %>
         <% if chip[:href] %>
           <a href="<%= chip[:href] %>"
@@ -16,16 +16,16 @@
         <% end %>
       <% end %>
       <% if @reset_all_url %>
-        <a href="<%= @reset_all_url %>" style="<%= reset_all_styles %>" aria-label="Reset all filters">Reset all</a>
+        <a href="<%= @reset_all_url %>" class="text-body-secondary" style="<%= reset_all_styles %>" aria-label="Reset all filters">Reset all</a>
       <% end %>
     </div>
   <% end %>
 
   <% if show_active_filters? %>
     <div class="d-flex align-items-center flex-wrap gap-2">
-      <span style="<%= label_styles %>">Active:</span>
+      <span class="text-body-secondary" style="<%= label_styles %>">Active:</span>
       <% @active_filters.each do |filter| %>
-        <span style="<%= active_pill_styles %>">
+        <span class="rounded-pill text-bg-primary" style="<%= active_pill_styles %>">
           <%= pill_label(filter) %>
           <% if filter[:remove_url] %>
             <a href="<%= filter[:remove_url] %>"
@@ -38,7 +38,7 @@
         </span>
       <% end %>
       <% if @clear_all_url %>
-        <a href="<%= @clear_all_url %>" style="<%= clear_all_styles %>" aria-label="Clear all filters">Clear all</a>
+        <a href="<%= @clear_all_url %>" class="text-body-secondary" style="<%= clear_all_styles %>" aria-label="Clear all filters">Clear all</a>
       <% end %>
     </div>
   <% end %>

@@ -1,0 +1,44 @@
+// Contrast oracle fixture — the EXTERNAL anchor for issue #130.
+//
+// `MpiDesignSystem::ColorContrast.accessible_foreground` is the Ruby counterpart
+// of Bootstrap's SCSS `color-contrast()`. A spec that checked that helper using
+// the helper's own `ratio` method would be self-referential: if the luminance
+// math were wrong in both places, the selector and the assertion would agree
+// with each other and still ship a real WCAG failure.
+//
+// So the source of truth lives here instead. This fixture runs BOOTSTRAP'S OWN
+// `color-contrast()` over AvatarCircle's palette and emits the result as real
+// CSS. `yarn build:css:compat` compiles it and asserts the foreground for every
+// colour, which pins the Ruby helper to the same oracle issue #128 used to
+// establish that `text-white` on `$mpi-success` was a 3.33:1 failure.
+//
+// If Bootstrap ever changes `color-contrast()`, its `$min-contrast-ratio`, or
+// its luminance table, this fixture fails and the Ruby helper is re-examined.
+//
+// Keep the palette below in sync with
+// `MpiDesignSystem::Admin::AvatarCircle::Component::COLORS` — the Ruby spec
+// asserts the two lists match, so a palette addition cannot land without a
+// recorded expectation on both sides.
+@import "mpi_design_system/tokens";
+@import "bootstrap/scss/bootstrap";
+
+$mds-avatar-palette: (
+  "0-2E75B6": #2E75B6,
+  "1-8B5CF6": #8B5CF6,
+  "2-E8733A": #E8733A,
+  "3-2DA67E": #2DA67E,
+  "4-D97706": #D97706,
+  "5-6366F1": #6366F1,
+  "6-DC3545": #DC3545,
+  "7-4EA8DE": #4EA8DE,
+  "8-22A06B": #22A06B,
+  "9-64748B": #64748B,
+  "placeholder-6C757D": #6C757D
+);
+
+@each $slug, $value in $mds-avatar-palette {
+  .mds-avatar-oracle-#{$slug} {
+    background-color: $value;
+    color: color-contrast($value);
+  }
+}
