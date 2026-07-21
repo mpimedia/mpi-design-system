@@ -16,6 +16,7 @@ class MpiDesignSystem::Admin::Badge::ComponentPreview < ApplicationComponentPrev
           { label: "Success", color: :success },
           { label: "Danger", color: :danger },
           { label: "Warning", color: :warning },
+          { label: "Info", color: :info },
           { label: "Secondary", color: :secondary }
         ]
       }

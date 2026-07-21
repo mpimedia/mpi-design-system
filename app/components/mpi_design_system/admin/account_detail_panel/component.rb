@@ -6,7 +6,7 @@ module MpiDesignSystem
       class Component < ViewComponent::Base
         # @param name [String] Account name
         # @param account_type [String] Account type label (e.g., "Distributor", "Studio")
-        # @param account_type_color [Symbol] Badge color :primary, :success, :danger, :warning, :secondary (default: :primary)
+        # @param account_type_color [Symbol] Badge color :primary, :success, :danger, :warning, :info, :secondary (default: :primary)
         # @param metrics [Hash] { contacts: Integer, engagements: Integer, titles: Integer }
         # @param contacts [Array<Hash>] Each: { name: String, title: String, path: String }
         # @param email [String] Account email
@@ -25,7 +25,7 @@ module MpiDesignSystem
                        created_date: nil, owner: nil, tag_groups: [], linked_titles: [])
           @name = name
           @account_type = account_type
-          @account_type_color = %i[primary success danger warning secondary].include?(account_type_color) ? account_type_color : :primary
+          @account_type_color = %i[primary success danger warning info secondary].include?(account_type_color) ? account_type_color : :primary
           @metrics = metrics
           @contacts = contacts || []
           @email = email

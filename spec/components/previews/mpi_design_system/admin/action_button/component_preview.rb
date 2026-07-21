@@ -15,6 +15,7 @@ class MpiDesignSystem::Admin::ActionButton::ComponentPreview < ApplicationCompon
           { label: "Success", color: :success },
           { label: "Danger", color: :danger },
           { label: "Warning", color: :warning },
+          { label: "Info", color: :info },
           { label: "Secondary", color: :secondary }
         ]
       }
@@ -82,6 +83,26 @@ class MpiDesignSystem::Admin::ActionButton::ComponentPreview < ApplicationCompon
       label: "View Details",
       href: "#",
       icon: "bi-arrow-right"
+    )
+  end
+
+  # @label As Action Link
+  def as_action_link
+    render MpiDesignSystem::Admin::ActionButton::Component.new(
+      label: "Delete",
+      href: "#",
+      method: :delete,
+      color: :danger,
+      icon: "bi-trash"
+    )
+  end
+
+  # @label With Appended Classes
+  def with_classes_append
+    render MpiDesignSystem::Admin::ActionButton::Component.new(
+      label: "Add Contact",
+      icon: "bi-plus-lg",
+      classes_append: "float-end"
     )
   end
 end

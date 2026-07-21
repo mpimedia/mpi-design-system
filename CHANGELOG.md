@@ -7,6 +7,51 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Added
+- **`MpiDesignSystem::ColorContrast`** — WCAG 2.1 relative-luminance and contrast-ratio math,
+  plus `accessible_foreground`, the Ruby counterpart of Bootstrap's SCSS `color-contrast()`.
+  For components that must emit a foreground in an *inline style*, where `text-bg-*` cannot
+  reach. Prefer `text-bg-*` whenever the background is a theme colour.
+- **A contrast oracle in CI** — `spec/fixtures/scss/avatar_contrast_oracle.scss` runs
+  Bootstrap's own `color-contrast()` over the avatar palette, and `bin/verify-contrast-oracle`
+  (wired into `yarn build:css:compat`) fails the build if Bootstrap and the Ruby helper ever
+  disagree. This exists because a contrast spec written against the helper's own `ratio`
+  method would be self-referential: wrong luminance math would agree with itself and still
+  ship a real failure. #128 could only produce this evidence by hand, recorded in prose.
+- **`Admin::ActionButton::Component` accepts `classes_append:`** (default `nil`) — extra layout
+  utility classes appended after the derived `btn`/color/size classes, so a consumer can place a
+  shipped button (`float-end`, `me-2`, `w-100`) without wrapping it in a positioning `<div>` or
+  forking the component. Accepts a String, a space-separated String, or an Array of Strings; all
+  class composition now runs through Rails' `token_list`, which flattens, splits, rejects blanks,
+  and dedupes — collapsing the previous two composition paths (the class list and the disabled-link
+  string concat) into one. Omitting it is byte-identical to the prior output, so existing consumers
+  see no drift. It is for layout utilities only — `btn-*`, color, and size classes conflict with the
+  derived classes and are resolved by stylesheet source order, not attribute order. (#136 —
+  harvest#776, harvest#778)
+- **Verb-gated `role="button"` on link-styled action buttons** — an `href:` anchor carrying a
+  non-GET Turbo verb (`:post`, `:put`, `:patch`, `:delete`) is an *action*, and now renders
+  `role="button"` so assistive technology announces it as such; the role persists when the link is
+  `disabled:`. An `href:` with `method: :get` or no method is *navigation* and deliberately renders
+  no role — Harvest passes `method: :get` on every navigation button (its `DEFAULT_METHOD` is
+  `:get`), so gating on the mere presence of `method:` would have mislabelled every navigation link.
+  A new `role:` param overrides the derivation, covering anchors driven by `data:` alone
+  (`data-bs-toggle`, a Stimulus action) with no HTTP verb. (#136 — harvest#776, harvest#778)
+- **`:info` joins the semantic color set** on `Admin::ActionButton`, `Admin::Badge`, and
+  `Admin::AccountDetailPanel` (`account_type_color:`), rendering `btn-info` / `btn-outline-info` /
+  `text-bg-info`. `$info` is already aliased to `$mpi-primary` (`#2E75B6`) in `_tokens.scss`, so no
+  token or SCSS change was needed and the color inherits Bootstrap's derived foreground. Unknown
+  colors still coerce silently to `:primary` — unchanged. (#136 — harvest#776, harvest#778)
+
+### Changed
+- **Visible design change:** avatars whose name hashes to one of the seven failing colours now
+  render **dark initials** instead of white. The palette itself is unchanged. This reverses a
+  design decision that `catalog/elements/avatar-circle.md` previously documented — the claim
+  "White text on all background colors meets WCAG AA 4.5:1 contrast" was false for 7 of 10 —
+  and the catalog is corrected in the same change.
+- `Admin::ActiveFilterBar` / `Admin::FilterChipBar` active pills use
+  `.rounded-pill.text-bg-primary` rather than a hardcoded `#2E75B6`, so they track a consumer's
+  `$primary` override instead of silently desynchronising from it. Pill geometry is unchanged.
+
 ### Fixed
 - **WCAG AA contrast in four inline-styled components** (#130) — the inline-style siblings of
   the `Badge` fix in #128. `Admin::AvatarCircle` paired a name-hashed background with a
@@ -26,28 +71,6 @@ include breaking changes).
 - `Admin::AvatarStack` — the "+N" overflow chip hand-copied `AvatarCircle`'s markup including
   a pinned foreground, so it would not have inherited the fix. Now derived (resolves to `#fff`,
   4.76:1 — unchanged visually, but it tracks the background rather than assuming it).
-
-### Added
-- **`MpiDesignSystem::ColorContrast`** — WCAG 2.1 relative-luminance and contrast-ratio math,
-  plus `accessible_foreground`, the Ruby counterpart of Bootstrap's SCSS `color-contrast()`.
-  For components that must emit a foreground in an *inline style*, where `text-bg-*` cannot
-  reach. Prefer `text-bg-*` whenever the background is a theme colour.
-- **A contrast oracle in CI** — `spec/fixtures/scss/avatar_contrast_oracle.scss` runs
-  Bootstrap's own `color-contrast()` over the avatar palette, and `bin/verify-contrast-oracle`
-  (wired into `yarn build:css:compat`) fails the build if Bootstrap and the Ruby helper ever
-  disagree. This exists because a contrast spec written against the helper's own `ratio`
-  method would be self-referential: wrong luminance math would agree with itself and still
-  ship a real failure. #128 could only produce this evidence by hand, recorded in prose.
-
-### Changed
-- **Visible design change:** avatars whose name hashes to one of the seven failing colours now
-  render **dark initials** instead of white. The palette itself is unchanged. This reverses a
-  design decision that `catalog/elements/avatar-circle.md` previously documented — the claim
-  "White text on all background colors meets WCAG AA 4.5:1 contrast" was false for 7 of 10 —
-  and the catalog is corrected in the same change.
-- `Admin::ActiveFilterBar` / `Admin::FilterChipBar` active pills use
-  `.rounded-pill.text-bg-primary` rather than a hardcoded `#2E75B6`, so they track a consumer's
-  `$primary` override instead of silently desynchronising from it. Pill geometry is unchanged.
 
 ## [0.6.0] - 2026-07-17
 
