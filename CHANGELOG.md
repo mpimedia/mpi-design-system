@@ -88,6 +88,20 @@ include breaking changes).
   a pinned foreground, so it would not have inherited the fix. Now derived (resolves to `#fff`,
   4.76:1 — unchanged visually, but it tracks the background rather than assuming it).
 
+### Internal
+- **The changelog release guard can now fail.** `spec/packaging/changelog_spec.rb` asserted
+  `include("0.2.0")` — but a changelog keeps history, so that passed forever regardless of the
+  version being released (VERSION had since reached 0.6.0). It now matches a release *heading*
+  anchored to `MpiDesignSystem::VERSION`, so it re-aims at every release, plus a decoy example
+  proving the guard rejects a changelog that mentions the version only in prose and in a link
+  reference — the shape the old substring form accepted. (#127)
+- **Repaired the link-reference block.** Only `[0.2.0]:` was defined, so the `[Unreleased]`,
+  `[0.6.0]`, `[0.5.0]`, `[0.4.1]`, `[0.4.0]`, and `[0.3.0]` headings rendered as literal
+  bracketed text instead of links. All six are now defined as Keep-a-Changelog compare links.
+  `## 0.1.0` stays unbracketed and undefined — no tag was ever cut for it. A new spec example
+  asserts every bracketed heading has a matching definition, so the block cannot silently rot
+  again. (#127)
+
 ## [0.6.0] - 2026-07-17
 
 ### Added
@@ -268,4 +282,10 @@ Initial internal version: the ViewComponent library, design tokens, Stimulus con
 and Lookbook previews, prior to the adoption-prep packaging corrections above. (No release
 tag was cut for 0.1.0.)
 
+[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.4.1...v0.5.0
+[0.4.1]: https://github.com/mpimedia/mpi-design-system/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/mpimedia/mpi-design-system/releases/tag/v0.2.0
