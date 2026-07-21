@@ -32,6 +32,14 @@ routinely survive a narrow sweep and ship green:
   *path fragment* (e.g. `admin/`) separately from the old *constant*, and confirm with a full
   preview render sweep (see `.claude/rules/testing.md`). Zeitwerk rewires constant→path but
   will not flag a hard-coded template string pointing at the moved directory.
+- **`catalog/previews/*.html` are hand-written and drift silently.** They are static mockups with
+  their own inline `<style>` block and hardcoded hex — nothing compiles, renders, or tests them,
+  so they never fail a build no matter how stale they get. Sweep them alongside the `.md` catalog
+  entry, and treat a contradiction between the two as a defect in the sweep. (Reference: #136
+  rewrote `action-button.md`'s Accessibility section to describe Bootstrap's derived foregrounds;
+  the sibling `action-button.html` was still forcing `color: #fff` on warning at **3.24:1** and
+  success at **3.33:1** — both WCAG AA failures, and both the exact claim the `.md` had just
+  retired. `badge.html` still carries pre-#128 `bg-secondary` + inline hex.)
 - **The repo's own docs, not just code.** Sweep `CLAUDE.md`, `AGENTS.md`, `.claude/rules/**`,
   `catalog/**`, `references/**`, and `docs/standards/**` for the old token too — leaving the
   convention documented one way while the code does another tells the next agent to re-create
@@ -56,14 +64,70 @@ Before creating a new component, check the catalog for an existing spec:
 
 If a catalog entry exists, implement to that spec. If not, raise it with the HC before building.
 
+## Design a Public API Against Real Call Sites, Not the Issue Text
+
+Everything under `app/` ships to Markaz, SFA, Garden, and Harvest. When adding or changing a
+component parameter, **read how those apps actually call the component** before settling on the
+design. There are no local checkouts, but the call sites are one command away:
+
+```bash
+gh search code "ActionButton::Component" --owner mpimedia --limit 20 \
+  --json repository,path --jq '.[] | "\(.repository.nameWithOwner): \(.path)"'
+
+gh api "repos/mpimedia/harvest/contents/<path>" --jq '.content' | base64 -d > /tmp/x.rb
+```
+
+What this catches that reasoning alone does not:
+
+- **Defaults that make a conditional universal.** An API gated on "did the caller pass `method:`?"
+  is meaningless if the caller's own wrapper supplies a default for it
+- **Naming the ecosystem already settled.** If three apps have converged on a parameter name,
+  adopt it rather than inventing a better one — the engine exists to absorb those local
+  components, and a rename is migration friction with no user-visible payoff
+- **Which call shapes are load-bearing**, so specs pin the real ones
+
+(Reference: #136 proposed `role="button"` on any `href:` anchor and the plan narrowed it to
+`href:` + `method:` present. Harvest's local component defines `DEFAULT_METHOD = :get` and passes
+`method:` on *every* button, so that gate would have applied the role to 100% of its anchors —
+including plain navigation links, announcing them as buttons to assistive technology. Gating on a
+non-GET verb was only discoverable by reading the consumer. The same read showed Markaz and
+Harvest already used `classes_append:`, which the engine adopted over the issue's `extra_classes:`.)
+
 ## Styling and Tokens
 
 - Use Bootstrap utility and component classes — no arbitrary hex values, sizes, or spacing
-- Design tokens live in `app/assets/stylesheets/mpi_design_system/_tokens.scss` and override
-  Bootstrap variables before Bootstrap is imported (`$mpi-primary: #2E75B6`,
-  `$mpi-brand-navy: #1B2A4A`, `$mpi-brand-accent: #4EA8DE`)
 - Token documentation lives in `tokens/*.md` (colors, typography, spacing, components,
   navigation, bootstrap-overrides) — consult it before choosing values
+
+### Tokens ship through TWO pipelines — change both, verify both
+
+There are two SCSS entry points, and a token added to one is invisible to consumers on the
+other. This is the single easiest way to ship a wrong color to all four apps.
+
+| File | Consumer path | Role |
+|------|---------------|------|
+| `_tokens_values.scss` | modern — `@use "mpi_design_system/tokens_values"` | Raw `$mpi-*` values, every one `!default`, **no Bootstrap dependency** |
+| `_tokens.scss` | legacy — `@import "mpi_design_system/tokens"` | `@import`s the values, then maps them onto Bootstrap's `$primary`/`$success`/… |
+
+Rules:
+
+- **Declare the raw value in `_tokens_values.scss`, always.** `_tokens.scss` should only *map*
+  (`$info: $mpi-info;`), never hardcode a value or alias another token
+  (`$info: $mpi-primary;`). A value that exists only in `_tokens.scss` reaches legacy
+  consumers and silently leaves modern ones on Bootstrap's default
+- **Declaring it is not enough — modern consumers map tokens themselves.** Bootstrap keeps its
+  own default for anything an app does not map, so a new token also needs the README's modern
+  snippet and `spec/fixtures/scss/modern_use.scss` updated, or the documented path stays broken
+- **Verify with `yarn build:css:compat`**, which compiles the legacy, modern, and
+  `@use … with ()` override fixtures and asserts the palette reaches the compiled CSS. Adding a
+  semantic token means adding its assertion. Grep the emitted custom property
+  (`--bs-info: #2E75B6`), not just the hex — the hex may appear from an unrelated token
+- **Prove a new build guard by breaking it.** Revert the mapping, confirm the build actually
+  fails, restore. (Reference: #136 added `:info`. `$info` was hardcoded in `_tokens.scss` only,
+  so modern consumers got Bootstrap's cyan `#0DCAF0` on `btn-info` — a color outside the MPI
+  palette — and the engine's own `modern_use.scss` fixture demonstrated the broken path. The
+  obvious guard, `! grep "#0dcaf0"`, would have false-passed forever: Bootstrap emits
+  `--bs-cyan: #0dcaf0` unconditionally, independent of `$info`.)
 - Custom SCSS only when Bootstrap genuinely cannot express the design; keep it in a
   dedicated partial under `app/assets/stylesheets/mpi_design_system/` (existing example:
   `_nav_bar.scss`) and import it from `application.scss`

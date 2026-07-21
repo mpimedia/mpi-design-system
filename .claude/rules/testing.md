@@ -104,9 +104,51 @@ end
 - `it` — one outcome, with a description that states the expected behavior
 - Use `let` for setup, not instance variables
 
+## Two False Greens Worth Naming
+
+DoD #3 asks "if this test passed but the component was broken, would I know?" Two specific
+shapes answer *no* while looking thorough. Both shipped green in #136 and were caught only in
+review.
+
+**1. Asserting a value the implementation would produce by a different path.**
+
+```ruby
+# FALSE GREEN — "button" is also what the derivation emits, so an implementation
+# that ignored `role:` entirely passes this identically.
+render_inline(described_class.new(label: "X", href: "/x", method: :delete, role: "button"))
+expect(page).to have_css("a[role='button']")
+
+# REAL — a value the derivation can never produce, so only an echoed override passes.
+render_inline(described_class.new(label: "X", href: "/x", method: :delete, role: "menuitem"))
+expect(page).to have_css("a[role='menuitem']")
+```
+
+When testing an override, a fallback, or a passthrough, pick a value the *other* branch cannot
+generate. If the expected value is reachable two ways, the test does not distinguish them.
+
+**2. An absence assertion with nothing proving the element rendered.**
+
+```ruby
+# FALSE GREEN — passes if the anchor renders without the attribute, AND passes if
+# nothing rendered at all, AND passes if a <button> rendered instead.
+expect(page).not_to have_css("a[role]")
+
+# REAL — pins the element first, then the absence.
+expect(page).to have_css("a.btn.btn-primary[href='/contacts/1']", text: "View")
+expect(page).not_to have_css("a[role]")
+```
+
+Every `not_to have_css` needs a positive assertion beside it. The same applies to
+`not_to have_text`.
+
+**Related:** when a constant drives behavior (`ACTION_METHODS`, `COLORS`, `SIZES`), loop it
+rather than spot-checking one member — otherwise a typo in the constant ships green.
+
 ## Anti-Patterns
 
 - Never assert only that a component "renders without error" — that is a false green
+- Never assert a value the implementation could produce by another path, and never leave a
+  `not_to have_css` unpaired with a positive assertion — see **Two False Greens** above
 - Never test private methods — test through the rendered output
 - Never reference models, the database, or request specs — the engine has none (browser
   feature specs exist, but only for genuine JS behavior — see Stack; default to `render_inline`)

@@ -95,7 +95,8 @@ app/
 │   ├── config/manifest.js
 │   ├── stylesheets/mpi_design_system/
 │   │   ├── application.scss          # Main engine stylesheet
-│   │   └── _tokens.scss              # Design token overrides
+│   │   ├── _tokens_values.scss       # Raw $mpi-* token values (modern @use entry point)
+│   │   └── _tokens.scss              # Maps values onto Bootstrap vars (legacy @import)
 │   └── images/mpi_design_system/
 ├── components/mpi_design_system/admin/  # ViewComponents (MpiDesignSystem::Admin::Name::Component)
 │   ├── badge/
@@ -148,7 +149,10 @@ Reference these tokens when choosing values. Do not invent arbitrary colors, siz
 ### Colors
 
 - Use semantic color classes (`btn-primary`, `text-danger`, `bg-success`) rather than custom hex values
-- Custom tokens are defined in `app/assets/stylesheets/mpi_design_system/_tokens.scss`
+- Custom token **values** are defined in `_tokens_values.scss`; `_tokens.scss` maps them onto
+  Bootstrap's variables for legacy `@import` consumers. Adding a token means touching both, plus
+  the README snippet and the compat fixture — see `.claude/rules/frontend.md` ("Tokens ship
+  through TWO pipelines")
 - Primary: `#2E75B6`, Navy: `#1B2A4A`, Accent: `#4EA8DE`
 - See `tokens/colors.md` for full documentation
 
