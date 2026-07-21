@@ -23,29 +23,75 @@ require "spec_helper"
 # browser actually painted — following the computed-style precedent set by the
 # `mpi--tag-input` spec (see `.claude/rules/testing.md`).
 RSpec.describe "Derived foreground contrast", type: :feature, js: true do
-  # getComputedStyle returns "rgb(r, g, b)" / "rgba(...)"; convert to a hex string
-  # ColorContrast can consume.
-  def hex_from_computed(value)
-    channels = value.scan(/[\d.]+/).first(3).map { |c| c.to_f.round }
-    raise "unparseable computed color: #{value.inspect}" unless channels.size == 3
+  # Resolves what a user actually SEES, which is not the same as the declared
+  # value in three ways this suite has to account for:
+  #
+  #   1. A colour may carry alpha. `.text-body-secondary` is
+  #      `rgba(<body-color>, .75)`, so reading the RGB channels and discarding
+  #      the alpha overstates contrast. Alpha is composited over the backdrop.
+  #   2. A background may be transparent, in which case the visible backdrop is
+  #      an ancestor's — so we walk up until we find an opaque one.
+  #   3. `opacity` on any ancestor fades the whole subtree. It is invisible to
+  #      the element's own computed `color`, which is how the retired
+  #      `opacity: 0.8` hid a 3.71:1 failure behind an AA-clean declaration.
+  RESOLVE_JS = <<~JS
+    (() => {
+      const parse = (value) => {
+        const parts = (value.match(/[\\d.]+/g) || []).map(Number);
+        return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+      };
+      const opaqueBackdrop = (node) => {
+        for (let el = node; el; el = el.parentElement) {
+          const bg = parse(getComputedStyle(el).backgroundColor);
+          if (bg.a === 1) return bg;
+        }
+        return { r: 255, g: 255, b: 255, a: 1 };
+      };
+      const over = (fg, bg) => ({
+        r: fg.r * fg.a + bg.r * (1 - fg.a),
+        g: fg.g * fg.a + bg.g * (1 - fg.a),
+        b: fg.b * fg.a + bg.b * (1 - fg.a),
+      });
+      const hex = (c) => '#' + [c.r, c.g, c.b]
+        .map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
 
-    format("#%02X%02X%02X", *channels)
-  end
+      const el = document.querySelector(SELECTOR);
+      if (!el) return null;
 
-  def computed(selector, property)
-    raw = page.evaluate_script(
-      "getComputedStyle(document.querySelector(#{selector.to_json})).#{property}"
-    )
-    raise "no element matched #{selector}" if raw.nil?
+      let cumulativeOpacity = 1;
+      for (let n = el; n; n = n.parentElement) {
+        cumulativeOpacity *= parseFloat(getComputedStyle(n).opacity);
+      }
 
-    hex_from_computed(raw)
+      const backdrop = opaqueBackdrop(el);
+      const foreground = over(parse(getComputedStyle(el).color), backdrop);
+
+      return {
+        foreground: hex(foreground),
+        background: hex(backdrop),
+        cumulativeOpacity: cumulativeOpacity,
+      };
+    })()
+  JS
+
+  def resolve(selector)
+    result = page.evaluate_script(RESOLVE_JS.sub("SELECTOR", selector.to_json))
+    raise "no element matched #{selector}" if result.nil?
+
+    result.transform_keys(&:to_sym)
   end
 
   def ratio_for(selector)
-    foreground = computed(selector, "color")
-    background = computed(selector, "backgroundColor")
+    resolved = resolve(selector)
+    measured = MpiDesignSystem::ColorContrast.ratio(resolved[:foreground], resolved[:background])
 
-    [ MpiDesignSystem::ColorContrast.ratio(foreground, background), foreground, background ]
+    [ measured, resolved[:foreground], resolved[:background] ]
+  end
+
+  def computed(selector, property)
+    key = property == "color" ? :foreground : :background
+
+    resolve(selector).fetch(key)
   end
 
   before { visit "/contrast_demo" }
@@ -131,15 +177,60 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
           "expected AA contrast for #{button_foreground} on #{pill_background}, got #{measured.round(2)}:1"
       end
 
-      # The retired `opacity: 0.8` composited white down to ~3.71:1. Full opacity
-      # is what keeps the measured ratio equal to the declared one.
-      it "paints the remove button at full opacity" do
-        opacity = page.evaluate_script(
-          "getComputedStyle(document.querySelector(#{"#{pill} a".to_json})).opacity"
-        )
-
-        expect(opacity.to_f).to eq(1.0)
+      # The retired `opacity: 0.8` composited white down to ~3.71:1. This checks
+      # CUMULATIVE opacity up the whole ancestor chain, not just the button's own:
+      # `opacity` on the pill (or any wrapper) would fade the × just as effectively
+      # while leaving the button's own computed value at 1.
+      it "paints the remove button at full opacity, ancestors included" do
+        expect(resolve("#{pill} a")[:cumulativeOpacity]).to eq(1.0)
       end
+
+      it "paints the pill itself at full opacity, ancestors included" do
+        expect(resolve(pill)[:cumulativeOpacity]).to eq(1.0)
+      end
+    end
+  end
+
+  # Bootstrap 5.3 colour modes. `.text-body-secondary` resolves through
+  # `--bs-body-color`, which flips to #dee2e6 under `data-bs-theme="dark"`.
+  # ActiveFilterBar pins a LIGHT background, so without pinning its colour mode
+  # too the label rendered at 1.16:1 in dark mode — a regression introduced by
+  # the fix itself and invisible to a light-mode-only suite. (#130)
+  describe "under data-bs-theme='dark'" do
+    it "keeps the ActiveFilterBar label readable against its pinned light bar" do
+      foreground = computed("#dark-active-filter-bar .text-body-secondary", "color")
+      background = computed("#dark-active-filter-bar [role='toolbar']", "backgroundColor")
+
+      expect(background).to eq("#F5F7FA")
+      expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5,
+        "dark-mode label #{foreground} on pinned light bar #{background} = " \
+        "#{MpiDesignSystem::ColorContrast.ratio(foreground, background).round(2)}:1"
+    end
+
+    it "keeps the ActiveFilterBar pill readable" do
+      measured, foreground, background = ratio_for("#dark-active-filter-bar .text-bg-primary")
+
+      expect(measured).to be >= 4.5,
+        "dark-mode pill #{foreground} on #{background} = #{measured.round(2)}:1"
+    end
+
+    # FilterChipBar pins no background, so its muted text should track the dark
+    # surface rather than being pinned light — the opposite treatment, and correct
+    # for the same reason.
+    it "lets FilterChipBar's muted text follow the dark surface it sits on" do
+      foreground = computed("#dark-filter-chip-bar .text-body-secondary", "color")
+      background = computed("#dark-mode", "backgroundColor")
+
+      expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5,
+        "dark-mode label #{foreground} on #{background} = " \
+        "#{MpiDesignSystem::ColorContrast.ratio(foreground, background).round(2)}:1"
+    end
+
+    it "keeps avatar initials readable" do
+      measured, foreground, background = ratio_for("#dark-avatars .rounded-circle")
+
+      expect(measured).to be >= 4.5,
+        "dark-mode avatar #{foreground} on #{background} = #{measured.round(2)}:1"
     end
   end
 
@@ -156,12 +247,14 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
       expect(computed("#active-filter-bar .text-body-secondary", "color")).not_to eq("#6C757D")
     end
 
+    # FilterChipBar sets no background, so `resolve` walks up to whatever opaque
+    # surface it actually sits on — which is the point: a pinned foreground here
+    # would only ever be verified against an assumed backdrop.
     it "paints the FilterChipBar labels above the AA floor against the page" do
-      foreground = computed("#filter-chip-bar .text-body-secondary", "color")
-      background = page.evaluate_script("getComputedStyle(document.body).backgroundColor")
-      background = background.include?("rgba(0, 0, 0, 0)") ? "#FFFFFF" : hex_from_computed(background)
+      measured, foreground, background = ratio_for("#filter-chip-bar .text-body-secondary")
 
-      expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5
+      expect(measured).to be >= 4.5,
+        "label #{foreground} on inherited backdrop #{background} = #{measured.round(2)}:1"
     end
   end
 end

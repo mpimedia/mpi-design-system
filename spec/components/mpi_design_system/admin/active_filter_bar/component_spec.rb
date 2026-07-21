@@ -90,10 +90,15 @@ RSpec.describe MpiDesignSystem::Admin::ActiveFilterBar::Component, type: :compon
     # A single sweep over the whole rendered document, so a hardcoded pair
     # reintroduced anywhere in this template fails the suite — including in
     # markup this spec does not enumerate.
-    it "emits no hardcoded foreground color anywhere in the rendered markup" do
+    # The lookbehind matters: `background-color:` also ends in "color:", so
+    # without it this would flag a *background* declaration as a foreground one.
+    # `\s*` around the colon catches whitespace variants a tighter pattern misses.
+    # It deliberately covers hex only — the components emit no named/rgb()/hsl()
+    # colours, and broadening it would trade a precise assertion for a vague one.
+    it "emits no hardcoded hex foreground anywhere in the rendered markup" do
       render_inline(described_class.new(filters: filters, clear_all_url: "/contacts?clear"))
 
-      expect(page.native.to_html).not_to match(/color:\s*#(?!\{)[0-9a-f]{3,6}/i)
+      expect(page.native.to_html).not_to match(/(?<!background-)color\s*:\s*#[0-9a-f]{3,8}\b/i)
     end
   end
 

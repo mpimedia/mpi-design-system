@@ -13,9 +13,10 @@ include breaking changes).
   hardcoded `color: #fff`; **7 of its 10 palette colours failed the 4.5:1 AA floor**, worst
   among them `$mpi-brand-accent` (`#4EA8DE`) at **2.63:1** — below even the relaxed
   large-text threshold — and `$mpi-success` (`#22A06B`) at **3.33:1**, the identical pairing
-  #128 had just fixed in `Badge`, still shipping in a second component. Because the colour is
-  derived from a hash of the contact's name, roughly 70% of contacts rendered below AA.
-  The foreground is now derived per background and every pairing clears AA, worst case 4.53:1.
+  #128 had just fixed in `Badge`, still shipping in a second component. **7 of the 10 palette
+  entries** failed; how that distributes over real contacts depends on the name-byte-sum hash,
+  which has not been measured against consumer data. The foreground is now derived per
+  background and every pairing clears AA, worst case 4.53:1.
 - `Admin::ActiveFilterBar` and `Admin::FilterChipBar` — the remove button's `opacity: 0.8`
   faded white to an effective `#D5E3F0` over the pill, **3.71:1**. The opacity is gone and the
   button inherits the pill's derived foreground. A declared-pair audit misses this class of

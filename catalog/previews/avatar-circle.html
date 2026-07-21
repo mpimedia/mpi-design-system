@@ -31,7 +31,9 @@
     .avatar-lg { width: 56px; height: 56px; font-size: 20px; }
     .avatar-xl { width: 80px; height: 80px; font-size: 28px; }
     .avatar-stack { display: flex; }
-    .avatar-stack .avatar { margin-left: -8px; border: 2px solid #fff; }
+    .avatar-stack .avatar { margin-left: -8px; }
+    /* Only the overflow chip carries a separator border, matching the live component. */
+    .avatar-stack .avatar-overflow { border: 2px solid #fff; }
     .avatar-stack .avatar:first-child { margin-left: 0; }
   </style>
 </head>
@@ -66,6 +68,22 @@
         <div class="avatar avatar-md fg-dark" style="background-color: #6366F1;">SC</div>
         <span class="small">Sara Cho</span>
       </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md fg-light" style="background-color: #DC3545;">EC</div>
+        <span class="small">Emily Chen</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md fg-dark" style="background-color: #4EA8DE;">MH</div>
+        <span class="small">Mona Habib</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md fg-dark" style="background-color: #22A06B;">HI</div>
+        <span class="small">Hana Ito</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar avatar-md fg-light" style="background-color: #64748B;">DK</div>
+        <span class="small">David Kim</span>
+      </div>
     </div>
   </div>
 
@@ -98,7 +116,7 @@
       <div class="avatar avatar-md fg-dark" style="background-color: #8B5CF6;">AD</div>
       <div class="avatar avatar-md fg-dark" style="background-color: #E8733A;">MK</div>
       <div class="avatar avatar-md fg-dark" style="background-color: #2DA67E;">RL</div>
-      <div class="avatar avatar-md fg-light" style="background-color: #64748B; font-size: 11px;">+3</div>
+      <div class="avatar avatar-md avatar-overflow fg-light" style="background-color: #64748B; font-size: 11px;">+3</div>
     </div>
   </div>
 

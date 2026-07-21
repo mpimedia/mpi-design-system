@@ -55,4 +55,26 @@
           reset_all_url: "#"
         ) %>
   </section>
+
+  <%# Same components under Bootstrap's dark colour mode. ActiveFilterBar pins a
+      light background, so a theme-aware foreground would render light-on-light
+      (1.16:1) unless the component pins its colour mode too. (#130) %>
+  <section id="dark-mode" data-bs-theme="dark" class="p-3" style="background: #212529;">
+    <div id="dark-active-filter-bar" class="mb-3">
+      <%= render MpiDesignSystem::Admin::ActiveFilterBar::Component.new(
+            filters: [ { category: "Keyword", value: "investors", remove_url: "#" } ],
+            clear_all_url: "#"
+          ) %>
+    </div>
+    <div id="dark-filter-chip-bar" class="mb-3">
+      <%= render MpiDesignSystem::Admin::FilterChipBar::Component.new(
+            groups: [ { label: "All", count: 100 } ],
+            active_filters: [ { category: "Tag", value: "Acquisitions", remove_url: "#" } ],
+            clear_all_url: "#"
+          ) %>
+    </div>
+    <div id="dark-avatars">
+      <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: "Mona Habib") %>
+    </div>
+  </section>
 </main>

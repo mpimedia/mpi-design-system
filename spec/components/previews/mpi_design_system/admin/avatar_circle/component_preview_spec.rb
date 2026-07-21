@@ -14,12 +14,18 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::ComponentPreview, type: :co
   describe "#color_variety" do
     it "renders every color in the palette exactly once" do
       render_preview(:color_variety, from: described_class)
+      html = page.native.to_html
 
-      rendered_backgrounds = component::COLORS.select do |color|
-        page.native.to_html.include?("background-color: #{color}")
+      # Counted, not merely detected. A `select` over "does this colour appear"
+      # would pass on a preview that rendered one colour ten times and called it
+      # variety — which is close to the bug this preview had before #130, where
+      # eight names covered only seven distinct colours.
+      occurrences = component::COLORS.to_h do |color|
+        [ color, html.scan("background-color: #{color}").length ]
       end
 
-      expect(rendered_backgrounds).to match_array(component::COLORS)
+      expect(occurrences.values).to all(eq(1)),
+        "expected one swatch per palette colour, got #{occurrences.reject { |_, n| n == 1 }.inspect}"
     end
 
     it "shows the accessible foreground derived for each background" do

@@ -2,6 +2,37 @@
 
 require "spec_helper"
 
+# One name per palette index, so all 10 colors are exercised — asserted by the
+# coverage example rather than assumed. Plain locals, not constants: a constant
+# declared inside an RSpec block lands on Object and leaks across the suite.
+names_by_palette_index = {
+  0 => "Jane Cooper",
+  1 => "Sarah Williams",
+  2 => "Tom Wilson",
+  3 => "Lisa Park",
+  4 => "Dana Reyes",
+  5 => "Robert Fox",
+  6 => "Emily Chen",
+  7 => "Mona Habib",
+  8 => "Hana Ito",
+  9 => "David Kim"
+}.freeze
+
+# Frozen from Bootstrap's compiled `color-contrast()` output; re-verified against
+# a fresh Bootstrap compile in CI by `bin/verify-contrast-oracle`.
+expected_foreground_by_color = {
+  "#2E75B6" => "#fff",
+  "#8B5CF6" => "#000",
+  "#E8733A" => "#000",
+  "#2DA67E" => "#000",
+  "#D97706" => "#000",
+  "#6366F1" => "#000",
+  "#DC3545" => "#fff",
+  "#4EA8DE" => "#000",
+  "#22A06B" => "#000",
+  "#64748B" => "#fff"
+}.freeze
+
 RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component do
   it "renders initials from a full name" do
     render_inline(described_class.new(name: "John Smith"))
@@ -47,45 +78,17 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
   # compiled `color-contrast()` output and re-verified against a fresh Bootstrap
   # compile in CI by `bin/verify-contrast-oracle`.
   describe "foreground contrast (#130)" do
-    # One name per palette index, so all 10 colors are exercised. Verified by
-    # the coverage example below rather than assumed.
-    NAMES_BY_PALETTE_INDEX = {
-      0 => "Jane Cooper",
-      1 => "Sarah Williams",
-      2 => "Tom Wilson",
-      3 => "Lisa Park",
-      4 => "Dana Reyes",
-      5 => "Robert Fox",
-      6 => "Emily Chen",
-      7 => "Mona Habib",
-      8 => "Hana Ito",
-      9 => "David Kim"
-    }.freeze
-
-    EXPECTED_FOREGROUND_BY_COLOR = {
-      "#2E75B6" => "#fff",
-      "#8B5CF6" => "#000",
-      "#E8733A" => "#000",
-      "#2DA67E" => "#000",
-      "#D97706" => "#000",
-      "#6366F1" => "#000",
-      "#DC3545" => "#fff",
-      "#4EA8DE" => "#000",
-      "#22A06B" => "#000",
-      "#64748B" => "#fff"
-    }.freeze
-
     it "exercises every palette color, so no entry escapes the gate" do
-      hashed = NAMES_BY_PALETTE_INDEX.values.map { |name| name.bytes.sum % described_class::COLORS.length }
+      hashed = names_by_palette_index.values.map { |name| name.bytes.sum % described_class::COLORS.length }
 
       expect(hashed).to match_array((0...described_class::COLORS.length).to_a)
-      expect(EXPECTED_FOREGROUND_BY_COLOR.keys).to match_array(described_class::COLORS)
+      expect(expected_foreground_by_color.keys).to match_array(described_class::COLORS)
     end
 
-    NAMES_BY_PALETTE_INDEX.each do |index, name|
+    names_by_palette_index.each do |index, name|
       context "for a name hashing to palette index #{index}" do
         let(:background) { described_class::COLORS[index] }
-        let(:foreground) { EXPECTED_FOREGROUND_BY_COLOR.fetch(background) }
+        let(:foreground) { expected_foreground_by_color.fetch(background) }
 
         it "renders #{name.inspect} with an accessible foreground on its background" do
           render_inline(described_class.new(name: name))
@@ -105,7 +108,7 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
 
       previously_failing.each do |background|
         index = described_class::COLORS.index(background)
-        render_inline(described_class.new(name: NAMES_BY_PALETTE_INDEX.fetch(index)))
+        render_inline(described_class.new(name: names_by_palette_index.fetch(index)))
 
         expect(page).to have_css("span[style*='background-color: #{background}']")
         expect(page).to have_no_css("span[style*='color: #fff']")
@@ -115,7 +118,7 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
     it "keeps white where it was already accessible, changing no more than it must" do
       %w[#2E75B6 #DC3545 #64748B].each do |background|
         index = described_class::COLORS.index(background)
-        render_inline(described_class.new(name: NAMES_BY_PALETTE_INDEX.fetch(index)))
+        render_inline(described_class.new(name: names_by_palette_index.fetch(index)))
 
         expect(page).to have_css("span[style*='color: #fff']")
       end
@@ -168,6 +171,66 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
     render_inline(described_class.new(name: "Maria Garcia"))
 
     expect(page).to have_css("span[aria-label='Maria Garcia']")
+  end
+
+  describe "sizes" do
+    {
+      sm: [ 28, 11 ],
+      md: [ 40, 14 ],
+      lg: [ 56, 20 ],
+      xl: [ 80, 28 ]
+    }.each do |size, (dimension, font_size)|
+      it "renders #{size} at #{dimension}px with #{font_size}px text" do
+        render_inline(described_class.new(name: "Test User", size: size))
+
+        expect(page).to have_css("span[style*='width: #{dimension}px'][style*='height: #{dimension}px']")
+        expect(page).to have_css("span[style*='font-size: #{font_size}px']")
+      end
+    end
+
+    it "falls back to md for an unknown size" do
+      render_inline(described_class.new(name: "Test User", size: :enormous))
+
+      expect(page).to have_css("span[style*='width: 40px'][style*='font-size: 14px']")
+    end
+  end
+
+  describe "name edge cases" do
+    it "renders the placeholder for an empty name" do
+      render_inline(described_class.new(name: ""))
+
+      expect(page).to have_css("i.bi.bi-person-fill")
+    end
+
+    it "renders the placeholder for a whitespace-only name" do
+      render_inline(described_class.new(name: "   "))
+
+      expect(page).to have_css("i.bi.bi-person-fill")
+    end
+
+    # An empty string is truthy in Ruby, so the previous `@name || "Unknown contact"`
+    # emitted `aria-label=""` — an unlabelled control, despite rendering the
+    # placeholder icon. (#130)
+    [ "", "   ", nil ].each do |blank|
+      it "labels a #{blank.inspect} name as Unknown contact rather than emitting an empty label" do
+        render_inline(described_class.new(name: blank))
+
+        expect(page).to have_css("span[aria-label='Unknown contact']")
+        expect(page).to have_no_css("span[aria-label='']")
+      end
+    end
+
+    it "derives initials from a single-word name" do
+      render_inline(described_class.new(name: "Cher"))
+
+      expect(page).to have_css("span.rounded-circle", text: "CC")
+    end
+
+    it "collapses extra whitespace between name parts" do
+      render_inline(described_class.new(name: "  Jane   Cooper  "))
+
+      expect(page).to have_css("span.rounded-circle", text: "JC")
+    end
   end
 
   describe "nav variant" do

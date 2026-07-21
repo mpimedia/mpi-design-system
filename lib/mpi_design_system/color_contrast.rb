@@ -23,6 +23,14 @@ module MpiDesignSystem
   # and returns the first whose ratio is **>=** `$min-contrast-ratio` (4.5),
   # falling back to whichever scores highest if neither clears the bar.
   #
+  # One narrowing: Bootstrap's candidate list is four entries —
+  # `$color-contrast-light, $color-contrast-dark, $white, $black` — so a project
+  # that overrode the first two would still get white/black as a fallback. This
+  # module implements the two-candidate case, which is equivalent under Bootstrap's
+  # defaults (light == white, dark == black) and is what this engine ships: it
+  # overrides neither, as `_tokens.scss` shows. If a consumer ever configures a
+  # non-white/black contrast pair, revisit this.
+  #
   # The two are not guaranteed to agree byte-for-byte at the threshold, and that
   # is intentional. Bootstrap computes luminance from a *rounded* lookup table
   # (`$_luminance-list`), so a colour sitting within ~0.001 of 4.5:1 can resolve

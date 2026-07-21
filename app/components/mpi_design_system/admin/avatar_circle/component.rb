@@ -39,7 +39,11 @@ module MpiDesignSystem
           attrs = {
             class: css_classes,
             style: inline_styles,
-            aria: { label: @name || "Unknown contact" }
+            # Keyed off `placeholder?`, not `@name || …`: an empty or whitespace
+            # name is truthy in Ruby, so the fallback never fired and the avatar
+            # rendered `aria-label=""` — an unlabelled control for a screen reader,
+            # even though it visibly shows the placeholder icon. (#130)
+            aria: { label: placeholder? ? "Unknown contact" : @name }
           }
           attrs[:href] = @href if @href
           attrs

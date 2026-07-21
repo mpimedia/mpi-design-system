@@ -30,6 +30,34 @@ RSpec.describe MpiDesignSystem::Admin::AvatarStack::Component, type: :component 
     expect(page).to have_css("div[aria-label='5 contacts, plus 2 more']")
   end
 
+  describe "edge cases" do
+    it "renders nothing but the group wrapper for an empty name list" do
+      render_inline(described_class.new(names: []))
+
+      expect(page).to have_css("div[role='group']")
+      expect(page).to have_no_css("span.rounded-circle")
+    end
+
+    it "labels an empty stack without raising" do
+      render_inline(described_class.new(names: []))
+
+      expect(page).to have_css("div[aria-label='0 contacts']")
+    end
+
+    it "falls back to md for an unknown size" do
+      render_inline(described_class.new(names: [ "Alice", "Bob", "Carol", "Dave", "Eve" ], max: 4, size: :enormous))
+
+      expect(page).to have_css("span[style*='width: 40px']", text: "+1")
+    end
+
+    it "renders every avatar when max exceeds the list length" do
+      render_inline(described_class.new(names: [ "Alice", "Bob" ], max: 10))
+
+      expect(page).to have_css("span.rounded-circle", count: 2)
+      expect(page).to have_no_text("+")
+    end
+  end
+
   describe "overflow chip boundary" do
     it "shows no chip when names exactly fill max" do
       render_inline(described_class.new(names: [ "Alice", "Bob", "Carol", "Dave" ], max: 4))

@@ -2,6 +2,24 @@
 
 require "spec_helper"
 
+# A plain local rather than a constant: a constant declared inside an RSpec block
+# lands on Object, where it leaks across the whole suite and can collide with a
+# same-named constant in another spec file. A local is visible to the nested
+# blocks below through the closure, without the leak.
+expected_foregrounds = {
+  "#2E75B6" => "#fff",
+  "#8B5CF6" => "#000",
+  "#E8733A" => "#000",
+  "#2DA67E" => "#000",
+  "#D97706" => "#000",
+  "#6366F1" => "#000",
+  "#DC3545" => "#fff",
+  "#4EA8DE" => "#000",
+  "#22A06B" => "#000",
+  "#64748B" => "#fff",
+  "#6C757D" => "#fff"
+}.freeze
+
 RSpec.describe MpiDesignSystem::ColorContrast do
   # Every ratio below is an INDEPENDENTLY published value, never one produced by
   # this module. That is the point: a spec that checked `ratio` using `ratio`
@@ -89,10 +107,25 @@ RSpec.describe MpiDesignSystem::ColorContrast do
       expect(described_class.ratio("#DC3545", "#000")).to be > described_class.ratio("#DC3545", "#fff")
     end
 
-    it "uses a >= comparison, so a color exactly at the threshold keeps the light foreground" do
-      # Contrived background whose white ratio is just above / just below 4.5.
+    it "switches foreground either side of the AA boundary" do
+      # #767676 is 4.542:1 on white and #777777 is 4.478:1 — the canonical pair
+      # straddling 4.5. Note this does NOT prove >= vs >; neither sits exactly on
+      # the threshold. The example below does that.
       expect(described_class.accessible_foreground("#767676")).to eq("#fff")
       expect(described_class.accessible_foreground("#777777")).to eq("#000")
+    end
+
+    # Proving `>=` rather than `>` needs a ratio EXACTLY equal to min_ratio, which
+    # no round hex value provides — so the threshold is set to a measured ratio.
+    # #8B5CF6 scores 4.23:1 on white and 4.96:1 on black, so with min_ratio pinned
+    # to its own white ratio the two operators disagree: `>=` returns white (it
+    # exactly meets the bar), `>` rejects white and falls through to black.
+    # Mutating the comparison in ColorContrast flips this example.
+    it "treats a foreground exactly at min_ratio as passing, not failing" do
+      exactly = described_class.ratio("#8B5CF6", "#fff")
+
+      expect(described_class.ratio("#8B5CF6", "#000")).to be > exactly
+      expect(described_class.accessible_foreground("#8B5CF6", min_ratio: exactly)).to eq("#fff")
     end
 
     # At the crossover point where white and black are equally legible, both
@@ -179,28 +212,25 @@ RSpec.describe MpiDesignSystem::ColorContrast do
   # table against a fresh Bootstrap compile in CI, so if Bootstrap and this module
   # ever diverge, the build fails instead of quietly shipping.
   describe "frozen expectations for the AvatarCircle palette" do
-    EXPECTED_FOREGROUNDS = {
-      "#2E75B6" => "#fff",
-      "#8B5CF6" => "#000",
-      "#E8733A" => "#000",
-      "#2DA67E" => "#000",
-      "#D97706" => "#000",
-      "#6366F1" => "#000",
-      "#DC3545" => "#fff",
-      "#4EA8DE" => "#000",
-      "#22A06B" => "#000",
-      "#64748B" => "#fff",
-      "#6C757D" => "#fff"
-    }.freeze
-
     it "covers exactly the shipped palette plus the placeholder, so a new color cannot land unreviewed" do
       shipped = MpiDesignSystem::Admin::AvatarCircle::Component::COLORS +
                 [ MpiDesignSystem::Admin::AvatarCircle::Component::PLACEHOLDER_COLOR ]
 
-      expect(shipped).to match_array(EXPECTED_FOREGROUNDS.keys)
+      expect(shipped).to match_array(expected_foregrounds.keys)
     end
 
-    EXPECTED_FOREGROUNDS.each do |background, foreground|
+    # Closes the one gap the shell oracle cannot see. The palette is written out
+    # in three places — the Ruby constant, this map, and the SCSS fixture — and
+    # `bin/verify-contrast-oracle` only compares the last two. Without this, the
+    # fixture could faithfully verify a palette the component no longer ships.
+    it "matches the palette the SCSS oracle fixture actually compiles" do
+      fixture = File.read(File.expand_path("../../fixtures/scss/avatar_contrast_oracle.scss", __dir__))
+      declared = fixture[/\$mds-avatar-palette:\s*\((.*?)\);/m, 1].to_s.scan(/#\h{6}/)
+
+      expect(declared).to match_array(expected_foregrounds.keys)
+    end
+
+    expected_foregrounds.each do |background, foreground|
       it "derives #{foreground} on #{background}, matching Bootstrap's compiled output" do
         expect(described_class.accessible_foreground(background)).to eq(foreground)
       end
@@ -211,7 +241,7 @@ RSpec.describe MpiDesignSystem::ColorContrast do
     end
 
     it "fixes a real failure rather than restating the status quo" do
-      failing = EXPECTED_FOREGROUNDS.keys.reject do |background|
+      failing = expected_foregrounds.keys.reject do |background|
         described_class.accessible?("#fff", background)
       end
 
@@ -219,7 +249,7 @@ RSpec.describe MpiDesignSystem::ColorContrast do
       expect(failing).to contain_exactly(
         "#8B5CF6", "#E8733A", "#2DA67E", "#D97706", "#6366F1", "#4EA8DE", "#22A06B"
       )
-      expect(failing.map { |background| EXPECTED_FOREGROUNDS[background] }).to all(eq("#000"))
+      expect(failing.map { |background| expected_foregrounds[background] }).to all(eq("#000"))
     end
   end
 end
