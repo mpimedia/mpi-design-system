@@ -144,11 +144,68 @@ Every `not_to have_css` needs a positive assertion beside it. The same applies t
 **Related:** when a constant drives behavior (`ACTION_METHODS`, `COLORS`, `SIZES`), loop it
 rather than spot-checking one member — otherwise a typo in the constant ships green.
 
+## A Guard Is Not Real Until You Have Watched It Fail
+
+The two shapes above are assertions that *can* fail but don't discriminate. This is the
+third shape: an assertion that **cannot fail at all**, and the sentence next to it claiming
+it can.
+
+`spec/packaging/changelog_spec.rb` asserted `expect(changelog).to include("0.2.0")` under an
+example named "documents the 0.2.0 release". A changelog keeps its history, so that passed
+forever no matter what was being released — green at v0.2.0, still green at v0.6.0, and it
+would have been green at v9.0.0. A release that forgot its CHANGELOG entry entirely passed.
+The example did not test the release; it tested that the past still existed (#127).
+
+**The rule: for every element you call load-bearing, remove it and watch a test go red.**
+Not "reason that it would" — run it. In #127 the fix itself broke this rule twice, and both
+were caught only by execution:
+
+- The header comment said the `^` anchor was load-bearing. Removing it left the entire suite
+  green — the anchor was documented, not tested. Fixed by adding a mid-line/indented example.
+- It said the `[ \t]+` (not `\s+`) definition scan was load-bearing. Replacing it with `\s+`
+  also left the suite green. Fixed by adding a fixture whose destination was deleted.
+
+```ruby
+# NOT A GUARD — the pattern's strictness is asserted in a comment and nowhere else.
+# Replace [ \t]+ with \s+ and nothing reddens.
+let(:definition_pattern) { /^\[([^\]]+)\]:[ \t]+\S/ }
+
+# REAL — a fixture that only the strict form rejects. Under \s+ this example fails,
+# because \s crosses the blank line and takes the next line's first character as the URL.
+it "counts the well-formed definition but not the destination-less one" do
+  expect("[1.0.0]: https://example.test/v1".scan(definition_pattern).flatten).to eq([ "1.0.0" ])
+  expect("[1.0.0]:\n\n<!-- gone -->\n".scan(definition_pattern).flatten).to be_empty
+end
+```
+
+Note the positive half: without it the example passes on a pattern that matches nothing at
+all. Proving a guard can fail does not exempt it from False Green #2.
+
+Two practical rules when mutation-testing:
+
+- **Isolate the spec file.** `version_spec.rb` independently pins the version, so bumping
+  `VERSION` reddens it regardless — a full-suite red proves nothing about the guard you are
+  testing. Run the single file.
+- **Never mutate with `git stash`** (shared stash stack, see `CLAUDE.md`). Edit, capture the
+  failure, revert, then confirm `git diff` shows only the intended change.
+
+**Verify claims about a pattern by executing it, not by reading it.** #127's plan review
+produced a confident, wrong claim that `\[`/`\]` form a character class; a three-line Ruby
+script refuted it in seconds. The same script found two real defects reading had missed.
+
+This is the spec-level twin of `.claude/rules/frontend.md`'s "prove a new build guard by
+breaking it" (#136) and its "verify a contrast rule against an external oracle, never against
+itself" (#130). Same failure, three layers: a check that grades its own homework, a check that
+never fails, and a claim nobody executed.
+
 ## Anti-Patterns
 
 - Never assert only that a component "renders without error" — that is a false green
 - Never assert a value the implementation could produce by another path, and never leave a
   `not_to have_css` unpaired with a positive assertion — see **Two False Greens** above
+- Never describe part of an assertion as load-bearing without a test that reddens when it is
+  removed, and never pin a literal that the artifact under test retains forever (a version, a
+  date, an id) — see **A Guard Is Not Real Until You Have Watched It Fail** above
 - Never test private methods — test through the rendered output
 - Never reference models, the database, or request specs — the engine has none (browser
   feature specs exist, but only for genuine JS behavior — see Stack; default to `render_inline`)

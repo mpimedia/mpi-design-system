@@ -101,6 +101,12 @@ include breaking changes).
   `## 0.1.0` stays unbracketed and undefined — no tag was ever cut for it. A new spec example
   asserts every bracketed heading has a matching definition, so the block cannot silently rot
   again. (#127)
+- **Named a third false-green shape in `.claude/rules/testing.md`.** "A Guard Is Not Real Until
+  You Have Watched It Fail" — for every element an assertion documents as load-bearing, remove
+  it and watch a test go red. #127's own fix broke that rule twice (the `^` anchor and the
+  `[ \t]+` scan were both documented as load-bearing while nothing reddened without them), and
+  both were caught only by execution. Joins the existing build-level and contrast-oracle twins
+  in `.claude/rules/frontend.md`. (#127)
 
 ## [0.6.0] - 2026-07-17
 
