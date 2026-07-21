@@ -141,6 +141,32 @@ expect(page).not_to have_css("a[role]")
 Every `not_to have_css` needs a positive assertion beside it. The same applies to
 `not_to have_text`.
 
+**Corollary — a conversion must guard what *survives*, not only what it removed.** When a change
+strips some of an element's output but keeps the rest, guards written to prove the *removed* part
+is gone can all pass while the *kept* part is silently deletable. This passes #2's own rule — the
+element is pinned, then absence is asserted — yet still ships green when the survivor vanishes,
+because nothing asserts the survivor is present. #149 converted `Pagination` from inline colour to
+utilities and kept the geometry (`width: 32px`, `font-size: 13px`, `font-weight: 500`, the nav's
+`padding-top`) inline. Its three guards each pinned the nav and the active page, then asserted *no
+colour / no hex / no fixed-scheme utility* — all correct, all green even after deleting
+`results_text_styles` outright or dropping `font-weight` from `page_btn_styles`, because the guards
+police what left, not what stayed.
+
+```ruby
+# The guards prove colour is GONE. Nothing proves the geometry STAYED —
+# empty `results_text_styles` and every guard is still green.
+it "keeps the non-colour geometry that has no Bootstrap equivalent" do
+  render_inline(described_class.new(current_page: 20, total_pages: 47, total_count: 1175, max_links: 7, url_builder: url_builder))
+  expect(page).to have_css("nav[aria-label='Pagination'][style*='padding-top: 12px']")
+  expect(page).to have_css("span.text-primary-emphasis[style*='font-size: 13px']", text: /Showing/)
+  expect(page).to have_css("span[aria-current='page'][style*='width: 32px'][style*='font-weight: 500']", text: "20")
+end
+```
+
+Watched failing both ways before trusting it: emptying `results_text_styles` and removing
+`font-weight: 500` each reddens exactly this example. The rule: after a conversion, list what the
+element still emits and pin it, or the next edit that removes it ships green.
+
 **Related:** when a constant drives behavior (`ACTION_METHODS`, `COLORS`, `SIZES`), loop it
 rather than spot-checking one member — otherwise a typo in the constant ships green.
 
