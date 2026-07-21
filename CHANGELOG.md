@@ -7,6 +7,8 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-07-21
+
 ### Added
 - **`MpiDesignSystem::ColorContrast`** — WCAG 2.1 relative-luminance and contrast-ratio math,
   plus `accessible_foreground`, the Ruby counterpart of Bootstrap's SCSS `color-contrast()`.
@@ -46,18 +48,6 @@ include breaking changes).
   `text-bg-info` in MPI blue with Bootstrap's derived foreground. Unknown colors still coerce
   silently to `:primary` — unchanged. (#136 — harvest#776, harvest#778)
 
-### Fixed
-- **`$mpi-info` is now a real token, so `:info` is MPI blue on *both* consumer paths.** The value
-  was previously hardcoded as `$info: $mpi-primary` in `_tokens.scss`, which covers only the legacy
-  `@import` pipeline. Modern Sass-module consumers (`@use "mpi_design_system/tokens_values"`) had no
-  `$mpi-info` to map at all, so Bootstrap's default cyan (`#0DCAF0`) reached `btn-info` /
-  `text-bg-info` — a color outside the MPI palette. `_tokens_values.scss` now declares
-  `$mpi-info: $mpi-primary !default` and `_tokens.scss` routes through it, so both pipelines emit
-  `--bs-info: #2E75B6`, and a `@use … with ($mpi-primary: …)` override carries through to info.
-  No rendered value changes for existing legacy consumers. The `build:css:compat` script now
-  asserts `--bs-info` on both compiled fixtures, so a future regression fails the build rather than
-  shipping cyan. (#136)
-
 ### Changed
 - **Visible design change:** avatars whose name hashes to one of the seven failing colours now
   render **dark initials** instead of white. The palette itself is unchanged. This reverses a
@@ -69,6 +59,16 @@ include breaking changes).
   `$primary` override instead of silently desynchronising from it. Pill geometry is unchanged.
 
 ### Fixed
+- **`$mpi-info` is now a real token, so `:info` is MPI blue on *both* consumer paths.** The value
+  was previously hardcoded as `$info: $mpi-primary` in `_tokens.scss`, which covers only the legacy
+  `@import` pipeline. Modern Sass-module consumers (`@use "mpi_design_system/tokens_values"`) had no
+  `$mpi-info` to map at all, so Bootstrap's default cyan (`#0DCAF0`) reached `btn-info` /
+  `text-bg-info` — a color outside the MPI palette. `_tokens_values.scss` now declares
+  `$mpi-info: $mpi-primary !default` and `_tokens.scss` routes through it, so both pipelines emit
+  `--bs-info: #2E75B6`, and a `@use … with ($mpi-primary: …)` override carries through to info.
+  No rendered value changes for existing legacy consumers. The `build:css:compat` script now
+  asserts `--bs-info` on both compiled fixtures, so a future regression fails the build rather than
+  shipping cyan. (#136)
 - **WCAG AA contrast in four inline-styled components** (#130) — the inline-style siblings of
   the `Badge` fix in #128. `Admin::AvatarCircle` paired a name-hashed background with a
   hardcoded `color: #fff`; **7 of its 10 palette colours failed the 4.5:1 AA floor**, worst
@@ -288,7 +288,8 @@ Initial internal version: the ViewComponent library, design tokens, Stimulus con
 and Lookbook previews, prior to the adoption-prep packaging corrections above. (No release
 tag was cut for 0.1.0.)
 
-[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/mpimedia/mpi-design-system/compare/v0.4.0...v0.4.1
