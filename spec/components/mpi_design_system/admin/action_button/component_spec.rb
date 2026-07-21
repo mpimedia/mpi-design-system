@@ -128,13 +128,30 @@ RSpec.describe MpiDesignSystem::Admin::ActionButton::Component, type: :component
 
       expect(page.find("button")[:class]).to eq("btn btn-primary ms-2")
     end
+
+    it "combines with the outline variant" do
+      render_inline(described_class.new(label: "Filter", variant: :outline, classes_append: "me-2"))
+
+      expect(page.find("button")[:class]).to eq("btn btn-outline-primary me-2")
+    end
+
+    it "combines with an icon-only button without disturbing its aria-label" do
+      render_inline(
+        described_class.new(label: "Edit", icon: "bi-pencil", icon_only: true, classes_append: "float-end")
+      )
+
+      expect(page).to have_css("button.btn.btn-primary.float-end[aria-label='Edit']")
+      expect(page).to have_css("i.bi.bi-pencil")
+    end
   end
 
   context "with an href performing a non-GET action" do
-    it "renders role='button'" do
-      render_inline(described_class.new(label: "Delete", href: "/contacts/1", method: :delete))
+    described_class::ACTION_METHODS.each do |verb|
+      it "renders role='button' for method: :#{verb}" do
+        render_inline(described_class.new(label: "Go", href: "/contacts/1", method: verb))
 
-      expect(page).to have_css("a.btn[role='button'][data-turbo-method='delete']")
+        expect(page).to have_css("a.btn[role='button'][data-turbo-method='#{verb}']")
+      end
     end
 
     it "keeps role='button' when disabled" do
@@ -142,33 +159,72 @@ RSpec.describe MpiDesignSystem::Admin::ActionButton::Component, type: :component
 
       expect(page).to have_css("a.btn.disabled[role='button'][aria-disabled='true']")
     end
+
+    it "derives the role from a string method" do
+      render_inline(described_class.new(label: "Delete", href: "/contacts/1", method: "delete"))
+
+      expect(page).to have_css("a.btn[role='button']")
+    end
+
+    it "derives the role from an uppercase string method" do
+      render_inline(described_class.new(label: "Delete", href: "/contacts/1", method: "DELETE"))
+
+      expect(page).to have_css("a.btn[role='button']")
+    end
   end
 
   context "with an href used for navigation" do
-    it "renders no role when the method is :get" do
+    it "renders an anchor with no role when the method is :get" do
       render_inline(described_class.new(label: "View", href: "/contacts/1", method: :get))
 
+      expect(page).to have_css("a.btn.btn-primary[href='/contacts/1']", text: "View")
       expect(page).not_to have_css("a[role]")
     end
 
-    it "renders no role when no method is given" do
+    it "renders an anchor with no role when no method is given" do
       render_inline(described_class.new(label: "View", href: "/contacts/1"))
 
+      expect(page).to have_css("a.btn.btn-primary[href='/contacts/1']", text: "View")
       expect(page).not_to have_css("a[role]")
     end
 
-    it "renders the explicit role override when given" do
-      render_inline(described_class.new(label: "View", href: "/contacts/1", method: :get, role: "button"))
+    it "echoes an explicit role rather than the derived value" do
+      render_inline(described_class.new(label: "View", href: "/contacts/1", method: :get, role: "menuitem"))
 
-      expect(page).to have_css("a[role='button']")
+      expect(page).to have_css("a[role='menuitem']")
+    end
+
+    it "lets an explicit role replace the derived button role" do
+      render_inline(described_class.new(label: "Delete", href: "/contacts/1", method: :delete, role: "menuitem"))
+
+      expect(page).to have_css("a[role='menuitem']")
+      expect(page).not_to have_css("a[role='button']")
+    end
+  end
+
+  context "with an unrecognized method" do
+    it "renders without raising and derives no role" do
+      expect {
+        render_inline(described_class.new(label: "Odd", href: "/contacts/1", method: 1))
+      }.not_to raise_error
+
+      expect(page).to have_css("a.btn[href='/contacts/1']")
+      expect(page).not_to have_css("a[role]")
     end
   end
 
   context "without an href" do
-    it "renders no role on a plain button" do
+    it "renders a button with no role" do
       render_inline(described_class.new(label: "Save"))
 
+      expect(page).to have_css("button.btn.btn-primary", text: "Save")
       expect(page).not_to have_css("button[role]")
+    end
+
+    it "applies an explicit role to a plain button" do
+      render_inline(described_class.new(label: "Save", role: "menuitem"))
+
+      expect(page).to have_css("button.btn[role='menuitem']")
     end
   end
 

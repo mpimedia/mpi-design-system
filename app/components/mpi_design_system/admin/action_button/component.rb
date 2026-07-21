@@ -83,10 +83,17 @@ module MpiDesignSystem
         # An href with :get (or no verb) is navigation and deliberately gets no role — consumers
         # such as Harvest pass method: :get on every navigation button. An explicit role: wins,
         # covering anchors driven by data: alone (data-bs-toggle / Stimulus) with no HTTP verb.
+        # role: is override-only: it can add or change a role, but cannot suppress the derived
+        # one, since a non-GET action link announced as a plain link is the bug this prevents.
+        #
+        # The verb is normalized rather than compared raw, so a String ("delete") or a shouty
+        # one ("DELETE") derives the role the same as :delete. Comparing raw would silently drop
+        # the role — no error, just a missing a11y attribute. Never raises on odd input, per
+        # `.claude/rules/frontend.md`: fall back to a safe default, don't blow up a render.
         def resolved_role
           return @role if @role.present?
 
-          "button" if @href && ACTION_METHODS.include?(@method&.to_sym)
+          "button" if @href && ACTION_METHODS.include?(@method.to_s.downcase.to_sym)
         end
 
         def btn_color_class
