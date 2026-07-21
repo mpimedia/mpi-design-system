@@ -1,0 +1,58 @@
+<% content_for :title, "Contrast Demo" %>
+
+<%# One avatar per palette entry, keyed by index so the spec can address each
+    precisely, plus the placeholder. The names are the same set the Lookbook
+    "Color Variety" preview uses. (#130) %>
+<% avatar_names = {
+     0 => "Jane Cooper",
+     1 => "Sarah Williams",
+     2 => "Tom Wilson",
+     3 => "Lisa Park",
+     4 => "Dana Reyes",
+     5 => "Robert Fox",
+     6 => "Emily Chen",
+     7 => "Mona Habib",
+     8 => "Hana Ito",
+     9 => "David Kim"
+   } %>
+
+<main class="container py-4">
+  <h1 class="h4 mb-3">Contrast Demo</h1>
+
+  <section id="avatars" class="mb-4">
+    <% avatar_names.each do |index, name| %>
+      <span data-avatar-index="<%= index %>">
+        <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: name) %>
+      </span>
+    <% end %>
+    <span data-avatar-placeholder>
+      <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new %>
+    </span>
+  </section>
+
+  <section id="stack" class="mb-4">
+    <%= render MpiDesignSystem::Admin::AvatarStack::Component.new(
+          names: [ "Alice Wong", "Bob Smith", "Carol Davis", "Dave Ruiz", "Eve Fox", "Frank Ito" ],
+          max: 4
+        ) %>
+  </section>
+
+  <section id="active-filter-bar" class="mb-4">
+    <%= render MpiDesignSystem::Admin::ActiveFilterBar::Component.new(
+          filters: [
+            { category: "Keyword", value: "investors", remove_url: "#" },
+            { category: "Group", value: "Distribution", remove_url: "#" }
+          ],
+          clear_all_url: "#"
+        ) %>
+  </section>
+
+  <section id="filter-chip-bar" class="mb-4">
+    <%= render MpiDesignSystem::Admin::FilterChipBar::Component.new(
+          groups: [ { label: "All", count: 100 } ],
+          active_filters: [ { category: "Tag", value: "Acquisitions", remove_url: "#" } ],
+          clear_all_url: "#",
+          reset_all_url: "#"
+        ) %>
+  </section>
+</main>
