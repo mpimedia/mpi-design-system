@@ -230,6 +230,20 @@ case, and watch it abort. A gate verified only on the happy path is indistinguis
 that always passes. This applies with most force to anything gating an irreversible step —
 a tag push, a deploy, a destructive migration.
 
+**Verify every snippet, not just the one you distrust.** The same #157 procedure carried a
+second prose guard that was never run, and it was broken too:
+
+```bash
+git show "$MERGE_SHA:lib/mpi_design_system/version.rb" | grep -q '"0.7.0"'   # dies under zsh
+git show "${MERGE_SHA}:lib/mpi_design_system/version.rb" | grep -q '"0.7.0"' # correct
+```
+
+`:l` is zsh's lowercase parameter modifier, so `"$MERGE_SHA:lib/…"` expands to `<sha>ib/…` and
+the command dies on an ambiguous argument — note this repo's shell is zsh. That one happens to
+fail *closed*, which is luck rather than design. The instructive part is the selection error:
+the author executed the gate whose logic he doubted and skipped the line that looked obvious,
+so the doubted line got fixed and the obvious one shipped broken. Run all of them.
+
 ## Anti-Patterns
 
 - Never assert only that a component "renders without error" — that is a false green
