@@ -40,6 +40,21 @@ routinely survive a narrow sweep and ship green:
   the sibling `action-button.html` was still forcing `color: #fff` on warning at **3.24:1** and
   success at **3.33:1** — both WCAG AA failures, and both the exact claim the `.md` had just
   retired. `badge.html` still carries pre-#128 `bg-secondary` + inline hex.)
+- **Converting a mockup from hardcoded hex to semantic utilities makes it render *Bootstrap's*
+  palette, not MPI's — add a `:root` token block.** The `catalog/previews/*.html` files load
+  **stock** Bootstrap from the CDN (`bootstrap@5.3.x/dist`), which ships `--bs-primary: #0d6efd`.
+  So the moment you replace a mockup's hardcoded `#2E75B6` with `text-bg-primary` / `text-primary`
+  / `bg-body` — the correct move for the component — the mockup silently switches to Bootstrap's
+  indigo, cyan, and grey, and now contradicts the component it documents while *looking* converted.
+  The engine avoids this only because it compiles Bootstrap with MPI's tokens; the CDN mockups do
+  not. Fix: add a `:root` block (and a `[data-bs-theme="dark"]` block for the emphasis tokens)
+  mirroring `_tokens.scss` — `--bs-primary`, `--bs-primary-rgb` (which `text-bg-*` reads at
+  runtime), `--bs-primary-text-emphasis`, `--bs-body-color`, `--bs-body-color-rgb`,
+  `--bs-secondary-color`. The precedent is `filter-chip-bar.html`. **Verify in a browser, not by
+  reading**: loading `pagination.html` against stock Bootstrap paints the pill `rgb(46, 117, 182)`
+  *with* the block and `rgb(13, 110, 253)` *without* it — the second is the bug, and nothing in CI
+  catches it. (Reference: #149 converted `pagination.html` and the `list-view.html` slice; both
+  needed the block. Every remaining Track 2 phase converts a mockup and will hit this identically.)
 - **A catalog entry's accessibility claims are assertions, not decoration — re-derive them when
   you touch the component.** Three separate cycles found a catalog file asserting a contrast
   property the code did not have: #128 (`Badge`), #130 (`avatar-circle.md` claimed "White text on

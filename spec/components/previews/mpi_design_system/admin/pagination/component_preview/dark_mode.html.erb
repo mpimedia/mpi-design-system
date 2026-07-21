@@ -1,0 +1,26 @@
+<%# Light and dark side by side. Each wrapper sets `data-bs-theme` and `bg-body`, so the
+    surface and the pagination bar inside it both resolve from the same colour mode —
+    which is the whole claim of the conversion. (#149) %>
+<div data-bs-theme="light" class="bg-body p-3 mb-3">
+  <p class="text-body-secondary small mb-2">data-bs-theme="light"</p>
+  <%= render MpiDesignSystem::Admin::Pagination::Component.new(
+        current_page: 20,
+        total_pages: 47,
+        total_count: 1175,
+        per_page: 25,
+        url_builder: ->(page) { "?page=#{page}" },
+        max_links: 7
+      ) %>
+</div>
+
+<div data-bs-theme="dark" class="bg-body p-3">
+  <p class="text-body-secondary small mb-2">data-bs-theme="dark"</p>
+  <%= render MpiDesignSystem::Admin::Pagination::Component.new(
+        current_page: 20,
+        total_pages: 47,
+        total_count: 1175,
+        per_page: 25,
+        url_builder: ->(page) { "?page=#{page}" },
+        max_links: 7
+      ) %>
+</div>

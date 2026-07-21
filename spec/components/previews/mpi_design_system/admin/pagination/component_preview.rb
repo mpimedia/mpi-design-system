@@ -45,6 +45,15 @@ class MpiDesignSystem::Admin::Pagination::ComponentPreview < ApplicationComponen
     )
   end
 
+  # The point of the #149 conversion: the same component, no variant flag, following
+  # Bootstrap's colour mode. Side-by-side so a designer can compare the two surfaces
+  # in one view rather than toggling a theme.
+  #
+  # @label Dark Mode
+  def dark_mode
+    render_with_template
+  end
+
   # @label Windowed (many pages)
   def windowed
     render MpiDesignSystem::Admin::Pagination::Component.new(

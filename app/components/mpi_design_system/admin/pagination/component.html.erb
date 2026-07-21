@@ -1,10 +1,11 @@
-<nav aria-label="Pagination" style="border-top: 1px solid #DEE2E6; padding-top: 12px;">
+<nav aria-label="Pagination" class="border-top" style="padding-top: 12px;">
   <div class="d-flex align-items-center justify-content-between">
-    <span style="<%= results_text_styles %>"><%= results_text %></span>
+    <span class="text-primary-emphasis" style="<%= results_text_styles %>"><%= results_text %></span>
 
     <div class="d-flex align-items-center flex-wrap gap-1">
       <% if show_prev? %>
         <a href="<%= page_url(@current_page - 1) %>"
+           class="<%= page_btn_classes %>"
            style="<%= page_btn_styles %>"
            aria-label="Previous page"
            <% if @turbo_frame %>data-turbo-frame="<%= @turbo_frame %>"<% end %>>
@@ -16,11 +17,12 @@
         <% if page_num == :gap %>
           <span class="text-body-secondary" style="<%= gap_styles %>" aria-hidden="true">&hellip;</span>
         <% elsif page_num == @current_page %>
-          <span style="<%= page_btn_styles(active: true) %>" aria-current="page" aria-label="Page <%= page_num %>">
+          <span class="<%= page_btn_classes(active: true) %>" style="<%= page_btn_styles %>" aria-current="page" aria-label="Page <%= page_num %>">
             <%= page_num %>
           </span>
         <% else %>
           <a href="<%= page_url(page_num) %>"
+             class="<%= page_btn_classes %>"
              style="<%= page_btn_styles %>"
              aria-label="Page <%= page_num %>"
              <% if @turbo_frame %>data-turbo-frame="<%= @turbo_frame %>"<% end %>>
@@ -31,6 +33,7 @@
 
       <% if show_next? %>
         <a href="<%= page_url(@current_page + 1) %>"
+           class="<%= page_btn_classes %>"
            style="<%= page_btn_styles %>"
            aria-label="Next page"
            <% if @turbo_frame %>data-turbo-frame="<%= @turbo_frame %>"<% end %>>

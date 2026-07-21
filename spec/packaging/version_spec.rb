@@ -9,11 +9,12 @@ require "spec_helper"
 # slot/block-based Admin::TableForIndex with batch selection + Ransack-free sortable
 # headers (harvest#692); v0.7.0 (#148) releases Admin::ActionButton's classes_append: /
 # verb-gated role: / :info color (#136), AA foreground derivation for the inline-styled
-# components (#130), and the changelog release guard (#127). This spec fails if the
-# constant regresses, keeping lib/mpi_design_system/version.rb in lockstep with
-# CHANGELOG.md and the git tag.
+# components (#130), and the changelog release guard (#127); v0.8.0 (#149) makes
+# Admin::Pagination theme-adaptive — the Track 2 pilot conversion (epic #147). This spec
+# fails if the constant regresses, keeping lib/mpi_design_system/version.rb in lockstep
+# with CHANGELOG.md and the git tag.
 RSpec.describe "MpiDesignSystem::VERSION" do
-  it "is 0.7.0" do
-    expect(MpiDesignSystem::VERSION).to eq("0.7.0")
+  it "is 0.8.0" do
+    expect(MpiDesignSystem::VERSION).to eq("0.8.0")
   end
 end
