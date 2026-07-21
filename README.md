@@ -110,8 +110,16 @@ Then import the MPI tokens in `application.scss` using **one** of the two entry 
   ```scss
   @use "mpi_design_system/tokens_values" as mpi;
   $primary: mpi.$mpi-primary;
+  $success: mpi.$mpi-success;
+  $warning: mpi.$mpi-warning;
+  $info: mpi.$mpi-info;
+  $body-color: mpi.$mpi-text;
   @import "bootstrap/scss/bootstrap";
   ```
+
+  Map every token you rely on — Bootstrap keeps its own default for any you skip. In
+  particular, an unmapped `$info` leaves Bootstrap's cyan (`#0DCAF0`) on `btn-info` /
+  `text-bg-info`, which is outside the MPI palette.
 
 ### 4. Use a component
 

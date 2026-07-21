@@ -4,7 +4,7 @@ module MpiDesignSystem
   module Admin
     module Badge
       class Component < ViewComponent::Base
-        COLORS = %i[primary success danger warning secondary].freeze
+        COLORS = %i[primary success danger warning info secondary].freeze
         VARIANTS = %i[filled outline tag_group].freeze
         SIZES = %i[sm md lg].freeze
 
@@ -19,7 +19,7 @@ module MpiDesignSystem
         }.freeze
 
         # @param label [String] Badge text
-        # @param color [Symbol] :primary, :success, :danger, :warning, :secondary
+        # @param color [Symbol] :primary, :success, :danger, :warning, :info, :secondary
         # @param variant [Symbol] :filled (default), :outline, :tag_group
         # @param size [Symbol] :sm, :md (default), :lg
         # @param tag_group [Symbol] Optional — :production, :distribution, :finance, :press_festival,

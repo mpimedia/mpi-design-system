@@ -25,6 +25,12 @@ $mpi-brand-accent: #4EA8DE !default;
 $mpi-success: #22A06B !default;
 $mpi-warning: #D4772C !default;
 // $danger is intentionally omitted — the palette uses Bootstrap's default (#DC3545).
+// $info is deliberately equal to primary (see tokens/colors.md). It is declared here
+// rather than hardcoded in `_tokens.scss` so BOTH consumer paths get it: modern `@use`
+// consumers had no $mpi-info at all, so Bootstrap's default cyan (#0DCAF0) reached
+// `btn-info`/`text-bg-info` — a color outside the MPI palette. Because it resolves from
+// $mpi-primary, a `@use … with ($mpi-primary: …)` override carries through to info too.
+$mpi-info: $mpi-primary !default;
 
 // Neutral colors
 $mpi-text: $mpi-brand-navy !default;

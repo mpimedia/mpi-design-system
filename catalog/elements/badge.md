@@ -32,6 +32,7 @@ Pill-shaped badges used for status indicators, counts, and labels across all MPI
 | Success | `$mpi-success` | `#22A06B` | Active status, positive |
 | Danger | `$mpi-danger` | `#DC3545` | Overdue, errors |
 | Warning | `$mpi-warning` | `#D4772C` | Pending, caution |
+| Info | `$info` (aliased to `$mpi-primary`) | `#2E75B6` | Informational, advisory |
 | Secondary | Bootstrap default | `#6C757D` | Neutral, muted |
 
 ### Tag Group Colors
@@ -67,7 +68,7 @@ Pill-shaped badges used for status indicators, counts, and labels across all MPI
 # MpiDesignSystem::Admin::Badge::Component
 class MpiDesignSystem::Admin::Badge::Component < ViewComponent::Base
   # @param label [String] Badge text
-  # @param color [Symbol] :primary, :success, :danger, :warning, :secondary
+  # @param color [Symbol] :primary, :success, :danger, :warning, :info, :secondary
   # @param variant [Symbol] :filled (default), :outline, :tag_group
   # @param size [Symbol] :sm, :md (default), :lg
   # @param tag_group [Symbol] Optional — :distribution, :outreach, :press_festival, :vendors,
@@ -80,7 +81,7 @@ end
 
 - `badge` — base class
 - `rounded-pill` — pill shape (or global override)
-- `text-bg-primary`, `text-bg-success`, `text-bg-danger`, `text-bg-warning`, `text-bg-secondary` — filled variants (each pairs the background with a Bootstrap-computed accessible foreground)
+- `text-bg-primary`, `text-bg-success`, `text-bg-danger`, `text-bg-warning`, `text-bg-info`, `text-bg-secondary` — filled variants (each pairs the background with a Bootstrap-computed accessible foreground)
 - `border` — outline variant base
 - Custom inline styles for tag group color pairs
 

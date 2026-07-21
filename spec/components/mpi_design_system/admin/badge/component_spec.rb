@@ -39,6 +39,18 @@ RSpec.describe MpiDesignSystem::Admin::Badge::Component, type: :component do
     expect(page).to have_no_css("span.badge.text-dark")
   end
 
+  it "renders a filled info badge" do
+    render_inline(described_class.new(label: "Note", color: :info))
+
+    expect(page).to have_css("span.badge.text-bg-info", text: "Note")
+  end
+
+  it "renders an outline info badge" do
+    render_inline(described_class.new(label: "Note", variant: :outline, color: :info))
+
+    expect(page).to have_css("span.badge.border.border-info.text-info")
+  end
+
   it "defaults invalid color to primary" do
     render_inline(described_class.new(label: "Test", color: :invalid))
 

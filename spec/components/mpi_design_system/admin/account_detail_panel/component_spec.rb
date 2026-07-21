@@ -204,6 +204,12 @@ RSpec.describe MpiDesignSystem::Admin::AccountDetailPanel::Component, type: :com
     end
   end
 
+  it "renders the account type badge in the info color" do
+    render_inline(described_class.new(name: "Test", account_type: "Partner", account_type_color: :info))
+
+    expect(page).to have_css("span.badge.text-bg-info", text: "Partner")
+  end
+
   it "defaults invalid account_type_color to primary" do
     render_inline(described_class.new(name: "Test", account_type: "Custom", account_type_color: :invalid))
 
