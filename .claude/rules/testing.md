@@ -195,8 +195,40 @@ script refuted it in seconds. The same script found two real defects reading had
 
 This is the spec-level twin of `.claude/rules/frontend.md`'s "prove a new build guard by
 breaking it" (#136) and its "verify a contrast rule against an external oracle, never against
-itself" (#130). Same failure, three layers: a check that grades its own homework, a check that
-never fails, and a claim nobody executed.
+itself" (#130). Same failure, four layers: a check that grades its own homework, a check that
+never fails, a claim nobody executed, and — the one that hides best — a check that never runs at
+all, because it lives in prose.
+
+### A check written in documentation is still a check
+
+Execute it before you publish it. The doctrine above is usually applied to specs, but a guard
+does not stop being a guard because it is written in a PR body, a runbook, or a comment. Those
+are the guards least likely to be run, because no suite ever touches them.
+
+#148's release PR documented a fail-closed tagging procedure whose CI gate read:
+
+```bash
+# NOT A GATE — reads as obviously correct, and is not.
+echo "$CONCLUSIONS" | grep -qv '^success$' && { echo "ABORT"; exit 1; }
+```
+
+Left to right that says "if any conclusion is not success, abort." Run it and both
+`success/failure` and `success/skipped` reach PROCEED: BSD `grep -qv` returns 1 on macOS even
+when a non-matching line is present. The gate could not fail — and nothing would ever have
+caught it, because it was a shell snippet in a PR description, destined to be run once by a
+human against a release tag that is awkward to retract.
+
+```bash
+# REAL — verified against success/success, success/failure, success/skipped, cancelled, and empty.
+[ -n "$CONCLUSIONS" ] || { echo "ABORT: no CI runs"; exit 1; }
+[ "$(printf '%s\n' "$CONCLUSIONS" | sort -u)" = "success" ] \
+  || { echo "ABORT: CI not all green -> $CONCLUSIONS"; exit 1; }
+```
+
+The method is the same as for a spec: paste the snippet into a shell, feed it the **failure**
+case, and watch it abort. A gate verified only on the happy path is indistinguishable from one
+that always passes. This applies with most force to anything gating an irreversible step —
+a tag push, a deploy, a destructive migration.
 
 ## Anti-Patterns
 
@@ -206,6 +238,9 @@ never fails, and a claim nobody executed.
 - Never describe part of an assertion as load-bearing without a test that reddens when it is
   removed, and never pin a literal that the artifact under test retains forever (a version, a
   date, an id) — see **A Guard Is Not Real Until You Have Watched It Fail** above
+- Never publish a command, gate, or runbook step you have not executed against its failure
+  case — a check in prose is still a check, and it is the kind no suite will ever run for you
+  — see **A check written in documentation is still a check** above
 - Never test private methods — test through the rendered output
 - Never reference models, the database, or request specs — the engine has none (browser
   feature specs exist, but only for genuine JS behavior — see Stack; default to `render_inline`)
