@@ -70,7 +70,8 @@ RSpec.describe "CHANGELOG.md" do
 
   let(:release_heading) { /^## \[#{Regexp.escape(MpiDesignSystem::VERSION)}\](?:[ \t]|$)/ }
   let(:bracketed_headings) { changelog.scan(/^## \[([^\]]+)\]/).flatten }
-  let(:reference_definitions) { changelog.scan(/^\[([^\]]+)\]:[ \t]+\S/).flatten }
+  let(:definition_pattern) { /^\[([^\]]+)\]:[ \t]+\S/ }
+  let(:reference_definitions) { changelog.scan(definition_pattern).flatten }
 
   let(:gemspec) do
     Gem::Specification.load(File.join(root, "mpi_design_system.gemspec"))
@@ -124,9 +125,10 @@ RSpec.describe "CHANGELOG.md" do
   end
 
   # The decoy above proves the guard discriminates on the version. These pin the
-  # two remaining load-bearing elements of the pattern, which a fixture missing
-  # the release section cannot exercise: drop `Regexp.escape` and the first would
-  # match; drop the `(?:[ \t]|$)` boundary and the rest would.
+  # three remaining load-bearing elements, which a fixture missing the release
+  # section cannot exercise: drop `Regexp.escape` and the wildcard heading matches,
+  # drop the `(?:[ \t]|$)` boundary and the longer-token headings match, drop the
+  # `^` anchor and the mid-line and indented mentions match.
   context "with a heading that only resembles the release heading" do
     let(:wildcard_version) { MpiDesignSystem::VERSION.gsub(".", "X") }
 
@@ -158,6 +160,21 @@ RSpec.describe "CHANGELOG.md" do
     expect(bracketed_headings).to include("Unreleased", MpiDesignSystem::VERSION)
 
     expect(reference_definitions).to match_array(bracketed_headings)
+  end
+
+  # Pins the `[ \t]+` strictness. Under `\s+` the malformed fixture below yields a
+  # phantom definition — `\s` crosses the blank line and takes the comment's `<` as
+  # the destination — so the example above would keep passing while a definition
+  # with no URL sat in the file. The well-formed half is what stops this from
+  # passing on a pattern that simply matches nothing.
+  context "with a link reference whose destination was deleted" do
+    let(:well_formed) { "[#{MpiDesignSystem::VERSION}]: https://example.test/v1\n" }
+    let(:malformed) { "[#{MpiDesignSystem::VERSION}]:\n\n<!-- destination removed -->\n" }
+
+    it "counts the well-formed definition but not the destination-less one" do
+      expect(well_formed.scan(definition_pattern).flatten).to eq([ MpiDesignSystem::VERSION ])
+      expect(malformed.scan(definition_pattern).flatten).to be_empty
+    end
   end
 
   it "is packaged in the gem's files so changelog_uri resolves" do
