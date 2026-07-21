@@ -40,6 +40,13 @@ routinely survive a narrow sweep and ship green:
   the sibling `action-button.html` was still forcing `color: #fff` on warning at **3.24:1** and
   success at **3.33:1** — both WCAG AA failures, and both the exact claim the `.md` had just
   retired. `badge.html` still carries pre-#128 `bg-secondary` + inline hex.)
+- **A catalog entry's accessibility claims are assertions, not decoration — re-derive them when
+  you touch the component.** Three separate cycles found a catalog file asserting a contrast
+  property the code did not have: #128 (`Badge`), #130 (`avatar-circle.md` claimed "White text on
+  all background colors meets WCAG AA 4.5:1" — false for 7 of 10), and #136
+  (`action-button.md` claimed white text met AA on every button color). A prose claim about
+  contrast ages the moment a palette value or a foreground rule changes, and nothing in CI reads
+  it. Recompute the ratio rather than trusting the sentence.
 - **The repo's own docs, not just code.** Sweep `CLAUDE.md`, `AGENTS.md`, `.claude/rules/**`,
   `catalog/**`, `references/**`, and `docs/standards/**` for the old token too — leaving the
   convention documented one way while the code does another tells the next agent to re-create
@@ -127,7 +134,10 @@ Rules:
   so modern consumers got Bootstrap's cyan `#0DCAF0` on `btn-info` — a color outside the MPI
   palette — and the engine's own `modern_use.scss` fixture demonstrated the broken path. The
   obvious guard, `! grep "#0dcaf0"`, would have false-passed forever: Bootstrap emits
-  `--bs-cyan: #0dcaf0` unconditionally, independent of `$info`.)
+  `--bs-cyan: #0dcaf0` unconditionally, independent of `$info`.) This is the build-level twin of
+  the Accessibility section's "verify against an external oracle, never against itself" (#130):
+  there, the risk is a check that grades its own homework; here, it is a check that never fails.
+  Both are answered the same way — make the guard fail on purpose before you trust a pass.
 - Custom SCSS only when Bootstrap genuinely cannot express the design; keep it in a
   dedicated partial under `app/assets/stylesheets/mpi_design_system/` (existing example:
   `_nav_bar.scss`) and import it from `application.scss`
