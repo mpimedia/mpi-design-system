@@ -1,8 +1,8 @@
 <% if show? %>
   <div style="<%= bar_styles %>" role="toolbar" aria-label="Active filters">
-    <span style="<%= label_styles %>">Active:</span>
+    <span class="text-body-secondary" style="<%= label_styles %>">Active:</span>
     <% @filters.each do |filter| %>
-      <span style="<%= pill_styles %>">
+      <span class="rounded-pill text-bg-primary" style="<%= pill_styles %>">
         <%= pill_label(filter) %>
         <% if filter[:remove_url] %>
           <a href="<%= filter[:remove_url] %>"
@@ -15,7 +15,7 @@
       </span>
     <% end %>
     <% if @clear_all_url %>
-      <a href="<%= @clear_all_url %>" style="<%= clear_all_styles %>" aria-label="Clear all filters">Clear all</a>
+      <a href="<%= @clear_all_url %>" class="text-body-secondary" style="<%= clear_all_styles %>" aria-label="Clear all filters">Clear all</a>
     <% end %>
   </div>
 <% end %>

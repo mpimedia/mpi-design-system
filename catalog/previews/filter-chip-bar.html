@@ -23,9 +23,24 @@
 
     /* Active filter pills — from Screen 6 */
     .active-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-right: 8px; white-space: nowrap; }
-    .active-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: #2E75B6; color: #fff; font-size: 12px; font-weight: 500; text-decoration: none; white-space: nowrap; }
-    .active-pill .pill-close { font-size: 10px; opacity: 0.8; cursor: pointer; margin-left: 2px; }
-    .active-pill .pill-close:hover { opacity: 1; }
+    /*
+      Static hand-authored snapshot — the live ViewComponent is canonical, and
+      catalog/previews/screenshots/filter-chip-bar.png is stale pending regeneration.
+
+      The shipped components use Bootstrap's `.rounded-pill.text-bg-primary`, which
+      derives the foreground from the app's configured $primary. This page loads
+      STOCK Bootstrap from a CDN, whose $primary is #0d6efd — so using the real
+      class here would render the wrong blue. `--bs-primary-rgb` is overridden below
+      to MPI's #2E75B6 so `.text-bg-primary` resolves correctly, and `.active-pill`
+      keeps only the geometry, mirroring the component's own split.
+
+      Note the `pill-close` has NO opacity: the retired `opacity: 0.8` faded white
+      to an effective #D5E3F0 over the pill — 3.71:1, below the WCAG AA floor (#130).
+    */
+    :root { --bs-primary-rgb: 46, 117, 182; }
+    .active-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 12px; font-weight: 500; text-decoration: none; white-space: nowrap; }
+    .active-pill .pill-close { font-size: 10px; cursor: pointer; margin-left: 2px; }
+    .active-pill .pill-close:hover { text-decoration: none; }
     .clear-all { font-size: 13px; color: #6C757D; text-decoration: none; margin-left: 8px; }
     .clear-all:hover { color: #2E75B6; text-decoration: underline; }
   </style>
@@ -71,9 +86,9 @@
     <div class="preview-label">Active Filter Pills — From Figma Screen 6 (Active Search Results)</div>
     <div class="d-flex align-items-center flex-wrap gap-2" style="max-width:800px;">
       <span class="active-label">ACTIVE:</span>
-      <span class="active-pill">Keyword: investors <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;opacity:0.8;margin-left:2px;" aria-label="Remove filter: Keyword: investors"><i class="bi bi-x"></i></button></span>
-      <span class="active-pill">Group: Buyers <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;opacity:0.8;margin-left:2px;" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></button></span>
-      <span class="active-pill">Activity: Engaged last 90 days <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;opacity:0.8;margin-left:2px;" aria-label="Remove filter: Activity: Engaged last 90 days"><i class="bi bi-x"></i></button></span>
+      <span class="active-pill rounded-pill text-bg-primary">Keyword: investors <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Keyword: investors"><i class="bi bi-x"></i></button></span>
+      <span class="active-pill rounded-pill text-bg-primary">Group: Buyers <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></button></span>
+      <span class="active-pill rounded-pill text-bg-primary">Activity: Engaged last 90 days <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Activity: Engaged last 90 days"><i class="bi bi-x"></i></button></span>
       <a class="clear-all" href="#">Clear all</a>
     </div>
   </div>
@@ -83,7 +98,7 @@
     <div class="preview-label">Active Filter Pills — Single Filter</div>
     <div class="d-flex align-items-center flex-wrap gap-2" style="max-width:800px;">
       <span class="active-label">ACTIVE:</span>
-      <span class="active-pill">Location: Los Angeles <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;opacity:0.8;margin-left:2px;" aria-label="Remove filter: Location: Los Angeles"><i class="bi bi-x"></i></button></span>
+      <span class="active-pill rounded-pill text-bg-primary">Location: Los Angeles <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Location: Los Angeles"><i class="bi bi-x"></i></button></span>
       <a class="clear-all" href="#">Clear all</a>
     </div>
   </div>
@@ -106,7 +121,7 @@
       </div>
       <div>
         <div class="text-muted small mb-1">Active Pill</div>
-        <span class="active-pill">Group: Buyers <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;opacity:0.8;margin-left:2px;" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></button></span>
+        <span class="active-pill rounded-pill text-bg-primary">Group: Buyers <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></button></span>
       </div>
     </div>
   </div>

@@ -7,6 +7,47 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Fixed
+- **WCAG AA contrast in four inline-styled components** (#130) — the inline-style siblings of
+  the `Badge` fix in #128. `Admin::AvatarCircle` paired a name-hashed background with a
+  hardcoded `color: #fff`; **7 of its 10 palette colours failed the 4.5:1 AA floor**, worst
+  among them `$mpi-brand-accent` (`#4EA8DE`) at **2.63:1** — below even the relaxed
+  large-text threshold — and `$mpi-success` (`#22A06B`) at **3.33:1**, the identical pairing
+  #128 had just fixed in `Badge`, still shipping in a second component. Because the colour is
+  derived from a hash of the contact's name, roughly 70% of contacts rendered below AA.
+  The foreground is now derived per background and every pairing clears AA, worst case 4.53:1.
+- `Admin::ActiveFilterBar` and `Admin::FilterChipBar` — the remove button's `opacity: 0.8`
+  faded white to an effective `#D5E3F0` over the pill, **3.71:1**. The opacity is gone and the
+  button inherits the pill's derived foreground. A declared-pair audit misses this class of
+  defect entirely, since the `color:` declaration on its own is AA-clean.
+- `Admin::ActiveFilterBar` labels and "Clear all" — `#6C757D` on the `#F5F7FA` bar was
+  **4.37:1**. Now Bootstrap's `.text-body-secondary` (6.14:1).
+- `Admin::AvatarStack` — the "+N" overflow chip hand-copied `AvatarCircle`'s markup including
+  a pinned foreground, so it would not have inherited the fix. Now derived (resolves to `#fff`,
+  4.76:1 — unchanged visually, but it tracks the background rather than assuming it).
+
+### Added
+- **`MpiDesignSystem::ColorContrast`** — WCAG 2.1 relative-luminance and contrast-ratio math,
+  plus `accessible_foreground`, the Ruby counterpart of Bootstrap's SCSS `color-contrast()`.
+  For components that must emit a foreground in an *inline style*, where `text-bg-*` cannot
+  reach. Prefer `text-bg-*` whenever the background is a theme colour.
+- **A contrast oracle in CI** — `spec/fixtures/scss/avatar_contrast_oracle.scss` runs
+  Bootstrap's own `color-contrast()` over the avatar palette, and `bin/verify-contrast-oracle`
+  (wired into `yarn build:css:compat`) fails the build if Bootstrap and the Ruby helper ever
+  disagree. This exists because a contrast spec written against the helper's own `ratio`
+  method would be self-referential: wrong luminance math would agree with itself and still
+  ship a real failure. #128 could only produce this evidence by hand, recorded in prose.
+
+### Changed
+- **Visible design change:** avatars whose name hashes to one of the seven failing colours now
+  render **dark initials** instead of white. The palette itself is unchanged. This reverses a
+  design decision that `catalog/elements/avatar-circle.md` previously documented — the claim
+  "White text on all background colors meets WCAG AA 4.5:1 contrast" was false for 7 of 10 —
+  and the catalog is corrected in the same change.
+- `Admin::ActiveFilterBar` / `Admin::FilterChipBar` active pills use
+  `.rounded-pill.text-bg-primary` rather than a hardcoded `#2E75B6`, so they track a consumer's
+  `$primary` override instead of silently desynchronising from it. Pill geometry is unchanged.
+
 ## [0.6.0] - 2026-07-17
 
 ### Added

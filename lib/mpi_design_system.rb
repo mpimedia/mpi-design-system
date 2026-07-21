@@ -1,4 +1,5 @@
 require "mpi_design_system/version"
+require "mpi_design_system/color_contrast"
 require "mpi_design_system/engine"
 
 module MpiDesignSystem

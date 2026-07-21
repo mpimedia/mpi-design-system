@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#
+# Verifies that Bootstrap's own `color-contrast()` picks the same foreground for
+# every AvatarCircle palette colour that MpiDesignSystem::ColorContrast does.
+#
+# This is the external anchor for issue #130. The Ruby helper's specs cannot
+# validate themselves — asserting `ratio(bg, accessible_foreground(bg)) >= 4.5`
+# calls the code under test on both sides, so wrong luminance math would agree
+# with itself and still ship a WCAG failure. Bootstrap's compiled SCSS is an
+# independent implementation, and it is the same oracle issue #128 used.
+#
+# Run via `yarn build:css:compat`. Fails loudly on any divergence.
+set -euo pipefail
+
+CSS="${1:-tmp/compat/avatar_oracle.css}"
+
+if [ ! -f "$CSS" ]; then
+  echo "verify-contrast-oracle: $CSS not found — compile the oracle fixture first" >&2
+  exit 1
+fi
+
+# slug:expected-foreground — must match the frozen map in
+# spec/lib/mpi_design_system/color_contrast_spec.rb
+EXPECTATIONS=(
+  "0-2E75B6:#fff"
+  "1-8B5CF6:#000"
+  "2-E8733A:#000"
+  "3-2DA67E:#000"
+  "4-D97706:#000"
+  "5-6366F1:#000"
+  "6-DC3545:#fff"
+  "7-4EA8DE:#000"
+  "8-22A06B:#000"
+  "9-64748B:#fff"
+  "placeholder-6C757D:#fff"
+)
+
+failures=0
+
+for entry in "${EXPECTATIONS[@]}"; do
+  slug="${entry%%:*}"
+  expected="${entry##*:}"
+
+  actual=$(awk -v sel=".mds-avatar-oracle-${slug} {" '
+    index($0, sel) == 1 { inblock = 1; next }
+    inblock && /^[[:space:]]*color:/ { sub(/^[[:space:]]*color:[[:space:]]*/, ""); sub(/;.*$/, ""); print; exit }
+    inblock && /}/ { exit }
+  ' "$CSS")
+
+  if [ -z "$actual" ]; then
+    echo "  MISSING  ${slug} — no rule emitted (palette drift between the SCSS fixture and Ruby?)" >&2
+    failures=$((failures + 1))
+  elif [ "$actual" != "$expected" ]; then
+    echo "  MISMATCH ${slug} — Bootstrap chose '${actual}', Ruby expects '${expected}'" >&2
+    failures=$((failures + 1))
+  fi
+done
+
+if [ "$failures" -gt 0 ]; then
+  echo "" >&2
+  echo "Contrast oracle FAILED with ${failures} divergence(s)." >&2
+  echo "Bootstrap's color-contrast() and MpiDesignSystem::ColorContrast disagree." >&2
+  echo "Do not 'fix' this by editing the expectations — work out which is right first." >&2
+  exit 1
+fi
+
+echo "Contrast oracle OK: Bootstrap color-contrast() matches ColorContrast for all ${#EXPECTATIONS[@]} palette colors"

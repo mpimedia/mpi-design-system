@@ -4,6 +4,10 @@ module MpiDesignSystem
   module Admin
     module AvatarStack
       class Component < ViewComponent::Base
+        # Neutral background for the "+N" overflow chip. Its foreground is derived
+        # rather than pinned, so the pair stays accessible if this value changes. (#130)
+        OVERFLOW_COLOR = "#64748B"
+
         # @param names [Array<String>] List of contact names
         # @param max [Integer] Maximum visible avatars before "+N" (default: 4)
         # @param size [Symbol] :sm, :md (default)
@@ -29,6 +33,14 @@ module MpiDesignSystem
 
         def dimension
           @size == :sm ? 28 : 40
+        end
+
+        def overflow_background_color
+          OVERFLOW_COLOR
+        end
+
+        def overflow_foreground_color
+          MpiDesignSystem::ColorContrast.accessible_foreground(OVERFLOW_COLOR)
         end
 
         def stack_label

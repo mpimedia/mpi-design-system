@@ -65,10 +65,30 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
       expect(page).to have_text("Group: Distribution")
     end
 
-    it "renders pills in primary blue with white text" do
+    # Previously asserted `background: #2E75B6` + `color: #fff` as literals.
+    # This component renders the same pill as ActiveFilterBar, and carried the
+    # same defects: a hardcoded duplicate of $mpi-primary, and a remove button
+    # faded to 3.71:1 by `opacity: 0.8`. Both now derive. (#130)
+    it "renders pills with a Bootstrap-derived foreground rather than pinned white" do
       render_inline(described_class.new(active_filters: active_filters))
 
-      expect(page).to have_css("span[style*='background: #2E75B6'][style*='color: #fff']")
+      expect(page).to have_css("span.rounded-pill.text-bg-primary", text: "Keyword: investors")
+      expect(page).to have_no_css("span[style*='background: #2E75B6']")
+      expect(page).to have_no_css("span[style*='color: #fff']")
+    end
+
+    it "does not fade the remove button, which eroded contrast to 3.71:1" do
+      render_inline(described_class.new(active_filters: active_filters))
+
+      expect(page).to have_css("a[style*='color: inherit']", count: 2)
+      expect(page).to have_no_css("a[style*='opacity']")
+    end
+
+    it "derives the label and clear-all foreground rather than pinning #6C757D" do
+      render_inline(described_class.new(active_filters: active_filters, clear_all_url: "/contacts"))
+
+      expect(page).to have_css("span.text-body-secondary", text: "Active:")
+      expect(page).to have_css("a.text-body-secondary", text: "Clear all")
     end
 
     it "renders remove button with aria-label" do
@@ -118,5 +138,49 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
     render_inline(described_class.new(groups: groups))
 
     expect(page).not_to have_text("Reset all")
+  end
+
+  # This component sets no background of its own, so a pinned muted foreground is
+  # only ever verified against an assumed one — `#6C757D` scored 4.69:1 on white
+  # but 4.37:1 on $mpi-background. `.text-body-secondary` derives from
+  # --bs-body-color and clears AA on both (6.40:1 / 6.14:1). (#130)
+  describe "muted text contrast (#130)" do
+    let(:groups) { [ { label: "All", count: 100 } ] }
+
+    it "derives the groups label foreground" do
+      render_inline(described_class.new(groups: groups))
+
+      expect(page).to have_css("span.text-body-secondary", text: "Groups:")
+    end
+
+    it "derives the reset-all foreground" do
+      render_inline(described_class.new(groups: groups, reset_all_url: "/contacts"))
+
+      expect(page).to have_css("a.text-body-secondary", text: "Reset all")
+    end
+
+    it "emits no hardcoded muted foreground anywhere in the rendered markup" do
+      render_inline(described_class.new(
+        groups: groups,
+        active_filters: [ { category: "Tag", value: "Acquisitions", remove_url: "#" } ],
+        clear_all_url: "/contacts",
+        reset_all_url: "/contacts"
+      ))
+
+      expect(page.native.to_html).not_to include("#6C757D")
+    end
+
+    # Group chips are deliberately NOT changed here: they render the shared
+    # TagChip::GROUPS pairs, whose 7 colour/background combinations all fail AA
+    # (2.77:1–4.34:1). Fixing those means changing shared tag token values — a
+    # designer-led decision tracked in the #130 follow-up, not silently absorbed
+    # into this PR. This example pins the current behaviour so the exclusion is
+    # explicit rather than accidental.
+    it "leaves group chip colours untouched, pending the tag-palette follow-up" do
+      selected = [ { label: "Distribution", count: 50, group: :distribution, selected: true } ]
+      render_inline(described_class.new(groups: selected))
+
+      expect(page).to have_css("span[style*='color: #E8733A'][style*='background: #FEF3EC']")
+    end
   end
 end

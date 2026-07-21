@@ -12,9 +12,9 @@ Two filter bar patterns used in CRM list views. Group filter chips provide tag-g
 
 - **Group chips:** Pill-shaped buttons with counts, one per tag group. "All" chip is always first
 - **Selected chip:** Uses the tag group's own color (e.g., Distribution selected = orange border/background `#E8733A` / `#FEF3EC`)
-- **Active pills:** Filled primary blue (`#2E75B6`) pills with white text and `×` remove button
-- **Labels:** ALL-CAPS prefix labels — "GROUPS:" and "ACTIVE:" — in gray, 11px, `font-weight: 600`
-- **Clear all:** Text link after active pills, gray by default, blue on hover
+- **Active pills:** Filled primary pills using Bootstrap's `.rounded-pill.text-bg-primary`, whose background *and* foreground derive from the app's configured `$primary`. Do not hardcode `#2E75B6` — a literal desynchronises the moment a consumer overrides the token (every token is `!default`). The `×` remove button inherits the derived foreground (#130)
+- **Labels:** ALL-CAPS prefix labels — "GROUPS:" and "ACTIVE:" — 11px, `font-weight: 600` (`FilterChipBar`) / `700` (`ActiveFilterBar`), colored by Bootstrap's `.text-body-secondary` rather than a pinned gray
+- **Clear all:** Text link after active pills, `.text-body-secondary` by default, blue on hover
 - **Groups → Tags rethink:** Tracked in #32, does not block this component's implementation
 
 ## Variants
@@ -52,8 +52,8 @@ Two filter bar patterns used in CRM list views. Group filter chips provide tag-g
 |---|---|
 | Container | Horizontal flex row with `gap-2` |
 | Label | "ACTIVE:" in gray, ALL-CAPS, 11px |
-| Pill | Filled blue (`#2E75B6`), white text, format: "Category: Value" |
-| Remove button | `×` icon (`bi-x`), opacity 0.8 → 1.0 on hover |
+| Pill | `.rounded-pill.text-bg-primary`, derived foreground, format: "Category: Value" |
+| Remove button | `×` icon (`bi-x`), `color: inherit` at full strength — **no opacity fade** |
 | Clear all | Text link after pills, clears all active filters |
 
 ## States
@@ -63,8 +63,8 @@ Two filter bar patterns used in CRM list views. Group filter chips provide tag-g
 | Default | Group chip | White background, gray border (`#DEE2E6`), dark text |
 | Hover | Group chip | Blue border (`#2E75B6`) |
 | Selected | Group chip | Group color border + light background |
-| Default | Active pill | Filled blue, white text |
-| Hover | Pill remove | `×` opacity increases to 1.0 |
+| Default | Active pill | Filled primary, derived foreground |
+| Hover | Pill remove | No opacity change — the retired `opacity: 0.8` faded the foreground to 3.71:1, below the AA floor (#130) |
 
 ## Props / API
 
@@ -85,7 +85,8 @@ end
 
 - `d-flex`, `align-items-center`, `flex-wrap`, `gap-2` — layout
 - Custom `.group-chip` (pill, border, padding)
-- Custom `.active-pill` (filled blue, white text)
+- `.rounded-pill.text-bg-primary` — active pill fill and derived foreground (replaces the former custom `.active-pill`)
+- `.text-body-secondary` — labels, "Clear all", "Reset all"
 - `bi-x` — remove icon in active pills
 
 ## Key Styles
