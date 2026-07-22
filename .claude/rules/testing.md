@@ -167,6 +167,34 @@ Watched failing both ways before trusting it: emptying `results_text_styles` and
 `font-weight: 500` each reddens exactly this example. The rule: after a conversion, list what the
 element still emits and pin it, or the next edit that removes it ships green.
 
+**Related — pin the *complete* surviving inline style, not one representative declaration.** The
+corollary says "list what the element still emits and pin it" — but a guard that pins *one*
+representative survivor per element leaves the rest deletable-green, and that gap survives even a
+careful review. #152 converted `FilterPanel`'s inline hex to utilities and kept each element's
+geometry/layout/typography inline; the first guard pinned one declaration per helper (panel
+`min-width`, title `font-weight`+`letter-spacing`, button `justify-content`+`width`, …) — and passed
+the author's self-review **and** the external *plan* review, yet left panel `border-radius`/`padding`,
+header/option/chevron `font-size`, and the button's `cursor`/`text-align` deletable without a red
+test (caught only by the external *diff* review). For an inline-style→utility conversion, assert each
+converted element's **complete** surviving inline style via exact equality —
+`have_css("aside.bg-body.border[style='border-radius: 8px; padding: 0; min-width: 220px']")` — not
+substring `[style*='…']` pins, which police only the fragments you happened to name. Exact match is
+brittle in exactly the intended way: any dropped, added, or reordered survivor reddens, so a
+deliberate geometry change updates the test on purpose. (`render_inline` emits the style string
+verbatim — Nokogiri preserves attribute *values*, only lowercasing attribute *names* — so the exact
+string is stable.) Proven by breaking it: removing `border-radius: 8px` (unguarded under the
+representative version) reddens the exact-match example. (#152.)
+
+**Related — a descendant selector false-passes when the class lands on an ancestor; pin the
+structural relationship with a child combinator.** `have_css("div.text-body input[...]")` proves only
+that *some* ancestor `div` of the input carries `.text-body` — not that the option *row* does. So it
+stays green if the class is mistakenly emitted on a wrapper (`.filter-section`, `.pb-2`) instead of
+the row itself — exactly the regression the assertion exists to catch (a cousin of False Green #1: the
+selector matches by an unintended path). Pin the real DOM relationship with child combinators —
+`div.text-body > label > input[...]` — so only the class on the row passes. Proven by breaking it:
+moving `.text-body` up to the `.pb-2` wrapper reddens the child-combinator form while the descendant
+form stays green. (#152.)
+
 **Related:** when a constant drives behavior (`ACTION_METHODS`, `COLORS`, `SIZES`), loop it
 rather than spot-checking one member — otherwise a typo in the constant ships green.
 
