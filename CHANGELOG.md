@@ -7,7 +7,33 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-07-22
+
 ### Changed
+- **`Admin::StatCard`, `Admin::AvatarStack`, and `Admin::ActiveFilterBar` are theme-adaptive** —
+  the three components no longer pin a light palette in inline styles; every colour now resolves
+  from a Bootstrap semantic utility, so each follows `data-bs-theme` and the consuming app's mapped
+  tokens. **StatCard**: the card is `bg-body border rounded-3` (was `#fff` / `1px solid #DEE2E6` /
+  `border-radius: 8px` — `rounded-3` is `--bs-border-radius-lg` = 8px, so the radius is preserved),
+  the label `text-body-secondary` (was `#6C757D`), the value `text-body` or, when `alert:`,
+  `text-danger` (was `#1B2A4A` / `#DC3545`), and the trend `text-success-emphasis` /
+  `text-danger-emphasis` / `text-body-secondary` (was `#22A06B` / `#DC3545` / `#6C757D`). The trend
+  uses the `-emphasis` variants deliberately: at 12px (small text, AA 4.5:1) base `.text-success`
+  (3.33:1 on the light card) and `.text-danger` (3.41:1 on the dark card) both fail the floor and
+  do not follow the colour mode, while the emphasis tokens pass (7.7–13.7:1) and adapt — a contrast
+  improvement, like the pilot's results text. The 32px value keeps base `.text-danger` for alerts
+  (large text, AA 3:1, and semantically red in both modes). **AvatarStack**: the `+N` overflow
+  chip's separator ring moves from `#fff` to `var(--bs-body-bg)`, so it tracks the surface in
+  either colour mode; the chip's own `#64748B` background (`$mpi-tag-internal`, which has no
+  Bootstrap semantic equivalent) and its #130-derived accessible foreground are unchanged.
+  **ActiveFilterBar**: the bar surface moves from `#F5F7FA` to `bg-body-secondary rounded`, and the
+  `data-bs-theme="light"` pin is removed — it existed only to freeze the light hex against a
+  theme-aware label, and an adaptive surface makes it a dark-mode regression instead. **For a
+  consumer that does not remap Bootstrap's defaults**, the StatCard card, border and radius are
+  pixel-identical to the literals they replace, and the one deliberate light-mode shift is the
+  filter-bar surface (`#F5F7FA` → `#E9ECEF`, Bootstrap's `--bs-secondary-bg`). Dark mode is new
+  behaviour. ActiveFilterBar's pills, labels and remove buttons were already tokenised (#130). No
+  public API change. (#150 — Track 2 phase 2, epic #147)
 - **`Admin::NavBar` and `Admin::AppShell` are theme-adaptive** — `_nav_bar.scss` (which styles
   both) no longer pins a light palette in compile-time Sass variables. Every colour now resolves
   from a Bootstrap **runtime CSS custom property** (`var(--bs-*)`), so the nav follows
@@ -355,7 +381,8 @@ Initial internal version: the ViewComponent library, design tokens, Stimulus con
 and Lookbook previews, prior to the adoption-prep packaging corrections above. (No release
 tag was cut for 0.1.0.)
 
-[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.5.0...v0.6.0
