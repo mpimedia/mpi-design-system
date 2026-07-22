@@ -26,20 +26,53 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
       expect(page).to have_css("a[href='/contacts?group=distribution']", text: "Distribution 342")
     end
 
-    it "highlights selected chip with group color" do
-      selected_groups = [
-        { label: "Distribution", count: 342, group: :distribution, selected: true, href: "#" }
-      ]
-      render_inline(described_class.new(groups: selected_groups))
+    # Looped over the whole mapping — a spot-check on one group would let a typo in
+    # GROUP_VARIANTS ship green (testing.md, "loop the constant"). Each selected chip
+    # renders its group's semantic `-subtle` surface + `-emphasis` foreground, which
+    # are theme-adaptive; the always-present count text pins WHICH chip is asserted.
+    it "renders a selected chip in its group's semantic subtle/emphasis utilities" do
+      described_class::GROUP_VARIANTS.each do |group, variant|
+        render_inline(described_class.new(groups: [
+          { label: group.to_s, count: 5, group: group, selected: true, href: "/contacts?group=#{group}" }
+        ]))
 
-      expect(page).to have_css("a[style*='border: 1px solid #E8733A'][style*='background: #FEF3EC']")
-      expect(page).to have_css("a[aria-current='page']")
+        expect(page).to have_css(
+          "a.rounded-pill.border.border-#{variant}-subtle.bg-#{variant}-subtle.text-#{variant}-emphasis[aria-current='page']",
+          text: "#{group} 5"
+        )
+      end
     end
 
-    it "renders unselected chips with default styling" do
+    it "renders unselected chips on the adaptive body surface" do
       render_inline(described_class.new(groups: groups))
 
-      expect(page).to have_css("[style*='border: 1px solid #DEE2E6'][style*='background: #fff']")
+      expect(page).to have_css("a.rounded-pill.border.bg-body.text-body", text: "Distribution 342")
+      expect(page).to have_css("a.rounded-pill.border.bg-body.text-body", text: "Outreach 128")
+    end
+
+    # A selected chip whose group is unknown gets the UNSELECTED treatment. `bg-body`
+    # is a state the selected branch cannot produce (it emits `-subtle`/`-emphasis`),
+    # so this distinguishes "fell back" from "was ignored" (testing.md False Green #1).
+    it "treats a selected chip with an unknown group as unselected" do
+      render_inline(described_class.new(groups: [
+        { label: "Mystery", count: 3, group: :nope, selected: true, href: "/contacts?group=nope" }
+      ]))
+
+      expect(page).to have_css("a.rounded-pill.border.bg-body.text-body[aria-current='page']", text: "Mystery 3")
+      expect(page).not_to have_css("a[class*='-subtle']")
+    end
+
+    # Colour left the chip's inline style; padding/size/weight did not, and have no
+    # Bootstrap equivalent. The theme-adaptivity guards below only assert ABSENCE, so
+    # without this a wiped group_chip_styles would ship green. Watched red by emptying
+    # that helper.
+    it "keeps the non-colour chip geometry inline" do
+      render_inline(described_class.new(groups: [ { label: "All", count: 5 } ]))
+
+      expect(page).to have_css(
+        "span.rounded-pill[style*='padding: 5px 12px'][style*='font-size: 13px'][style*='font-weight: 500']",
+        text: "All 5"
+      )
     end
 
     it "wraps in a role=group with aria-label" do
@@ -65,10 +98,7 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
       expect(page).to have_text("Group: Distribution")
     end
 
-    # Previously asserted `background: #2E75B6` + `color: #fff` as literals.
-    # This component renders the same pill as ActiveFilterBar, and carried the
-    # same defects: a hardcoded duplicate of $mpi-primary, and a remove button
-    # faded to 3.71:1 by `opacity: 0.8`. Both now derive. (#130)
+    # The pill renders the same derived-foreground fill as ActiveFilterBar. (#130)
     it "renders pills with a Bootstrap-derived foreground rather than pinned white" do
       render_inline(described_class.new(active_filters: active_filters))
 
@@ -77,11 +107,31 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
       expect(page).to have_no_css("span[style*='color: #fff']")
     end
 
-    it "does not fade the remove button, which eroded contrast to 3.71:1" do
+    # The retired `opacity: 0.8` faded white to 3.71:1 (#130); the retired inline
+    # `color: inherit; background: none; border: none` became the utility trio
+    # `text-reset bg-transparent border-0`, so the button pins no colour of its own
+    # while still inheriting the pill's derived foreground. (#151)
+    it "resets the remove button to the pill's own foreground without pinning colour" do
       render_inline(described_class.new(active_filters: active_filters))
 
-      expect(page).to have_css("a[style*='color: inherit']", count: 2)
+      expect(page).to have_css("a.text-reset.bg-transparent.border-0[aria-label='Remove filter: Keyword: investors']", count: 1)
+      expect(page).to have_css("a.text-reset.bg-transparent.border-0", count: 2)
+      expect(page).to have_no_css("a[style*='color']")
       expect(page).to have_no_css("a[style*='opacity']")
+    end
+
+    # remove_btn_styles keeps padding/font-size/line-height/cursor inline (no Bootstrap
+    # equivalent). Pin them POSITIVELY — the theme-adaptivity guards only assert ABSENCE,
+    # so without this, emptying remove_btn_styles ships green. Watched red by emptying it.
+    # (#151, FIX 5)
+    it "keeps the remove button's non-colour geometry inline" do
+      render_inline(described_class.new(active_filters: active_filters))
+
+      expect(page).to have_css(
+        "a.text-reset.bg-transparent.border-0[style*='padding: 0'][style*='font-size: inherit']" \
+        "[style*='line-height: 1'][style*='cursor: pointer']",
+        count: 2
+      )
     end
 
     it "derives the label and clear-all foreground rather than pinning #6C757D" do
@@ -169,18 +219,111 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
 
       expect(page.native.to_html).not_to include("#6C757D")
     end
+  end
 
-    # Group chips are deliberately NOT changed here: they render the shared
-    # TagChip::GROUPS pairs, whose 7 colour/background combinations all fail AA
-    # (2.77:1–4.34:1). Fixing those means changing shared tag token values — a
-    # designer-led decision tracked in the #130 follow-up, not silently absorbed
-    # into this PR. This example pins the current behaviour so the exclusion is
-    # explicit rather than accidental.
-    it "leaves group chip colours untouched, pending the tag-palette follow-up" do
-      selected = [ { label: "Distribution", count: 50, group: :distribution, selected: true } ]
-      render_inline(described_class.new(groups: selected))
+  # #151 moved every chip colour (selected surface, unselected surface, remove button)
+  # onto Bootstrap semantic utilities so the bar tracks `data-bs-theme`. Each guard
+  # pins the element it is about POSITIVELY before asserting an absence, and each was
+  # proven by watching it fail against a mutation that trips it (testing.md, "A Guard
+  # Is Not Real Until You Have Watched It Fail"). The 12-entry fixed-scheme list is the
+  # exact one from pagination/component_spec.rb.
+  describe "theme-adaptivity guards" do
+    let(:fixed_scheme_utilities) do
+      %w[
+        bg-white bg-black bg-light bg-dark
+        text-white text-black text-light text-dark
+        border-white border-black border-light border-dark
+      ]
+    end
 
-      expect(page).to have_css("span[style*='color: #E8733A'][style*='background: #FEF3EC']")
+    # Matches 3-, 4-, 6- and 8-digit CSS hex; the trailing (?!\h) stops a 6-digit
+    # match inside a longer run and the 4/8 branches close the alpha forms.
+    let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
+
+    # A colour/border/opacity-bearing property, matched on the name to the LEFT of the
+    # colon. `--bs-border-width` (custom-property prefix) and `border-radius` (radius is
+    # not one of the side/attribute suffixes) fall OUTSIDE this pattern and stay allowed
+    # geometry — so a re-introduced `border: 1px solid red` or `border: none` is caught
+    # while the surviving `--bs-border-width: 2px` is not. (#151, FIX 3)
+    let(:colour_or_border_prop) do
+      /\A(color|background(-color)?|border(-(top|right|bottom|left|color|style|width))?|outline|box-shadow|opacity)\z/
+    end
+
+    # A colour literal in a declaration VALUE: hex, rgb()/hsl(), or a common named colour
+    # as a whole word — so a hue smuggled into an allowed property's value is still caught.
+    let(:colour_value_literal) do
+      /#(?:\h{3,8})|\brgb|\bhsl|\b(?:red|green|blue|white|black|orange|yellow|purple|gr[ae]y)\b/i
+    end
+
+    # Every surviving inline "property: value" declaration that names a colour/border
+    # property OR carries a colour literal in its value.
+    def offending_style_declarations(fragment)
+      fragment.css("[style]")
+              .flat_map { |el| el["style"].to_s.split(";") }
+              .map(&:strip).reject(&:empty?)
+              .select do |decl|
+        prop, value = decl.split(":", 2)
+        prop.to_s.strip.downcase.match?(colour_or_border_prop) ||
+          value.to_s.strip.downcase.match?(colour_value_literal)
+      end
+    end
+
+    let(:populated) do
+      described_class.new(
+        groups: [
+          { label: "All", count: 2307 },
+          { label: "Distribution", count: 342, group: :distribution, selected: true, href: "/contacts?group=distribution" },
+          { label: "Outreach", count: 128, group: :outreach, href: "/contacts?group=outreach" }
+        ],
+        active_filters: [ { category: "Keyword", value: "investors", remove_url: "/contacts?remove=keyword" } ],
+        clear_all_url: "/contacts",
+        reset_all_url: "/contacts"
+      )
+    end
+
+    it "emits no literal colour anywhere in the markup" do
+      render_inline(populated)
+
+      # Prove the markup under scrutiny actually rendered — a scan over an empty
+      # string matches nothing and would pass forever.
+      expect(page).to have_css("a[aria-current='page']", text: "Distribution 342")
+      expect(page).to have_css("span.text-bg-primary", text: "Keyword: investors")
+
+      expect(rendered_content).not_to match(hex_literal)
+      expect(rendered_content).not_to include("rgb(")
+      expect(rendered_content).not_to include("hsl(")
+    end
+
+    it "emits no colour, border, or opacity declaration in the inline styles that remain" do
+      render_inline(populated)
+
+      # Inline styles DO still exist (geometry) — without this the assertion below would
+      # pass on a component that emitted no style at all.
+      expect(page).to have_css("[style*='padding: 5px 12px']")
+
+      # Only geometry may survive inline. Matching on the PROPERTY name catches a
+      # re-introduced `border: 1px solid red` / `border: none` (named colour / keyword) a
+      # `[style*='color']` / `[style*='background']` substring scan let through;
+      # `--bs-border-width` and `border-radius` remain allowed. Proven by mutation: a
+      # `border: 1px solid red` injected into a style helper reddens this. (#151, FIX 3)
+      fragment = Nokogiri::HTML::DocumentFragment.parse(rendered_content)
+      expect(offending_style_declarations(fragment)).to eq([])
+    end
+
+    it "pins no fixed-scheme utility that would break under data-bs-theme" do
+      render_inline(populated)
+
+      # Every element, enumerated — not a [class*=…] substring hunt, which would match
+      # `border-danger-subtle` for `border-dark`.
+      elements = page.all("*")
+      expect(elements.size).to be > 1
+
+      applied = elements.flat_map { |el| el[:class].to_s.split }.uniq
+      expect(applied).to include(
+        "text-body", "bg-body", "text-body-secondary",
+        "text-bg-primary", "bg-danger-subtle", "text-danger-emphasis"
+      )
+      expect(applied & fixed_scheme_utilities).to be_empty
     end
   end
 end

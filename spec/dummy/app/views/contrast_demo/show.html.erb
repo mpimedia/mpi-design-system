@@ -16,6 +16,36 @@
      9 => "David Kim"
    } %>
 
+<%# DataTable fixture shared by the light (#datatable) and dark (#dark-datatable)
+    renders so both exercise the identical rows. Row 1's tags column carries one tag
+    per distinct GROUP_VARIANTS hue (press_festival->primary, outreach->success,
+    finance->warning, distribution->danger, internal->secondary) and the three rows'
+    status column carries one status per distinct STATUS_VARIANTS hue (active->success,
+    follow_up->warning, inactive->secondary), so contrast_spec can LOOP every tag-dot
+    and status-dot variant against the resting row backdrop in both colour modes. (#151) %>
+<% datatable_columns = [
+     { key: :name, label: "Name", sortable: true },
+     { key: :tags, label: "Tags" },
+     { key: :account, label: "Account" },
+     { key: :status, label: "Status" }
+   ] %>
+<% datatable_rows = [
+     {
+       name: "John Smith", title: "Theatrical Buyer", name_href: "/contacts/1",
+       tags: [
+         { label: "Festival", group: :press_festival },
+         { label: "Outreach", group: :outreach },
+         { label: "Finance", group: :finance },
+         { label: "Distribution", group: :distribution },
+         { label: "Internal", group: :internal }
+       ],
+       account: "Sony Pictures", account_href: "/accounts/1",
+       status: "Active", status_key: :active
+     },
+     { name: "Ada Lovelace", status: "Follow up", status_key: :follow_up },
+     { name: "Alan Turing", status: "Inactive", status_key: :inactive }
+   ] %>
+
 <main class="container py-4">
   <h1 class="h4 mb-3">Contrast Demo</h1>
 
@@ -64,10 +94,25 @@
 
   <section id="filter-chip-bar" class="mb-4">
     <%= render MpiDesignSystem::Admin::FilterChipBar::Component.new(
-          groups: [ { label: "All", count: 100 } ],
+          groups: [
+            { label: "All", count: 100 },
+            { label: "Finance", count: 51, group: :finance, selected: true, href: "#" }
+          ],
           active_filters: [ { category: "Tag", value: "Acquisitions", remove_url: "#" } ],
           clear_all_url: "#",
           reset_all_url: "#"
+        ) %>
+  </section>
+
+  <%# DataTable (#151) — theme-adaptive. The tag/status dots keep a FIXED identity hue
+      (decorative), so the spec asserts >=3:1 against the RESTING row backdrop rather than
+      the 4.5:1 text floor, looping every dot variant; header, name, muted text, borders
+      and the account link adapt and are asserted in both modes (the dark copy lives inside
+      #dark-mode below). %>
+  <section id="datatable" class="mb-4">
+    <%= render MpiDesignSystem::Admin::DataTable::Component.new(
+          variant: :search_results, columns: datatable_columns, rows: datatable_rows,
+          sort_by: :name, sort_dir: :asc
         ) %>
   </section>
 
@@ -106,9 +151,18 @@
     </div>
     <div id="dark-filter-chip-bar" class="mb-3">
       <%= render MpiDesignSystem::Admin::FilterChipBar::Component.new(
-            groups: [ { label: "All", count: 100 } ],
+            groups: [
+              { label: "All", count: 100 },
+              { label: "Finance", count: 51, group: :finance, selected: true, href: "#" }
+            ],
             active_filters: [ { category: "Tag", value: "Acquisitions", remove_url: "#" } ],
             clear_all_url: "#"
+          ) %>
+    </div>
+    <div id="dark-datatable" class="mb-3">
+      <%= render MpiDesignSystem::Admin::DataTable::Component.new(
+            variant: :search_results, columns: datatable_columns, rows: datatable_rows,
+            sort_by: :name, sort_dir: :asc
           ) %>
     </div>
     <div id="dark-pagination" class="mb-3">

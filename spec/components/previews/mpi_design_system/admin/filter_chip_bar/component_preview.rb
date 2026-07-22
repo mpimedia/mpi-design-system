@@ -54,4 +54,13 @@ class MpiDesignSystem::Admin::FilterChipBar::ComponentPreview < ApplicationCompo
       reset_all_url: "#"
     )
   end
+
+  # The point of the #151 conversion: the same component, no variant flag, following
+  # Bootstrap's colour mode. Side-by-side so a designer can compare the selected chips'
+  # semantic subtle/emphasis surfaces on the light and dark backdrop in one view.
+  #
+  # @label Dark Mode
+  def dark_mode
+    render_with_template
+  end
 end

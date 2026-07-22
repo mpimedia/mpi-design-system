@@ -1,0 +1,25 @@
+<%# Light and dark side by side. Each wrapper sets `data-bs-theme` and `bg-body`, so the
+    surface and the chips inside it both resolve from the same colour mode — which is the
+    whole claim of the #151 conversion. The selected chip carries its group's semantic
+    `-subtle`/`-emphasis` utilities; the remove button is `text-reset`. %>
+<% groups = [
+     { label: "All", count: 2307 },
+     { label: "Distribution", count: 342, group: :distribution, selected: true, href: "#" },
+     { label: "Outreach", count: 128, group: :outreach, href: "#" },
+     { label: "Finance", count: 51, group: :finance, href: "#" }
+   ] %>
+<% active = [ { category: "Keyword", value: "investors", remove_url: "#" } ] %>
+
+<div data-bs-theme="light" class="bg-body p-3 mb-3">
+  <p class="text-body-secondary small mb-2">data-bs-theme="light"</p>
+  <%= render MpiDesignSystem::Admin::FilterChipBar::Component.new(
+        groups: groups, active_filters: active, clear_all_url: "#"
+      ) %>
+</div>
+
+<div data-bs-theme="dark" class="bg-body p-3">
+  <p class="text-body-secondary small mb-2">data-bs-theme="dark"</p>
+  <%= render MpiDesignSystem::Admin::FilterChipBar::Component.new(
+        groups: groups, active_filters: active, clear_all_url: "#"
+      ) %>
+</div>

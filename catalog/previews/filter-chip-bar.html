@@ -7,19 +7,54 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    body { padding: 32px; background: #fff; }
-    .preview-section { margin-bottom: 40px; }
-    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
+    /* This file loads STOCK Bootstrap from the CDN, which ships indigo #0D6EFD and its
+       own success/warning. The engine compiles Bootstrap with MPI's tokens instead, so
+       without these overrides the semantic utilities below would paint Bootstrap's
+       palette and this mockup would contradict the component it documents. Mirrors
+       _tokens.scss + Bootstrap's derived subtle/emphasis for the tokens MPI overrides
+       (primary, success, warning); danger and secondary keep Bootstrap's defaults, which
+       MPI also uses. (Same pattern as pagination.html.) After #151 the group chips render
+       Bootstrap semantic utilities, so this block is what keeps them MPI-coloured. */
+    :root {
+      --bs-primary: #2E75B6;
+      --bs-primary-rgb: 46, 117, 182;
+      --bs-primary-text-emphasis: #122F49;
+      --bs-primary-bg-subtle: #D5E3F0;
+      --bs-primary-border-subtle: #ABC8E2;
+      --bs-success: #22A06B;
+      --bs-success-rgb: 34, 160, 107;
+      --bs-success-text-emphasis: #0E402B;
+      --bs-success-bg-subtle: #D3ECE1;
+      --bs-success-border-subtle: #A7D9C4;
+      --bs-warning: #D4772C;
+      --bs-warning-rgb: 212, 119, 44;
+      --bs-warning-text-emphasis: #553012;
+      --bs-warning-bg-subtle: #F6E4D5;
+      --bs-warning-border-subtle: #EEC9AB;
+      --bs-danger: #DC3545;
+      --bs-danger-rgb: 220, 53, 69;
+      --bs-link-color: #2E75B6;
+      --bs-link-color-rgb: 46, 117, 182;
+      --bs-body-color: #1B2A4A;
+      --bs-body-color-rgb: 27, 42, 74;
+      --bs-secondary-color: rgba(27, 42, 74, 0.75);
+    }
+    [data-bs-theme="dark"] {
+      --bs-primary-text-emphasis: #82ACD3;
+      --bs-success-text-emphasis: #A7D9C4;
+      --bs-warning-text-emphasis: #E5AD80;
+    }
 
-    /* Group filter chips — from Screen 2 */
-    .group-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-right: 8px; white-space: nowrap; }
-    .group-chip { display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 999px; border: 1px solid #DEE2E6; background: #fff; font-size: 13px; font-weight: 500; color: #1B2A4A; text-decoration: none; white-space: nowrap; cursor: pointer; }
-    .group-chip:hover { border-color: #2E75B6; }
-    .group-chip .count { font-weight: 600; color: #6C757D; font-size: 12px; }
-    .group-chip.selected { border-color: #E8733A; background: #FEF3EC; color: #E8733A; }
-    .group-chip.selected .count { color: #E8733A; }
-    .group-chip.all { border-color: #DEE2E6; }
-    .group-chip.all .count { color: #6C757D; }
+    body { padding: 32px; }
+    .preview-section { margin-bottom: 40px; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+
+    /* Group filter chips — geometry only after #151. Colour comes from the Bootstrap
+       semantic utilities in the markup (bg-body/text-body when unselected;
+       bg-#{sem}-subtle / text-#{sem}-emphasis / border-#{sem}-subtle when selected), so
+       the chips follow the palette above. The count inherits the chip's own foreground. */
+    .group-chip { display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; cursor: pointer; }
+    .group-chip .count { font-weight: 600; font-size: 12px; }
 
     /* Active filter pills — from Screen 6 */
     .active-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bs-secondary-color); margin-right: 8px; white-space: nowrap; }
@@ -65,45 +100,57 @@
        from --bs-secondary-color so it stays AA — the hardcoded #6C757D was 3.29:1 there. */
     [data-bs-theme="dark"] .preview-label { color: var(--bs-secondary-color); }
     .active-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 12px; font-weight: 500; text-decoration: none; white-space: nowrap; }
-    .active-pill .pill-close { font-size: 10px; cursor: pointer; margin-left: 2px; }
+    .active-pill .pill-close { font-size: 10px; cursor: pointer; margin-left: 2px; padding: 0; line-height: 1; }
     .active-pill .pill-close:hover { text-decoration: none; }
     .clear-all { font-size: 13px; color: var(--bs-secondary-color); text-decoration: none; margin-left: 8px; }
     .clear-all:hover { color: var(--bs-link-color); text-decoration: underline; }
   </style>
 </head>
-<body>
-  <h4 class="mb-1" style="color:#1B2A4A;">FilterChipBar</h4>
-  <p class="text-muted small mb-4">Two filter bar patterns used in CRM list views. Group filter chips for tag-group filtering, and active filter pills showing applied search/filter criteria.</p>
+<body class="bg-body text-body">
+  <h4 class="mb-1">FilterChipBar</h4>
+  <p class="text-body-secondary small mb-4">Two filter bar patterns used in CRM list views. Group filter chips for tag-group filtering, and active filter pills showing applied search/filter criteria.</p>
 
   <!-- Group filter chips — from Figma Screen 2 (Contact List) -->
   <div class="preview-section">
-    <div class="preview-label">Group Filter Chips — From Figma Screen 2 (Contact List View)</div>
+    <div class="preview-label text-body-secondary">Group Filter Chips — From Figma Screen 2 (Contact List View)</div>
     <div class="d-flex align-items-center flex-wrap gap-2" style="max-width:800px;">
-      <span class="group-label">GROUPS:</span>
-      <a class="group-chip all" href="#">All <span class="count">2,307</span></a>
-      <a class="group-chip selected" href="#">Buyers <span class="count">342</span></a>
-      <a class="group-chip" href="#">Press <span class="count">289</span></a>
-      <a class="group-chip" href="#">Festivals <span class="count">156</span></a>
-      <a class="group-chip" href="#">Sellers <span class="count">98</span></a>
-      <a class="group-chip" href="#">Institutional <span class="count">67</span></a>
-      <a class="group-chip" href="#">Organizations <span class="count">45</span></a>
-      <a class="group-chip" href="#">Internal <span class="count">23</span></a>
+      <span class="active-label text-body-secondary">GROUPS:</span>
+      <a class="group-chip border bg-body text-body" href="#">All <span class="count">2,307</span></a>
+      <a class="group-chip border border-danger-subtle bg-danger-subtle text-danger-emphasis" href="#" aria-current="page">Buyers <span class="count">342</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Press <span class="count">289</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Festivals <span class="count">156</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Sellers <span class="count">98</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Institutional <span class="count">67</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Organizations <span class="count">45</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Internal <span class="count">23</span></a>
     </div>
   </div>
 
   <!-- No selection state -->
   <div class="preview-section">
-    <div class="preview-label">Group Filter Chips — No Selection (Default)</div>
+    <div class="preview-label text-body-secondary">Group Filter Chips — No Selection (Default)</div>
     <div class="d-flex align-items-center flex-wrap gap-2" style="max-width:800px;">
-      <span class="group-label">GROUPS:</span>
-      <a class="group-chip all" href="#">All <span class="count">2,307</span></a>
-      <a class="group-chip" href="#">Buyers <span class="count">342</span></a>
-      <a class="group-chip" href="#">Press <span class="count">289</span></a>
-      <a class="group-chip" href="#">Festivals <span class="count">156</span></a>
-      <a class="group-chip" href="#">Sellers <span class="count">98</span></a>
-      <a class="group-chip" href="#">Institutional <span class="count">67</span></a>
-      <a class="group-chip" href="#">Organizations <span class="count">45</span></a>
-      <a class="group-chip" href="#">Internal <span class="count">23</span></a>
+      <span class="active-label text-body-secondary">GROUPS:</span>
+      <a class="group-chip border bg-body text-body" href="#">All <span class="count">2,307</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Buyers <span class="count">342</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Press <span class="count">289</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Festivals <span class="count">156</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Sellers <span class="count">98</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Institutional <span class="count">67</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Organizations <span class="count">45</span></a>
+      <a class="group-chip border bg-body text-body" href="#">Internal <span class="count">23</span></a>
+    </div>
+  </div>
+
+  <!-- Selected states across the five distinct semantic hues (#151) -->
+  <div class="preview-section">
+    <div class="preview-label text-body-secondary">Selected Chip — Semantic Hues (GROUP_VARIANTS)</div>
+    <div class="d-flex align-items-center flex-wrap gap-2" style="max-width:800px;">
+      <a class="group-chip border border-danger-subtle bg-danger-subtle text-danger-emphasis" href="#" aria-current="page">Distribution <span class="count">342</span></a>
+      <a class="group-chip border border-success-subtle bg-success-subtle text-success-emphasis" href="#" aria-current="page">Outreach <span class="count">128</span></a>
+      <a class="group-chip border border-warning-subtle bg-warning-subtle text-warning-emphasis" href="#" aria-current="page">Finance <span class="count">51</span></a>
+      <a class="group-chip border border-primary-subtle bg-primary-subtle text-primary-emphasis" href="#" aria-current="page">Press/Festival <span class="count">95</span></a>
+      <a class="group-chip border border-secondary-subtle bg-secondary-subtle text-secondary-emphasis" href="#" aria-current="page">Internal <span class="count">23</span></a>
     </div>
   </div>
 
@@ -112,9 +159,9 @@
     <div class="preview-label">Active Filter Pills — From Figma Screen 6 (Active Search Results)</div>
     <div class="bg-body-secondary rounded d-flex align-items-center flex-wrap gap-2" style="max-width:800px; padding:10px 16px;">
       <span class="active-label">ACTIVE:</span>
-      <span class="active-pill rounded-pill text-bg-primary">Keyword: investors <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Keyword: investors"><i class="bi bi-x"></i></button></span>
-      <span class="active-pill rounded-pill text-bg-primary">Group: Buyers <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></button></span>
-      <span class="active-pill rounded-pill text-bg-primary">Activity: Engaged last 90 days <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Activity: Engaged last 90 days"><i class="bi bi-x"></i></button></span>
+      <span class="active-pill rounded-pill text-bg-primary">Keyword: investors <a class="pill-close text-reset bg-transparent border-0" href="#" aria-label="Remove filter: Keyword: investors"><i class="bi bi-x"></i></a></span>
+      <span class="active-pill rounded-pill text-bg-primary">Group: Buyers <a class="pill-close text-reset bg-transparent border-0" href="#" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></a></span>
+      <span class="active-pill rounded-pill text-bg-primary">Activity: Engaged last 90 days <a class="pill-close text-reset bg-transparent border-0" href="#" aria-label="Remove filter: Activity: Engaged last 90 days"><i class="bi bi-x"></i></a></span>
       <a class="clear-all" href="#">Clear all</a>
     </div>
   </div>
@@ -124,7 +171,7 @@
     <div class="preview-label">Active Filter Pills — Single Filter</div>
     <div class="bg-body-secondary rounded d-flex align-items-center flex-wrap gap-2" style="max-width:800px; padding:10px 16px;">
       <span class="active-label">ACTIVE:</span>
-      <span class="active-pill rounded-pill text-bg-primary">Location: Los Angeles <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Location: Los Angeles"><i class="bi bi-x"></i></button></span>
+      <span class="active-pill rounded-pill text-bg-primary">Location: Los Angeles <a class="pill-close text-reset bg-transparent border-0" href="#" aria-label="Remove filter: Location: Los Angeles"><i class="bi bi-x"></i></a></span>
       <a class="clear-all" href="#">Clear all</a>
     </div>
   </div>
@@ -137,31 +184,27 @@
     <div class="preview-label">Active Filter Pills — Dark Mode (Adaptive Surface)</div>
     <div class="bg-body-secondary rounded d-flex align-items-center flex-wrap gap-2" style="max-width:800px; padding:10px 16px;">
       <span class="active-label">ACTIVE:</span>
-      <span class="active-pill rounded-pill text-bg-primary">Keyword: investors <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Keyword: investors"><i class="bi bi-x"></i></button></span>
-      <span class="active-pill rounded-pill text-bg-primary">Group: Buyers <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></button></span>
+      <span class="active-pill rounded-pill text-bg-primary">Keyword: investors <a class="pill-close text-reset bg-transparent border-0" href="#" aria-label="Remove filter: Keyword: investors"><i class="bi bi-x"></i></a></span>
+      <span class="active-pill rounded-pill text-bg-primary">Group: Buyers <a class="pill-close text-reset bg-transparent border-0" href="#" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></a></span>
       <a class="clear-all" href="#">Clear all</a>
     </div>
   </div>
 
   <!-- States -->
   <div class="preview-section">
-    <div class="preview-label">Chip States</div>
+    <div class="preview-label text-body-secondary">Chip States</div>
     <div class="d-flex gap-3 align-items-end">
       <div>
-        <div class="text-muted small mb-1">Default</div>
-        <span class="group-chip">Buyers <span class="count">342</span></span>
+        <div class="text-body-secondary small mb-1">Default</div>
+        <span class="group-chip border bg-body text-body">Buyers <span class="count">342</span></span>
       </div>
       <div>
-        <div class="text-muted small mb-1">Selected</div>
-        <span class="group-chip selected">Buyers <span class="count">342</span></span>
+        <div class="text-body-secondary small mb-1">Selected</div>
+        <span class="group-chip border border-danger-subtle bg-danger-subtle text-danger-emphasis">Buyers <span class="count">342</span></span>
       </div>
       <div>
-        <div class="text-muted small mb-1">Hover</div>
-        <span class="group-chip" style="border-color:#2E75B6;">Buyers <span class="count">342</span></span>
-      </div>
-      <div>
-        <div class="text-muted small mb-1">Active Pill</div>
-        <span class="active-pill rounded-pill text-bg-primary">Group: Buyers <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></button></span>
+        <div class="text-body-secondary small mb-1">Active Pill</div>
+        <span class="active-pill rounded-pill text-bg-primary">Group: Buyers <a class="pill-close text-reset bg-transparent border-0" href="#" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></a></span>
       </div>
     </div>
   </div>

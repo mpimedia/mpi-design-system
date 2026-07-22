@@ -44,6 +44,15 @@ class MpiDesignSystem::Admin::DataTable::ComponentPreview < ApplicationComponent
     )
   end
 
+  # The #151 conversion in one view: the same table under both colour modes. The tag
+  # dots keep a fixed identity hue across themes (decorative — the label carries the
+  # meaning); header, name, muted text, borders and the account link all adapt.
+  #
+  # @label Dark Mode
+  def dark_mode
+    render_with_template
+  end
+
   private
 
   def sample_contacts

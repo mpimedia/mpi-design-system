@@ -1,0 +1,29 @@
+<%# Light and dark side by side. Each wrapper sets `data-bs-theme` and `bg-body`, so the
+    surface and the table inside it both resolve from the same colour mode — the claim of
+    the #151 conversion. Tag dots stay a fixed identity hue (decorative); everything else
+    adapts. %>
+<% columns = [
+     { key: :name, label: "Name", sortable: true },
+     { key: :tags, label: "Tags" },
+     { key: :last_engagement, label: "Last Engagement", sortable: true },
+     { key: :account, label: "Account" }
+   ] %>
+<% rows = [
+     { name: "Jane Cooper", title: "VP of Acquisitions", name_href: "#", tags: [ { group: :distribution, label: "Acquisitions" } ], last_engagement: "2 days ago", account: "Acme Films", account_href: "#" },
+     { name: "Robert Fox", title: "Festival Director", name_href: "#", tags: [ { group: :press_festival, label: "Festival" } ], last_engagement: "1 week ago", account: "Berlin Film Fest", account_href: "#" },
+     { name: "Emily Chen", title: "Press Manager", name_href: "#", tags: [ { group: :outreach, label: "Journalist" } ], last_engagement: "3 days ago", account: "Film Weekly", account_href: "#" }
+   ] %>
+
+<div data-bs-theme="light" class="bg-body p-3 mb-3">
+  <p class="text-body-secondary small mb-2">data-bs-theme="light"</p>
+  <%= render MpiDesignSystem::Admin::DataTable::Component.new(
+        columns: columns, rows: rows, sort_by: :name, sort_dir: :asc
+      ) %>
+</div>
+
+<div data-bs-theme="dark" class="bg-body p-3">
+  <p class="text-body-secondary small mb-2">data-bs-theme="dark"</p>
+  <%= render MpiDesignSystem::Admin::DataTable::Component.new(
+        columns: columns, rows: rows, sort_by: :name, sort_dir: :asc
+      ) %>
+</div>

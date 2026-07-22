@@ -489,4 +489,150 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
         "label #{foreground} on inherited backdrop #{background} = #{measured.round(2)}:1"
     end
   end
+
+  # FilterChipBar selected chip (#151). The selected chip carries its group's semantic
+  # `-subtle` surface with its `-emphasis` foreground, both resolved from the compiled
+  # bundle — so the pair follows `data-bs-theme`. The demo's selected chip is Finance
+  # (-> warning). Exact painted values were measured against the compiled bundle, not
+  # derived by hand; the ratio alone would be a false green (inherited body text on the
+  # page also clears AA), so both the value and the ratio are asserted.
+  describe "FilterChipBar selected chip (#151)" do
+    {
+      "light" => { root: "#filter-chip-bar", foreground: "#553012", background: "#F6E4D5" },
+      "dark" => { root: "#dark-filter-chip-bar", foreground: "#E5AD80", background: "#2A1809" }
+    }.each do |mode, expected|
+      it "paints the selected chip's #{mode} emphasis-on-subtle above the AA floor" do
+        measured, foreground, background = ratio_for("#{expected[:root]} a[aria-current='page']")
+
+        expect(foreground).to eq(expected[:foreground])
+        expect(background).to eq(expected[:background])
+        expect(measured).to be >= 4.5,
+          "#{mode} selected chip #{foreground} on #{background} = #{measured.round(2)}:1"
+      end
+    end
+  end
+
+  # DataTable (#151). The conversion moved every DataTable colour onto Bootstrap
+  # utilities. Three things a render spec cannot prove and this layer must:
+  #   * the 2px header separator lands on the BOTTOM edge only — `border-2` would box
+  #     all four sides of a `.table th` (the P0 the conversion had to avoid);
+  #   * the account link paints Bootstrap's adaptive `--bs-link-color` (no pinned
+  #     `text-*` class), a different value per colour mode;
+  #   * the decorative dots keep a FIXED identity hue across themes (the documented
+  #     exception) and still clear the 3:1 non-text floor against each row backdrop.
+  describe "DataTable (#151)" do
+    # Expected solid fill per Bootstrap semantic, measured against the compiled engine
+    # bundle. Theme colours do not flip under data-bs-theme (only subtle/emphasis
+    # derivatives do), so each holds in both light and dark mode.
+    DOT_HEX = {
+      primary: "#2E75B6", success: "#22A06B", warning: "#D4772C",
+      danger: "#DC3545", secondary: "#6C757D"
+    }.freeze
+
+    def border_widths(selector)
+      page.evaluate_script(
+        "(() => { const e = document.querySelector(#{selector.to_json}); " \
+        "if (!e) throw new Error('no element matched'); const cs = getComputedStyle(e); " \
+        "return { top: cs.borderTopWidth, right: cs.borderRightWidth, " \
+        "bottom: cs.borderBottomWidth, left: cs.borderLeftWidth }; })()"
+      )
+    end
+
+    def border_bottom_color_of(selector)
+      page.evaluate_script(
+        "(() => { const e = document.querySelector(#{selector.to_json}); " \
+        "if (!e) throw new Error('no element matched'); " \
+        "return getComputedStyle(e).borderBottomColor; })()"
+      )
+    end
+
+    # A dot is an empty span whose FILL is its own background-color. Measure that fill
+    # against the first opaque ANCESTOR (never the dot itself, which is opaque), and
+    # composite any bg-opacity — mirroring the RESOLVE_JS approach for backgrounds.
+    def dot_contrast(selector)
+      js = <<~JS
+        (() => {
+          const parse = (v) => { const p = (v.match(/[\\d.]+/g) || []).map(Number);
+            return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
+          const over = (fg, bg) => ({ r: fg.r*fg.a + bg.r*(1-fg.a), g: fg.g*fg.a + bg.g*(1-fg.a), b: fg.b*fg.a + bg.b*(1-fg.a) });
+          const hex = (c) => '#' + [c.r, c.g, c.b].map((x) => Math.round(x).toString(16).padStart(2, '0')).join('').toUpperCase();
+          const el = document.querySelector(#{selector.to_json});
+          if (!el) return null;
+          let backdrop = { r: 255, g: 255, b: 255, a: 1 };
+          for (let n = el.parentElement; n; n = n.parentElement) {
+            const bg = parse(getComputedStyle(n).backgroundColor);
+            if (bg.a === 1) { backdrop = bg; break; }
+          }
+          const fill = over(parse(getComputedStyle(el).backgroundColor), backdrop);
+          return { fill: hex(fill), backdrop: hex(backdrop) };
+        })()
+      JS
+      result = page.evaluate_script(js)
+      raise "no element matched #{selector}" if result.nil?
+
+      result = result.transform_keys(&:to_sym)
+      [ MpiDesignSystem::ColorContrast.ratio(result[:fill], result[:backdrop]), result[:fill], result[:backdrop] ]
+    end
+
+    {
+      "light" => { root: "#datatable", surface: "#FFFFFF", link: "#2E75B6", border: "rgb(222, 226, 230)" },
+      "dark" => { root: "#dark-datatable", surface: "#212529", link: "#82ACD3", border: "rgb(73, 80, 87)" }
+    }.each do |mode, expected|
+      context "in #{mode} mode" do
+        let(:root) { expected[:root] }
+
+        it "puts the 2px header separator on the bottom edge alone" do
+          widths = border_widths("#{root} thead th")
+
+          expect(widths["bottom"]).to eq("2px")
+          expect(widths["top"]).to eq("0px")
+          expect(widths["right"]).to eq("0px")
+          expect(widths["left"]).to eq("0px")
+        end
+
+        it "tracks the colour mode with the header separator colour" do
+          expect(border_bottom_color_of("#{root} thead th")).to eq(expected[:border])
+        end
+
+        it "paints the account link in Bootstrap's adaptive link colour above the AA floor" do
+          measured, foreground, background = ratio_for("#{root} a[href='/accounts/1']")
+
+          expect(foreground).to eq(expected[:link])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} account link #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        # Tag dots — row 1's tags column (2nd cell) carries one dot per distinct
+        # GROUP_VARIANTS hue. Loop the whole mapping (so a new/renamed variant is proven
+        # too), asserting each solid fill AND that it clears >=3:1 on the RESTING
+        # (non-hover) row backdrop. The dots are decorative (the adjacent label carries
+        # the meaning), so the transient table-hover dip below 3:1 is out of scope and
+        # deliberately not asserted — see the CHANGELOG dot note. (#151, P0)
+        MpiDesignSystem::Admin::DataTable::Component::GROUP_VARIANTS.values.uniq.each do |variant|
+          it "keeps the decorative #{variant} tag dot >=3:1 on the resting row backdrop" do
+            measured, fill, backdrop = dot_contrast("#{root} tbody td:nth-child(2) span.d-inline-block.bg-#{variant}")
+
+            expect(fill).to eq(DOT_HEX.fetch(variant))
+            expect(backdrop).to eq(expected[:surface])
+            expect(measured).to be >= 3.0,
+              "#{mode} #{variant} tag dot #{fill} on resting #{backdrop} = #{measured.round(2)}:1"
+          end
+        end
+
+        # Status dots — the status column (4th cell) carries one dot per distinct
+        # STATUS_VARIANTS hue across the three rows. Same resting-backdrop >=3:1 proof.
+        MpiDesignSystem::Admin::DataTable::Component::STATUS_VARIANTS.values.uniq.each do |variant|
+          it "keeps the decorative #{variant} status dot >=3:1 on the resting row backdrop" do
+            measured, fill, backdrop = dot_contrast("#{root} tbody td:nth-child(4) span.d-inline-block.bg-#{variant}")
+
+            expect(fill).to eq(DOT_HEX.fetch(variant))
+            expect(backdrop).to eq(expected[:surface])
+            expect(measured).to be >= 3.0,
+              "#{mode} #{variant} status dot #{fill} on resting #{backdrop} = #{measured.round(2)}:1"
+          end
+        end
+      end
+    end
+  end
 end
