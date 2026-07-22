@@ -83,6 +83,20 @@ routinely survive a narrow sweep and ship green:
   and added `.mds-navbar__brand-arm { fill: $mpi-brand-navy }` / `-center { fill: $mpi-primary }` —
   two fresh frozen fills the rebase surfaced, which #154 then had to convert too, and whose
   per-selector bindings the compile guard had to grow.)
+- **An inline-styled component may already have browser contrast coverage that pins the old hex —
+  sweep `spec/features/` and `spec/dummy/**/contrast_demo` before converting, not just `app/**` and
+  the render specs.** The `contrast_demo`/`contrast_spec` pattern (#130, #155) renders a component in
+  a real browser and asserts its *computed* colours, so a conversion that changes those colours
+  breaks the feature spec's hardcoded assertions — and an exploration sweep that greps only `app/**`
+  + `spec/components/**` never sees them. `git grep` the component name **and** the old hex across
+  `spec/features/**` and the `contrast_demo` fixture, and update the pinned computed values (surface,
+  foreground, ratio) in the same change. A conversion that reverses a previously *documented*
+  decision must also rewrite that decision's rationale (comments, the changelog, and the feature spec
+  that encoded it), not just the code. (Reference: #150 converted `ActiveFilterBar`'s `#F5F7FA` bar;
+  `spec/features/contrast_spec.rb` asserted `background == "#F5F7FA"` in two places — missed by the
+  initial code exploration, caught only by external review — and the conversion had to reverse #130's
+  `data-bs-theme="light"` pin and re-pin the adaptive `#E9ECEF`/`#343A40` surface the browser now
+  paints.)
 
 ## Component Catalog First
 
