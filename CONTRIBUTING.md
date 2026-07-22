@@ -142,9 +142,10 @@ A release is a single `chore(release): vX.Y.Z — <summary>` commit touching exa
 The `.gemspec` needs no edit — it reads the `VERSION` constant.
 
 - **`lib/mpi_design_system/version.rb`** — bump `VERSION`.
-- **`spec/packaging/version_spec.rb`** — update the `it "is X.Y.Z"` description **and** the
-  `expect(...).to eq("X.Y.Z")` (both literals are asserted), and add a one-line clause to the
-  release-lineage comment (house convention — the comment itself is not asserted).
+- **`spec/packaging/version_spec.rb`** — update the `expect(...).to eq("X.Y.Z")` (the only
+  asserted literal), the `it "is X.Y.Z"` example description (cosmetic — RSpec never compares it
+  to `VERSION`, so a stale one ships green; keep it honest anyway), and a one-line clause on the
+  release-lineage comment (also not asserted — house convention).
 - **`README.md`** — bump the `tag: "vX.Y.Z"` pin in **both** the Gemfile install example and the
   explanatory line beneath it.
 - **`CHANGELOG.md`** — the four edits below.
@@ -207,21 +208,25 @@ MERGE_SHA=$(gh pr view "$PR" --json mergeCommit --jq .mergeCommit.oid)
 [ -n "$MERGE_SHA" ] || { echo "ABORT: no merge commit (PR not merged?)"; exit 1; }
 
 # Gate: every check on the MERGE COMMIT must be green. check-runs gives per-job conclusions, so a
-# skipped job cannot hide behind a workflow-level roll-up. Fail closed on empty (no run yet) and on
-# any pending/failed/skipped/cancelled job.
-CONCLUSIONS=$(gh api "repos/mpimedia/mpi-design-system/commits/$MERGE_SHA/check-runs" \
-  --jq '.check_runs[].conclusion')
+# skipped job cannot hide behind a workflow-level roll-up. `--paginate` so a non-success beyond the
+# first 30 checks is not missed; `.conclusion // "pending"` maps a still-running check (null
+# conclusion, which gh would otherwise emit as a blank line that command substitution silently
+# trims) to a non-success token. Fails closed on empty, pending, or any non-success job.
+CONCLUSIONS=$(gh api --paginate "repos/mpimedia/mpi-design-system/commits/$MERGE_SHA/check-runs" \
+  --jq '.check_runs[] | .conclusion // "pending"')
 [ -n "$CONCLUSIONS" ] || { echo "ABORT: no CI checks for $MERGE_SHA"; exit 1; }
 [ "$(printf '%s\n' "$CONCLUSIONS" | sort -u)" = "success" ] \
   || { echo "ABORT: CI not all green -> $CONCLUSIONS"; exit 1; }
 
-# Sanity-check the version at that commit. BRACE the variable — a bare "$MERGE_SHA:lib/..." triggers
-# zsh's :l modifier and mangles the path into "<sha>ib/...".
-git show "${MERGE_SHA}:lib/mpi_design_system/version.rb"
+# Assert the version at that commit is the one you're tagging (substitute X.Y.Z). BRACE the
+# variable — a bare "$MERGE_SHA:lib/..." triggers zsh's :l modifier and mangles the path into
+# "<sha>ib/...". Fails closed if git show errors or the version does not match.
+git show "${MERGE_SHA}:lib/mpi_design_system/version.rb" | grep -q 'VERSION = "X.Y.Z"' \
+  || { echo "ABORT: version.rb at $MERGE_SHA is not X.Y.Z"; exit 1; }
 
-# Lightweight tag on the merge commit, then push it.
-git tag "vX.Y.Z" "$MERGE_SHA"
-git push origin "vX.Y.Z"
+# Lightweight tag on the merge commit, then push it — chained so a failed tag (e.g. one that
+# already exists at the wrong commit) never reaches the push.
+git tag "vX.Y.Z" "$MERGE_SHA" && git push origin "vX.Y.Z"
 ```
 
 - Resolve `$MERGE_SHA` from the PR's own `mergeCommit`, **not** `git rev-parse origin/main` — `main`
