@@ -61,6 +61,9 @@
       --bs-secondary-color: rgba(222, 226, 230, 0.75);
       --bs-link-color: #82ACD3;
     }
+    /* #150: in the dark example the scaffolding preview label sits on #212529; source it
+       from --bs-secondary-color so it stays AA — the hardcoded #6C757D was 3.29:1 there. */
+    [data-bs-theme="dark"] .preview-label { color: var(--bs-secondary-color); }
     .active-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 12px; font-weight: 500; text-decoration: none; white-space: nowrap; }
     .active-pill .pill-close { font-size: 10px; cursor: pointer; margin-left: 2px; }
     .active-pill .pill-close:hover { text-decoration: none; }
