@@ -95,4 +95,27 @@ class MpiDesignSystem::Admin::NavBar::ComponentPreview < ApplicationComponentPre
       profile_url: "/profile"
     )
   end
+
+  # @label Custom Logo Mark
+  def custom_logo_mark
+    render MpiDesignSystem::Admin::NavBar::Component.new(
+      current_section: :dashboard,
+      logo_text: "HARVEST",
+      logo_mark: '<svg width="20" height="24" viewBox="0 0 24 24" fill="#4EA8DE" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4"/></svg>'.html_safe
+    )
+  end
+
+  # @label Subsection Visibility
+  def subsection_visibility
+    render MpiDesignSystem::Admin::NavBar::Component.new(
+      current_section: :crm,
+      current_subsection: :contacts,
+      sections: [ { key: :crm, label: "CRM", href: "/crm" } ],
+      subsections: { crm: [
+        { key: :contacts, label: "Contacts", href: "/crm/contacts" },
+        { key: :accounts, label: "Accounts", href: "/crm/accounts" },
+        { key: :secret, label: "Hidden (visible: false)", href: "/crm/secret", visible: false }
+      ] }
+    )
+  end
 end

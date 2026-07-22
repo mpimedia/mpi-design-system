@@ -41,10 +41,11 @@ module MpiDesignSystem
         # @param profile_url [String] Optional URL for user profile link
         # @param logo_text [String] Logo text (default: "MARKAZ")
         # @param logo_href [String] Logo link URL (default: first section's href or "/")
+        # @param logo_mark [String] Custom logo mark markup (trusted SVG/image); default renders the Markaz diamond
         def initialize(current_section: nil, current_subsection: nil, user_name: nil, search_url: nil,
                        search_placeholder: "Search...", sections: nil, subsections: nil, environment: nil,
                        system_url: nil, sign_out_url: nil, sign_out_method: :delete, profile_url: nil,
-                       logo_text: "MARKAZ", logo_href: nil)
+                       logo_text: "MARKAZ", logo_href: nil, logo_mark: nil)
           @current_section = current_section
           @current_subsection = current_subsection
           @user_name = user_name
@@ -59,6 +60,7 @@ module MpiDesignSystem
           @profile_url = profile_url
           @logo_text = logo_text
           @logo_href = logo_href
+          @logo_mark = logo_mark
         end
 
         def before_render
@@ -86,7 +88,7 @@ module MpiDesignSystem
         end
 
         def current_subsections
-          @subsections[@current_section] || []
+          (@subsections[@current_section] || []).select { |s| s.fetch(:visible, true) }
         end
 
         def show_env_bar?
@@ -105,11 +107,11 @@ module MpiDesignSystem
         def markaz_logo_svg
           <<~SVG.html_safe
             <svg width="20" height="24" viewBox="0 0 22 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <polygon points="1,0 6,0 12.5,11 10.5,13" fill="#1B2A4A"/>
-              <polygon points="16,0 21,0 11.5,13 9.5,11" fill="#1B2A4A"/>
-              <polygon points="10.5,15 12.5,13 5,26 0,26" fill="#1B2A4A"/>
-              <polygon points="9.5,13 11.5,15 22,26 17,26" fill="#1B2A4A"/>
-              <polygon points="11,11 13,13 11,15 9,13" fill="#2E75B6"/>
+              <polygon points="1,0 6,0 12.5,11 10.5,13" class="mds-navbar__brand-arm" fill="currentColor"/>
+              <polygon points="16,0 21,0 11.5,13 9.5,11" class="mds-navbar__brand-arm" fill="currentColor"/>
+              <polygon points="10.5,15 12.5,13 5,26 0,26" class="mds-navbar__brand-arm" fill="currentColor"/>
+              <polygon points="9.5,13 11.5,15 22,26 17,26" class="mds-navbar__brand-arm" fill="currentColor"/>
+              <polygon points="11,11 13,13 11,15 9,13" class="mds-navbar__brand-center" fill="currentColor"/>
             </svg>
           SVG
         end

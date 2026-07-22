@@ -151,5 +151,31 @@ RSpec.describe MpiDesignSystem::Admin::AppShell::Component, type: :component do
 
       expect(page).to have_css("input[placeholder='Search...']")
     end
+
+    it "forwards a custom logo mark to NavBar" do
+      render_inline(described_class.new(
+        current_section: :dashboard,
+        logo_mark: '<svg class="app-mark"><rect width="10" height="10"/></svg>'.html_safe
+      ))
+
+      expect(page).to have_css("svg.app-mark")
+      expect(page).not_to have_css("svg[viewbox='0 0 22 26']")
+    end
+
+    it "forwards subsection visibility to NavBar" do
+      render_inline(described_class.new(
+        current_section: :crm,
+        sections: [ { key: :crm, label: "CRM", href: "/crm" } ],
+        subsections: { crm: [
+          { key: :alpha, label: "Alpha Sub", href: "/crm/alpha" },
+          { key: :beta, label: "Beta Sub", href: "/crm/beta", visible: false }
+        ] }
+      ))
+
+      within("nav[aria-label='Section navigation']") do
+        expect(page).to have_link("Alpha Sub")
+        expect(page).not_to have_link("Beta Sub")
+      end
+    end
   end
 end

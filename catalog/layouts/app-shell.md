@@ -10,7 +10,7 @@ Global application frame used on every page of every MPI app. Provides the Nexus
 
 ## Design Decisions
 
-- **Brand mark:** Nexus SVG diamond logo (navy `#1B2A4A` arms + primary blue `#2E75B6` center diamond) + "MARKAZ" text (`font-weight: 300`, `letter-spacing: 0.12em`, `color: #1B2A4A`). NOT "X MARKAZ" text -- corrected after design review
+- **Brand mark:** Nexus SVG diamond logo (navy arms + primary blue center diamond) + "MARKAZ" text (`font-weight: 300`, `letter-spacing: 0.12em`, `color: #1B2A4A`). NOT "X MARKAZ" text -- corrected after design review. The default mark's fills are token-sourced (`.mds-navbar__brand-arm` → `$mpi-brand-navy`, `.mds-navbar__brand-center` → `$mpi-primary`, with a `currentColor` fallback), not hardcoded hex. Callers can override the whole mark by forwarding `logo_mark:` to NavBar
 - **White background:** Canonical style (V2). Both top bar and sub-nav use white background with bottom border (`#DEE2E6`)
 - **Top bar height:** 52px. Sub-nav height: 42px
 - **Level 1 nav:** 6 items -- Dashboard, Content, CRM, Rights & Avails, Releases, Screenings
@@ -55,6 +55,7 @@ class MpiDesignSystem::Admin::AppShell::Component < ViewComponent::Base
   # @param search_url [String] Global search action URL
   # @param search_placeholder [String] Contextual placeholder text
   # @param show_sidebar [Boolean] Whether to show the content sidebar (default: false)
+  # @param logo_mark [String] Custom logo mark markup (trusted SVG/image); forwarded to NavBar, default renders the Markaz diamond
   #
   # Renders content via a block/slot:
   # renders_one :sidebar  # Optional sidebar slot

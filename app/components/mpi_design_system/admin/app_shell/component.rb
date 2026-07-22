@@ -23,11 +23,12 @@ module MpiDesignSystem
         # @param profile_url [String] Optional URL for user profile link
         # @param logo_text [String] Logo text (default: "MARKAZ")
         # @param logo_href [String] Logo link URL
+        # @param logo_mark [String] Custom logo mark markup (trusted SVG/image); forwarded to NavBar
         def initialize(current_section: :dashboard, current_subsection: nil, user_name: nil,
                        search_url: nil, search_placeholder: "Search...", show_sidebar: false,
                        sections: nil, subsections: nil, environment: nil, system_url: nil,
                        sign_out_url: nil, sign_out_method: :delete, profile_url: nil,
-                       logo_text: "MARKAZ", logo_href: nil)
+                       logo_text: "MARKAZ", logo_href: nil, logo_mark: nil)
           @current_section = current_section
           @current_subsection = current_subsection
           @user_name = user_name
@@ -43,6 +44,7 @@ module MpiDesignSystem
           @profile_url = profile_url
           @logo_text = logo_text
           @logo_href = logo_href
+          @logo_mark = logo_mark
         end
 
         private
@@ -64,6 +66,7 @@ module MpiDesignSystem
           opts[:sign_out_method] = @sign_out_method if @sign_out_method != :delete
           opts[:profile_url] = @profile_url if @profile_url
           opts[:logo_href] = @logo_href if @logo_href
+          opts[:logo_mark] = @logo_mark if @logo_mark
           opts
         end
 

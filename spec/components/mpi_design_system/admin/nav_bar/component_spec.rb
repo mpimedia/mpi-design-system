@@ -313,6 +313,91 @@ RSpec.describe MpiDesignSystem::Admin::NavBar::Component, type: :component do
     end
   end
 
+  describe "custom logo mark" do
+    it "renders a provided logo mark instead of the default Markaz mark" do
+      render_inline(described_class.new(
+        current_section: :dashboard,
+        logo_mark: '<svg class="custom-mark"><rect width="10" height="10"/></svg>'.html_safe
+      ))
+
+      expect(page).to have_css("a.mds-navbar__brand svg.custom-mark")
+      expect(page).not_to have_css("a.mds-navbar__brand svg[viewbox='0 0 22 26']")
+    end
+
+    it "falls back to the default Markaz mark when logo_mark is blank" do
+      render_inline(described_class.new(current_section: :dashboard, logo_mark: ""))
+
+      expect(page).to have_css("a.mds-navbar__brand svg[viewbox='0 0 22 26'] polygon.mds-navbar__brand-center")
+    end
+
+    it "does not treat a non-html_safe logo_mark string as raw HTML" do
+      render_inline(described_class.new(current_section: :dashboard, logo_mark: "<b>x</b>"))
+
+      within("a.mds-navbar__brand") do
+        expect(page).to have_text("<b>x</b>")
+        expect(page).not_to have_css("b")
+      end
+    end
+  end
+
+  describe "default logo mark (tokenized)" do
+    it "sources the mark fills from tokens with no hardcoded brand hex" do
+      render_inline(described_class.new(current_section: :dashboard))
+
+      expect(page).to have_css("a.mds-navbar__brand svg[viewbox='0 0 22 26'][aria-hidden='true']")
+      expect(page).to have_css("a.mds-navbar__brand svg polygon.mds-navbar__brand-arm[fill='currentColor']", count: 4)
+      expect(page).to have_css("a.mds-navbar__brand svg polygon.mds-navbar__brand-center[fill='currentColor']", count: 1)
+      expect(page).not_to have_css("polygon[fill='#1B2A4A']")
+      expect(page).not_to have_css("polygon[fill='#2E75B6']")
+    end
+  end
+
+  describe "subsection visible: filtering" do
+    let(:crm_sections) { [ { key: :crm, label: "CRM", href: "/crm" } ] }
+
+    it "hides a subsection marked visible: false" do
+      render_inline(described_class.new(
+        current_section: :crm,
+        sections: crm_sections,
+        subsections: { crm: [
+          { key: :alpha, label: "Alpha Sub", href: "/crm/alpha" },
+          { key: :beta, label: "Beta Sub", href: "/crm/beta", visible: false }
+        ] }
+      ))
+
+      within("nav[aria-label='Section navigation']") do
+        expect(page).to have_link("Alpha Sub", href: "/crm/alpha")
+        expect(page).not_to have_link("Beta Sub")
+      end
+    end
+
+    it "renders a subsection with no :visible key (defaults to visible)" do
+      render_inline(described_class.new(
+        current_section: :crm,
+        sections: crm_sections,
+        subsections: { crm: [ { key: :alpha, label: "Alpha Sub", href: "/crm/alpha" } ] }
+      ))
+
+      within("nav[aria-label='Section navigation']") do
+        expect(page).to have_link("Alpha Sub", href: "/crm/alpha")
+      end
+    end
+
+    it "hides the entire sub-nav when every subsection is not visible" do
+      render_inline(described_class.new(
+        current_section: :crm,
+        sections: crm_sections,
+        subsections: { crm: [
+          { key: :alpha, label: "Alpha Sub", href: "/crm/alpha", visible: false },
+          { key: :beta, label: "Beta Sub", href: "/crm/beta", visible: false }
+        ] }
+      ))
+
+      expect(page).to have_css("a.mds-navbar__section-link--active", text: "CRM")
+      expect(page).not_to have_css("nav[aria-label='Section navigation']")
+    end
+  end
+
   describe "regression: profile_url without sign_out_url" do
     it "does not render sign out link when only profile_url is provided" do
       render_inline(described_class.new(
