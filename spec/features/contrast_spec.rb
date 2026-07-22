@@ -365,6 +365,33 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
     end
   end
 
+  # NavBar brand mark (#155). The default diamond's fills were tokenized from inline hex to
+  # `.mds-navbar__brand-arm`/`.mds-navbar__brand-center` classes (mapped to $mpi-brand-navy /
+  # $mpi-primary) with a `currentColor` fallback in markup. render_inline proves the classes
+  # and `fill="currentColor"` are emitted; only a browser proves the author CSS class wins over
+  # the presentation attribute and paints the two-tone. The load-bearing assertion is the
+  # CENTER: currentColor would fall back to the brand navy, so center == primary is exactly what
+  # distinguishes "the .mds-navbar__brand-center rule resolved" from "the fallback painted".
+  describe "NavBar brand mark" do
+    def fill_of(selector)
+      page.evaluate_script(
+        "(() => { const e = document.querySelector(#{selector.to_json}); " \
+        "if (!e) throw new Error('no element matched'); " \
+        "return getComputedStyle(e).fill; })()"
+      )
+    end
+
+    it "paints the arm polygons navy from $mpi-brand-navy, not the monochrome fallback" do
+      expect(page).to have_css("#nav-bar-mark polygon.mds-navbar__brand-arm")
+      expect(fill_of("#nav-bar-mark polygon.mds-navbar__brand-arm")).to eq("rgb(27, 42, 74)")
+    end
+
+    it "paints the center polygon primary from $mpi-primary — the value the currentColor fallback cannot produce" do
+      expect(page).to have_css("#nav-bar-mark polygon.mds-navbar__brand-center")
+      expect(fill_of("#nav-bar-mark polygon.mds-navbar__brand-center")).to eq("rgb(46, 117, 182)")
+    end
+  end
+
   describe "muted text" do
     it "paints the ActiveFilterBar label above the AA floor against the bar" do
       foreground = computed("#active-filter-bar .text-body-secondary", "color")

@@ -10,7 +10,7 @@ Two-level horizontal navigation used as the primary app shell navigation across 
 
 ## Design Decisions
 
-- **Brand mark:** Nexus SVG diamond logo (navy `#1B2A4A` arms + primary blue `#2E75B6` center diamond) — NOT "X MARKAZ" text logo
+- **Brand mark:** Nexus SVG diamond logo (navy arms + primary blue center diamond) — NOT "X MARKAZ" text logo. The default mark's fills are **token-sourced**, not hardcoded hex: the arm polygons carry `.mds-navbar__brand-arm` (filled from `$mpi-brand-navy`) and the center polygon carries `.mds-navbar__brand-center` (filled from `$mpi-primary`), each with a `fill="currentColor"` fallback in the markup. A caller can replace the whole mark via `logo_mark:` (see Props / API)
 - **MARKAZ text:** `font-weight: 300`, `letter-spacing: 0.12em`, color `#1B2A4A`
 - **White background:** Both bars use white background with bottom border (`#DEE2E6`)
 - **Active state:** Primary blue text (`#2E75B6`) + 2px blue bottom border + `font-weight: 600`
@@ -64,12 +64,37 @@ Other section sub-navs will be documented as their designs are finalized.
 ```ruby
 # MpiDesignSystem::Admin::NavBar::Component
 class MpiDesignSystem::Admin::NavBar::Component < ViewComponent::Base
-  # @param current_section [Symbol] :dashboard, :content, :crm, :rights_avails, :releases, :screenings
-  # @param current_subsection [Symbol] Section-specific (e.g., :contacts, :accounts for CRM)
+  # @param current_section [Symbol] Active top-level section key (e.g. :dashboard, :crm)
+  # @param current_subsection [Symbol] Active subsection key (e.g. :contacts, :accounts for CRM)
   # @param user_name [String] Current user name (for avatar)
-  # @param search_url [String] Global search action URL
+  # @param search_url [String] Global search action URL (search bar hidden when nil)
+  # @param search_placeholder [String] Placeholder text for search input (default: "Search...")
+  # @param sections [Array<Hash>] Custom top-level sections (overrides defaults); each hash supports visible: (default true)
+  # @param subsections [Hash{Symbol => Array<Hash>}] Custom subsections (overrides defaults); each hash supports visible: (default true)
+  # @param environment [Symbol] :development, :staging, :production (env bar shown for dev/staging)
+  # @param system_url [String] URL for system admin gear icon (shown when present)
+  # @param sign_out_url [String] URL for sign-out action
+  # @param sign_out_method [Symbol] HTTP method for sign-out (default: :delete)
+  # @param profile_url [String] Optional URL for user profile link
+  # @param logo_text [String] Logo text (default: "MARKAZ")
+  # @param logo_href [String] Logo link URL (default: first visible section's href or "/")
+  # @param logo_mark [String] Custom logo mark markup (trusted SVG/image); default renders the Markaz diamond
 end
 ```
+
+### Subsection visibility
+
+Each subsection hash supports an optional `visible:` key (default `true`), mirroring the
+top-level `sections`. A subsection with `visible: false` is filtered out of the sub-nav; when
+every subsection of the active section is hidden, the sub-nav bar is not rendered at all.
+
+### Custom logo mark
+
+`logo_mark:` overrides the default Markaz diamond with caller-supplied markup (an SVG or
+`<img>`). It accepts **trusted, developer-authored markup only** — a non-`html_safe` string is
+escaped and rendered as text, so pass `.html_safe` markup you control, never user input. A blank
+value (`nil` or `""`) falls back to the default mark. Supply your own decorative or labeled
+accessibility semantics (e.g. `aria-hidden="true"` for a mark paired with the visible logo text).
 
 ## Bootstrap Classes
 

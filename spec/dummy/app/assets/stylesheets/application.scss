@@ -3,3 +3,7 @@
 @import "mpi_design_system/tokens";
 @import "bootstrap/scss/bootstrap";
 @import "bootstrap-icons/font/bootstrap-icons";
+// Component CSS — the tokenized NavBar brand mark degrades to monochrome without it
+// (_nav_bar.scss maps .mds-navbar__brand-arm/-center onto $mpi-brand-navy / $mpi-primary).
+// Loaded last so both $danger (Bootstrap) and the $mpi-* tokens are already in scope. (#155)
+@import "mpi_design_system/nav_bar";

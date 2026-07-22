@@ -36,6 +36,15 @@
   }
 }
 
+// Brand mark diamond fills — token-sourced (currentColor fallback in markup)
+.mds-navbar__brand-arm {
+  fill: $mpi-brand-navy;
+}
+
+.mds-navbar__brand-center {
+  fill: $mpi-primary;
+}
+
 // Section navigation links
 .mds-navbar__section-link {
   font-size: 14px;

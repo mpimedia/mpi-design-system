@@ -170,6 +170,18 @@ element still emits and pin it, or the next edit that removes it ships green.
 **Related:** when a constant drives behavior (`ACTION_METHODS`, `COLORS`, `SIZES`), loop it
 rather than spot-checking one member — otherwise a typo in the constant ships green.
 
+**Related — `render_inline` lowercases SVG attribute names, so a camelCase selector silently
+matches nothing.** ViewComponent's `render_inline` parses output through Nokogiri's HTML parser,
+which downcases attribute *names* (`viewBox` → `viewbox`, `preserveAspectRatio` →
+`preserveaspectratio`). CSS attribute-name matching is case-sensitive, so
+`have_css("svg[viewBox='0 0 22 26']")` matches **nothing** — and a `not_to` paired with it is a
+guard that can never fail (False Green #2's cousin: the *selector*, not the DOM, is what's empty).
+Use lowercase: `have_css("svg[viewbox='0 0 22 26']")`. Attribute *values* and element/class
+selectors are unaffected. Confirm which form the parser emits with a one-line probe
+(`puts page.native.to_html`) before trusting any camelCase attribute selector. (#155 — a
+`not_to have_css("svg[viewBox=…]")` guard on the logo-mark override passed only because the
+camelCase selector never matched; lowercasing it turned the guard real.)
+
 ## A Guard Is Not Real Until You Have Watched It Fail
 
 The two shapes above are assertions that *can* fail but don't discriminate. This is the
