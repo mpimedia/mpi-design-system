@@ -1,0 +1,38 @@
+<%# Light and dark side by side. Each wrapper sets `data-bs-theme` and `bg-body`, so the
+    whole shell frame — the NavBar it wraps, the breadcrumb strip, the sidebar surface and
+    its border, and the main content background — resolves from that colour mode. The shell
+    surfaces were the second half of the #154 conversion (mds-shell__*). %>
+<% [ "light", "dark" ].each do |mode| %>
+  <div data-bs-theme="<%= mode %>" class="bg-body p-3 mb-3">
+    <p class="text-body-secondary small mb-2">data-bs-theme="<%= mode %>"</p>
+    <%= render MpiDesignSystem::Admin::AppShell::Component.new(
+          current_section: :crm,
+          current_subsection: :contacts,
+          user_name: "Jane Cooper",
+          search_url: "#",
+          system_url: "/admin/system",
+          sign_out_url: "/sign_out",
+          show_sidebar: true
+        ) do |shell| %>
+      <% shell.with_breadcrumb do %>
+        <nav aria-label="Breadcrumb" class="small text-body-secondary py-2">CRM &rsaquo; Contacts &rsaquo; Jane Cooper</nav>
+      <% end %>
+      <% shell.with_sidebar do %>
+        <div class="p-2">
+          <h6 class="text-body-secondary text-uppercase mb-3" style="font-size: 11px; letter-spacing: 0.5px;">Quick Filters</h6>
+          <ul class="list-unstyled small mb-0">
+            <li class="mb-2"><a href="#" class="text-decoration-none link-body-emphasis">All Contacts</a></li>
+            <li class="mb-2"><a href="#" class="text-decoration-none link-body-emphasis">My Contacts</a></li>
+            <li class="mb-2"><a href="#" class="text-decoration-none link-body-emphasis">Recently Viewed</a></li>
+          </ul>
+        </div>
+      <% end %>
+      <% shell.with_body do %>
+        <div class="p-2">
+          <h1 class="h4 mb-2">CRM Contacts</h1>
+          <p class="text-body-secondary mb-0">Main content area. The surface, sidebar, and breadcrumb all follow the colour mode of this wrapper.</p>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

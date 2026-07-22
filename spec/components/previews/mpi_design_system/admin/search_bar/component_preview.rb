@@ -42,4 +42,13 @@ class MpiDesignSystem::Admin::SearchBar::ComponentPreview < ApplicationComponent
       size: :lg
     )
   end
+
+  # The search-icon prepend uses `bg-body` (not the old hardcoded `bg-white`), so it
+  # follows Bootstrap's colour mode instead of staying a white patch inside a dark
+  # navbar. Light and dark side by side. (#154)
+  #
+  # @label Theme Adaptive
+  def theme_adaptive
+    render_with_template
+  end
 end

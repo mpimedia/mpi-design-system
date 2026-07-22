@@ -74,6 +74,15 @@ routinely survive a narrow sweep and ship green:
   numbers; a line-scoped sweep misses second occurrences in the same file. (Reference: #128
   tokenized Badge's filled contrast; the external review caught a retired `bg-warning` +
   `text-dark` example still in `.claude/rules/testing.md` that a line-scoped sweep skipped.)
+- **Re-run the sweep against the *rebased* file, not the one you branched from — a sibling PR can
+  re-introduce the pattern you're removing.** A conversion often sits in review while another PR
+  touches the same component; its new rules land in your file on rebase and, because they compile,
+  ship green through your already-passing guards. Before finalizing a conversion, re-grep the
+  *rebased* artifact (e.g. `grep '\$' the-partial` for a Sass-var conversion), not the version at
+  branch time. (Reference: #154 converted `_nav_bar.scss` to `var(--bs-*)`; #155 merged mid-review
+  and added `.mds-navbar__brand-arm { fill: $mpi-brand-navy }` / `-center { fill: $mpi-primary }` —
+  two fresh frozen fills the rebase surfaced, which #154 then had to convert too, and whose
+  per-selector bindings the compile guard had to grow.)
 
 ## Component Catalog First
 
@@ -155,7 +164,23 @@ Rules:
   Both are answered the same way — make the guard fail on purpose before you trust a pass.
 - Custom SCSS only when Bootstrap genuinely cannot express the design; keep it in a
   dedicated partial under `app/assets/stylesheets/mpi_design_system/` (existing example:
-  `_nav_bar.scss`) and import it from `application.scss`
+  `_nav_bar.scss`, which styles NavBar/AppShell) and import it from `application.scss`
+- **A custom partial must still be theme-adaptive — resolve colour from `var(--bs-*)`, never a
+  Sass `$var`.** A Sass variable freezes one palette at compile time; a Bootstrap runtime CSS
+  custom property re-resolves when `data-bs-theme` flips. `_nav_bar.scss` is the reference: after
+  #154 it draws every colour from `var(--bs-body-bg)`, `var(--bs-border-color)`,
+  `var(--bs-body-color)`, `var(--bs-secondary-color)`, `var(--bs-link-color)`, `var(--bs-primary)`,
+  `var(--bs-danger)` and `var(--bs-tertiary-bg)` — so it has **no compile-time Sass-var
+  dependency** (it compiles standalone) and adapts to the colour mode like the rest of the system.
+  Interactive link *text* maps to `var(--bs-link-color)` (AA-safe in dark: `#82ACD3`), **not**
+  `var(--bs-primary)` (which stays `#2E75B6` → ~3.19:1 on the dark navbar `#212529` and only ~2.75:1
+  on the dark subnav `#2B3035`, both below the 4.5:1 AA/UI floor). The conversion is proven at the
+  compile level by `bin/verify-nav-bar-adaptive` (run from `yarn build:css:compat`, asserting every
+  colour is `var(--bs-*)`-driven) and in a browser by `spec/features/nav_bar_theme_spec.rb` — both
+  proven by breaking them. When a custom partial ships hardcoded hex to the emitted markup (e.g. an
+  inline SVG `fill`), that hex is frozen too: #154's logo arms had to move to `fill="currentColor"`
+  (and, in #155, onto `.mds-navbar__brand-arm/-center` classes whose `fill` this partial now drives
+  from `var(--bs-body-color)`/`var(--bs-link-color)`).
 - **Moving a component's colour from inline to CSS makes it depend on the component partial being
   loaded — and that partial is not on the documented consumer path.** The engine ships SCSS as
   source (`lib/mpi_design_system/engine.rb` — "No asset-pipeline initializer by design"); the
@@ -169,10 +194,21 @@ Rules:
   never saw the partial; grep the specific `selector{property:value}`, since Bootstrap emits the
   token hex elsewhere (`--bs-primary: #2E75B6`). (2) Add a browser computed-style spec (the
   `contrast_demo`/`contrast_spec` pattern) asserting a *painted* value only the correct rule can
-  produce — e.g. a two-tone mark whose centre must compute `$mpi-primary`, since a `currentColor`
-  fallback would paint it the arms' navy. (Reference: #155 tokenised the NavBar mark's fills;
-  without importing `_nav_bar.scss` in the dummy app the mark rendered monochrome in Lookbook, and
-  `yarn build:css` could not see the rule at all — a grep guard against it would have false-passed.)
+  produce — e.g. a two-tone mark whose centre must compute `var(--bs-link-color)`, since a
+  `currentColor` fallback would paint it the arms' `var(--bs-body-color)`. (Reference: #155
+  tokenised the NavBar mark's fills; without importing `_nav_bar.scss` in the dummy app the mark
+  rendered monochrome in Lookbook, and `yarn build:css` could not see the rule at all — a grep
+  guard against it would have false-passed.)
+- **A partial's compile guard must pin each selector's binding, not merely that a token appears —
+  and be proven by a *swap*, not only a deletion.** A guard that greps "`var(--bs-body-bg)` occurs
+  somewhere" false-greens on a token *swap* (navbar↔subnav) because both tokens still appear, and
+  on a raw colour in a property it never scanned (`fill`, `outline`, `box-shadow`). Parse the
+  compiled `.mds-*` CSS and assert `selector{property:value}` for every rule, and reject a raw
+  colour (hex/rgb/hsl/named) in *any* declaration. Prove it by swapping two valid tokens, not just
+  by deleting one — a deletion-only test passes a guard that cannot tell two tokens apart.
+  (Reference: #154's `bin/verify-nav-bar-adaptive` began as a token-presence check; the PR review
+  caught that a navbar↔subnav swap and a `fill: red` both shipped green, so it was rewritten as a
+  per-selector binding proof.)
 
 ## Stimulus Controllers
 

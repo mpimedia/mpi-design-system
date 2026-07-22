@@ -7,6 +7,40 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Changed
+- **`Admin::NavBar` and `Admin::AppShell` are theme-adaptive** — `_nav_bar.scss` (which styles
+  both) no longer pins a light palette in compile-time Sass variables. Every colour now resolves
+  from a Bootstrap **runtime CSS custom property** (`var(--bs-*)`), so the nav follows
+  `data-bs-theme` and the consuming app's mapped tokens: surfaces are `var(--bs-body-bg)` (navbar,
+  sidebar) and `var(--bs-tertiary-bg)` (sub-nav, shell main, breadcrumb), borders are
+  `var(--bs-border-color)`, the brand is `var(--bs-body-color)`, muted links and the gear are
+  `var(--bs-secondary-color)`, and every interactive link (hover/active text and the active
+  underlines) is `var(--bs-link-color)`. The env-bar strips stay `var(--bs-primary)` /
+  `var(--bs-danger)` — fixed status hues. **For a consumer that does not remap Bootstrap's
+  defaults, light mode is near-identical** (`--bs-body-color` maps to MPI navy `#1B2A4A`,
+  `--bs-border-color` is `#DEE2E6`); the two deliberate light-mode shifts are semantic and remain
+  AA — muted text `#6C757D` → `var(--bs-secondary-color)` (a muted navy) and the app-chrome
+  `#F5F7FA` → `var(--bs-tertiary-bg)` (`#F8F9FA`). Dark mode is new behaviour: interactive links
+  map to `var(--bs-link-color)` (`#82ACD3` in dark = AA-safe), **not** `var(--bs-primary)`, which
+  stays `#2E75B6` (~3.19:1 on the dark navbar `#212529` and only ~2.75:1 on the dark subnav
+  `#2B3035` — the worst surface — both below the 4.5:1 floor). The partial now has **no
+  compile-time Sass-var dependency** — it compiles standalone, so consumers import it after
+  Bootstrap (`@import "mpi_design_system/nav_bar";`). Geometry (heights, padding, weights, the
+  avatar sizing) is byte-identical.
+
+  Two dark-mode gaps in the rendered nav are fixed alongside the conversion:
+  - **Logo** — the `NavBar` brand SVG hardcoded `fill="#1B2A4A"` on its four arms, which paint at
+    ~1.09:1 (invisible) on a dark navbar. The arms now inherit `currentColor` (the brand link's
+    `var(--bs-body-color)`) and the centre accent draws `var(--bs-link-color)`.
+  - **SearchBar** — the search-icon prepend used `bg-white`, a white patch inside a dark navbar; it
+    is now `bg-body`, which follows the colour mode.
+
+  A compile-level guard (`bin/verify-nav-bar-adaptive`, run from `yarn build:css:compat`) asserts
+  every colour in the compiled partial is `var(--bs-*)`-driven with no frozen hex, and a browser
+  feature spec (`spec/features/nav_bar_theme_spec.rb`) proves every surface, foreground and the
+  logo adapt and clear WCAG AA under both colour modes — both proven by breaking them. No public
+  API change. (#154 — Track 2 phase 6, epic #147)
+
 ## [0.8.0] - 2026-07-21
 
 ### Changed

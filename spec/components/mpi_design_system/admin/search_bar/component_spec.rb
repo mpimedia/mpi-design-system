@@ -11,6 +11,17 @@ RSpec.describe MpiDesignSystem::Admin::SearchBar::Component, type: :component do
     expect(page).to have_css("input[type='search'][placeholder='Search...']")
   end
 
+  # The search-icon prepend must follow Bootstrap's colour mode: it was a hardcoded
+  # `bg-white` patch that stayed white inside a dark navbar. `bg-body` adapts to
+  # data-bs-theme. Pin the element first, then assert the retired class is gone —
+  # an unpaired `not_to` would also pass if nothing rendered. (#154)
+  it "renders the search-icon prepend on the adaptive body surface, not a white patch" do
+    render_inline(described_class.new)
+
+    expect(page).to have_css("span.input-group-text.bg-body i.bi.bi-search")
+    expect(page).not_to have_css("span.input-group-text.bg-white")
+  end
+
   it "renders with custom placeholder" do
     render_inline(described_class.new(placeholder: "Search contacts..."))
 

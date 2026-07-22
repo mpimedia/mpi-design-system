@@ -1,0 +1,86 @@
+<% content_for :title, "NavBar Theme Demo" %>
+
+<%# The NavBar and AppShell rendered once in each colour mode, so the feature spec can
+    read COMPUTED styles under both `data-bs-theme` values on a single page and prove the
+    #154 conversion adapts. Each wrapper pins the mode and a `bg-body` surface. Stable ids
+    scope every selector the spec addresses. %>
+
+<% nav_args = {
+     current_section: :crm,
+     current_subsection: :contacts,
+     user_name: "Jane Cooper",
+     search_url: "#",
+     system_url: "/admin/system",
+     environment: :development,
+     sign_out_url: "/sign_out"
+   } %>
+
+<main class="container-fluid py-4">
+  <h1 class="h4 mb-3">NavBar Theme Demo</h1>
+
+  <section id="nav-light" data-bs-theme="light" class="bg-body p-3 mb-4">
+    <%= render MpiDesignSystem::Admin::NavBar::Component.new(**nav_args) %>
+  </section>
+
+  <section id="nav-dark" data-bs-theme="dark" class="bg-body p-3 mb-4">
+    <%= render MpiDesignSystem::Admin::NavBar::Component.new(**nav_args) %>
+  </section>
+
+  <%# Staging env variant — the env-bar strips are fixed status hues (primary for
+      development above, danger for staging) that do NOT flip with the colour mode,
+      so the feature spec asserts the danger strip against a staging NavBar in both
+      modes. %>
+  <% staging_nav_args = nav_args.merge(environment: :staging) %>
+
+  <section id="nav-staging-light" data-bs-theme="light" class="bg-body p-3 mb-4">
+    <%= render MpiDesignSystem::Admin::NavBar::Component.new(**staging_nav_args) %>
+  </section>
+
+  <section id="nav-staging-dark" data-bs-theme="dark" class="bg-body p-3 mb-4">
+    <%= render MpiDesignSystem::Admin::NavBar::Component.new(**staging_nav_args) %>
+  </section>
+
+  <section id="shell-light" data-bs-theme="light" class="bg-body p-3 mb-4">
+    <%= render MpiDesignSystem::Admin::AppShell::Component.new(
+          current_section: :crm,
+          current_subsection: :contacts,
+          user_name: "Jane Cooper",
+          search_url: "#",
+          system_url: "/admin/system",
+          sign_out_url: "/sign_out",
+          show_sidebar: true
+        ) do |shell| %>
+      <% shell.with_breadcrumb do %>
+        <nav aria-label="Breadcrumb" class="small text-body-secondary py-2">CRM &rsaquo; Contacts</nav>
+      <% end %>
+      <% shell.with_sidebar do %>
+        <div class="p-2 small">Quick filters</div>
+      <% end %>
+      <% shell.with_body do %>
+        <div class="p-2"><h2 class="h5">Contacts</h2></div>
+      <% end %>
+    <% end %>
+  </section>
+
+  <section id="shell-dark" data-bs-theme="dark" class="bg-body p-3 mb-4">
+    <%= render MpiDesignSystem::Admin::AppShell::Component.new(
+          current_section: :crm,
+          current_subsection: :contacts,
+          user_name: "Jane Cooper",
+          search_url: "#",
+          system_url: "/admin/system",
+          sign_out_url: "/sign_out",
+          show_sidebar: true
+        ) do |shell| %>
+      <% shell.with_breadcrumb do %>
+        <nav aria-label="Breadcrumb" class="small text-body-secondary py-2">CRM &rsaquo; Contacts</nav>
+      <% end %>
+      <% shell.with_sidebar do %>
+        <div class="p-2 small">Quick filters</div>
+      <% end %>
+      <% shell.with_body do %>
+        <div class="p-2"><h2 class="h5">Contacts</h2></div>
+      <% end %>
+    <% end %>
+  </section>
+</main>

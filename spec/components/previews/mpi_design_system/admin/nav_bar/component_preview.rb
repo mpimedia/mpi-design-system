@@ -118,4 +118,14 @@ class MpiDesignSystem::Admin::NavBar::ComponentPreview < ApplicationComponentPre
       ] }
     )
   end
+
+  # The point of the #154 conversion: the same NavBar, no variant flag, following
+  # Bootstrap's colour mode. Light and dark side by side so a designer can compare
+  # the two surfaces — including the logo, subnav, gear, and search prepend — in one
+  # view. (#154)
+  #
+  # @label Theme Adaptive
+  def theme_adaptive
+    render_with_template
+  end
 end

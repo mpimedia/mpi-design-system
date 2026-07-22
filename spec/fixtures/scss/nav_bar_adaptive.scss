@@ -1,0 +1,10 @@
+// Compat fixture — the theme-adaptive NavBar partial, compiled STANDALONE.
+//
+// After #154 `_nav_bar.scss` resolves every colour from a Bootstrap runtime CSS
+// custom property (var(--bs-*)) and carries no compile-time Sass-variable
+// dependency, so it must compile with neither the MPI tokens nor Bootstrap in
+// scope. `build:css:compat` compiles this and asserts every colour declaration
+// is var(--bs-*)-driven (no frozen hex/rgb/keyword) and the geometry survives.
+// If any colour reverted to a `$mpi-*`/`$danger` Sass var this file would fail
+// to compile at all. (#154)
+@import "mpi_design_system/nav_bar";

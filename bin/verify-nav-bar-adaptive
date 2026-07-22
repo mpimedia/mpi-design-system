@@ -1,0 +1,217 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Verifies the theme-adaptive NavBar partial (#154). `_nav_bar.scss` was converted
+# so every colour resolves from a Bootstrap runtime CSS custom property
+# (var(--bs-*)) instead of a compile-time Sass variable, which is what lets the nav
+# follow `data-bs-theme`. This is the compile-level guard for that conversion; the
+# browser paint proof lives in spec/features/nav_bar_theme_spec.rb.
+#
+# It runs against the STANDALONE-compiled fixture (spec/fixtures/scss/
+# nav_bar_adaptive.scss -> tmp/compat/nav_bar.css). Because that fixture imports the
+# partial with neither the MPI tokens nor Bootstrap in scope, any colour that
+# reverted to a `$mpi-*`/`$danger` Sass var would already have failed to compile —
+# so the file reaching this script at all proves it is Sass-var-free. This script
+# then proves the STRONGER claims, at a resolution the old "does the token appear
+# somewhere?" grep could not:
+#
+#   1. PER-SELECTOR BINDING — every converted selector's specific colour property
+#      equals the EXACT var(--bs-*) it is meant to. A navbar<->subnav surface swap
+#      (both still legal tokens, both still present in the file) now reds here,
+#      where a "token appears somewhere" grep passed it.
+#   2. STRONG NEGATIVE — no declaration of ANY property (not just background/color/
+#      border — fill, outline, stroke, box-shadow included) may carry a raw colour:
+#      a #hex, an rgb()/hsl() function, or a CSS named colour. The only permitted
+#      non-var values are transparent / currentColor / none / inherit / initial /
+#      unset. `fill: red` or `outline: red` reds here.
+#   3. GEOMETRY — the promised-unchanged fixed dimensions survive.
+#
+# The brand-mark diamond fills are covered too: `.mds-navbar__brand-arm` must bind
+# `fill: var(--bs-body-color)` and `.mds-navbar__brand-center` `fill: var(--bs-link-color)`
+# (the #155 mark tokenisation, converted off the frozen $mpi-brand-navy/$mpi-primary
+# Sass vars in #154), so a regression to a frozen `fill: #1B2A4A` reds twice — WRONG
+# BINDING and RAW COLOUR.
+#
+# Run via `yarn build:css:compat`. Fails loudly on any divergence. Prove it by
+# breaking it (see .claude/rules/frontend.md "prove a new build guard by breaking
+# it"): swap `.mds-navbar` background to var(--bs-tertiary-bg) -> the per-selector
+# check reds; set `.mds-navbar__brand-arm { fill: #1B2A4A }` -> WRONG BINDING + RAW
+# COLOUR red; add `outline: red;` to any .mds-* rule -> the strong negative reds.
+
+require "set"
+
+CSS = ARGV[0] || "tmp/compat/nav_bar.css"
+
+unless File.file?(CSS)
+  warn "verify-nav-bar-adaptive: #{CSS} not found — compile the fixture first"
+  exit 1
+end
+
+source = File.read(CSS)
+
+# --- Parse the compiled CSS into selector => [[property, value], ...]. The
+#     compiler emits one flat rule per selector with `prop: value;` declarations,
+#     so a light structural parse is exact here (no nesting, no at-rules).
+rules = {}
+source.scan(/([^{}]+)\{([^}]*)\}/m).each do |raw_selectors, body|
+  declarations = body.split(";").map(&:strip).reject(&:empty?).map do |declaration|
+    property, value = declaration.split(":", 2)
+    [ property.to_s.strip.downcase, value.to_s.strip ]
+  end
+  raw_selectors.split(",").each do |selector|
+    key = selector.strip
+    next if key.empty?
+
+    (rules[key] ||= []).concat(declarations)
+  end
+end
+
+failures = []
+
+# The first colour-ish token in a value: a var(--bs-*), a hex, or an rgb()/hsl()
+# function. Used to pull the colour out of a shorthand like
+# `border-bottom: 1px solid var(--bs-border-color)`.
+COLOUR_TOKEN = /var\(--bs-[a-z0-9-]+\)|#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)/i
+
+# A logical colour "slot" -> the properties (longhand first, then the shorthand it
+# can hide inside) that can carry it.
+SLOT_PROPERTIES = {
+  background: %w[background-color background],
+  color: %w[color],
+  border_bottom: %w[border-bottom-color border-bottom],
+  border_right: %w[border-right-color border-right],
+  fill: %w[fill]
+}.freeze
+
+# The exact binding every converted selector must carry. Pins the specific
+# property, not merely "this token exists in the file" — a navbar<->subnav swap
+# leaves both tokens present but reds here.
+EXPECTED_BINDINGS = {
+  ".mds-env-bar--development"          => { background: "var(--bs-primary)" },
+  ".mds-env-bar--staging"             => { background: "var(--bs-danger)" },
+  ".mds-navbar"                       => { background: "var(--bs-body-bg)", border_bottom: "var(--bs-border-color)" },
+  ".mds-navbar__brand"                => { color: "var(--bs-body-color)" },
+  ".mds-navbar__brand:hover"          => { color: "var(--bs-body-color)" },
+  ".mds-navbar__brand-arm"            => { fill: "var(--bs-body-color)" },
+  ".mds-navbar__brand-center"         => { fill: "var(--bs-link-color)" },
+  ".mds-navbar__section-link"         => { color: "var(--bs-secondary-color)" },
+  ".mds-navbar__section-link:hover"   => { color: "var(--bs-link-color)" },
+  ".mds-navbar__section-link--active" => { color: "var(--bs-link-color)", border_bottom: "var(--bs-link-color)" },
+  ".mds-navbar__gear"                 => { color: "var(--bs-secondary-color)" },
+  ".mds-navbar__gear:hover"           => { color: "var(--bs-link-color)" },
+  ".mds-subnav"                       => { background: "var(--bs-tertiary-bg)", border_bottom: "var(--bs-border-color)" },
+  ".mds-subnav__link"                 => { color: "var(--bs-link-color)" },
+  ".mds-subnav__link:hover"           => { color: "var(--bs-link-color)" },
+  ".mds-subnav__link--active"         => { color: "var(--bs-link-color)", border_bottom: "var(--bs-link-color)" },
+  ".mds-shell__sidebar"               => { background: "var(--bs-body-bg)", border_right: "var(--bs-border-color)" },
+  ".mds-shell__main"                  => { background: "var(--bs-tertiary-bg)" },
+  ".mds-shell__breadcrumb"            => { background: "var(--bs-tertiary-bg)" }
+}.freeze
+
+def slot_value(declarations, properties)
+  properties.each do |wanted|
+    declarations.each do |property, value|
+      return value if property == wanted
+    end
+  end
+  nil
+end
+
+def colour_token(value)
+  match = value.match(COLOUR_TOKEN)
+  match && match[0]
+end
+
+# 1. PER-SELECTOR BINDING
+EXPECTED_BINDINGS.each do |selector, slots|
+  declarations = rules[selector]
+  if declarations.nil?
+    failures << "MISSING SELECTOR  #{selector} — expected in the compiled nav styles but absent"
+    next
+  end
+
+  slots.each do |slot, expected_var|
+    value = slot_value(declarations, SLOT_PROPERTIES.fetch(slot))
+    if value.nil?
+      failures << "MISSING BINDING   #{selector} { #{slot} } — no declaration carries this colour"
+      next
+    end
+
+    actual = colour_token(value)
+    next if actual == expected_var
+
+    failures << "WRONG BINDING     #{selector} { #{slot}: #{actual || value.inspect} } — expected #{expected_var}"
+  end
+end
+
+# 2. STRONG NEGATIVE — reject a raw colour in ANY declaration of ANY property.
+ALLOWED_COLOUR_KEYWORDS = Set.new(%w[transparent currentcolor none inherit initial unset]).freeze
+
+# The full set of CSS named colours. None collide with any geometry keyword in the
+# partial (solid, flex, column, center, auto, inline-flex, hidden, ...), so a
+# whole-value word scan is safe and rejects `outline: red` / `fill: red`.
+CSS_NAMED_COLOURS = Set.new(%w[
+  aliceblue antiquewhite aqua aquamarine azure beige bisque black blanchedalmond
+  blue blueviolet brown burlywood cadetblue chartreuse chocolate coral
+  cornflowerblue cornsilk crimson cyan darkblue darkcyan darkgoldenrod darkgray
+  darkgreen darkgrey darkkhaki darkmagenta darkolivegreen darkorange darkorchid
+  darkred darksalmon darkseagreen darkslateblue darkslategray darkslategrey
+  darkturquoise darkviolet deeppink deepskyblue dimgray dimgrey dodgerblue
+  firebrick floralwhite forestgreen fuchsia gainsboro ghostwhite gold goldenrod
+  gray green greenyellow grey honeydew hotpink indianred indigo ivory khaki
+  lavender lavenderblush lawngreen lemonchiffon lightblue lightcoral lightcyan
+  lightgoldenrodyellow lightgray lightgreen lightgrey lightpink lightsalmon
+  lightseagreen lightskyblue lightslategray lightslategrey lightsteelblue
+  lightyellow lime limegreen linen magenta maroon mediumaquamarine mediumblue
+  mediumorchid mediumpurple mediumseagreen mediumslateblue mediumspringgreen
+  mediumturquoise mediumvioletred midnightblue mintcream mistyrose moccasin
+  navajowhite navy oldlace olive olivedrab orange orangered orchid palegoldenrod
+  palegreen paleturquoise palevioletred papayawhip peachpuff peru pink plum
+  powderblue purple rebeccapurple red rosybrown royalblue saddlebrown salmon
+  sandybrown seagreen seashell sienna silver skyblue slateblue slategray slategrey
+  snow springgreen steelblue tan teal thistle tomato turquoise violet wheat white
+  whitesmoke yellow yellowgreen
+]).freeze
+
+rules.each do |selector, declarations|
+  declarations.each do |property, value|
+    # Remove the legal runtime tokens, then look for any raw colour in what remains.
+    stripped = value.gsub(/var\(--bs-[a-z0-9-]+\)/i, " ")
+
+    reason =
+      if (hex = stripped[/#[0-9a-fA-F]{3,8}\b/])
+        "frozen hex #{hex}"
+      elsif (fn = stripped[/\b(?:rgba?|hsla?)\(/i])
+        "#{fn.strip.chomp('(')}() colour"
+      elsif (named = stripped.downcase.scan(/[a-z]+/).find { |word| CSS_NAMED_COLOURS.include?(word) && !ALLOWED_COLOUR_KEYWORDS.include?(word) })
+        "named colour '#{named}'"
+      end
+
+    next unless reason
+
+    failures << "RAW COLOUR        #{selector} { #{property}: #{value} } — #{reason}; must be var(--bs-*)"
+  end
+end
+
+# 3. GEOMETRY — the conversion promised to touch colour only.
+GEOMETRY = [ "height: 10px", "height: 52px", "height: 42px", "width: 180px" ].freeze
+GEOMETRY.each do |dimension|
+  next if source.include?(dimension)
+
+  failures << "GEOMETRY MISSING  '#{dimension}' — a non-colour dimension changed"
+end
+
+if failures.any?
+  warn ""
+  warn "NavBar adaptive check FAILED with #{failures.length} problem(s):"
+  failures.each { |failure| warn "  #{failure}" }
+  warn ""
+  warn "Every colour in _nav_bar.scss must resolve from a Bootstrap var(--bs-*), and each"
+  warn "converted selector must carry its EXACT token (no navbar<->subnav swap)."
+  exit 1
+end
+
+puts "NavBar adaptive OK: _nav_bar.scss compiles standalone; every converted selector binds " \
+     "its exact var(--bs-*) (surfaces, foregrounds, borders, underlines, env hues, brand-mark fills), " \
+     "no declaration of any property carries a frozen hex/rgb/hsl/named colour, and the " \
+     "10px/52px/42px + 180px geometry survives"

@@ -10,11 +10,24 @@ Two-level horizontal navigation used as the primary app shell navigation across 
 
 ## Design Decisions
 
-- **Brand mark:** Nexus SVG diamond logo (navy arms + primary blue center diamond) — NOT "X MARKAZ" text logo. The default mark's fills are **token-sourced**, not hardcoded hex: the arm polygons carry `.mds-navbar__brand-arm` (filled from `$mpi-brand-navy`) and the center polygon carries `.mds-navbar__brand-center` (filled from `$mpi-primary`), each with a `fill="currentColor"` fallback in the markup. A caller can replace the whole mark via `logo_mark:` (see Props / API)
-- **MARKAZ text:** `font-weight: 300`, `letter-spacing: 0.12em`, color `#1B2A4A`
-- **White background:** Both bars use white background with bottom border (`#DEE2E6`)
-- **Active state:** Primary blue text (`#2E75B6`) + 2px blue bottom border + `font-weight: 600`
-- **Inactive state:** Muted gray text (`#6C757D`), `font-weight: 500`
+- **Theme-adaptive colours (#154):** every colour in `_nav_bar.scss` resolves from a
+  Bootstrap **runtime CSS custom property** (`var(--bs-*)`), not a frozen hex — so the nav
+  follows `data-bs-theme`. Under the default (light) MPI configuration the values below still
+  resolve, but they are now the consumer's mapped Bootstrap tokens, not hardcoded literals.
+- **Brand mark:** Nexus SVG diamond logo — NOT "X MARKAZ" text logo. The default mark's fills are
+  **token-sourced**, not hardcoded hex: the arm polygons carry `.mds-navbar__brand-arm` (filled
+  from `var(--bs-body-color)`) and the centre polygon carries `.mds-navbar__brand-center` (filled
+  from `var(--bs-link-color)`), each with a `fill="currentColor"` fallback in the markup — so the
+  mark follows `data-bs-theme`. (Before #154 the arms were a frozen `#1B2A4A`, which paints at
+  ~1.09:1 — invisible — on a dark navbar.) A caller can replace the whole mark via `logo_mark:`
+  (see Props / API).
+- **MARKAZ text:** `font-weight: 300`, `letter-spacing: 0.12em`, colour `var(--bs-body-color)`
+  (navy in light, near-white in dark)
+- **Surfaces:** the top bar is `var(--bs-body-bg)`, the sub-nav is `var(--bs-tertiary-bg)`; both
+  carry a bottom border of `var(--bs-border-color)`
+- **Active state:** link-colour text `var(--bs-link-color)` (`#2E75B6` light / `#82ACD3` dark,
+  AA-safe in both) + 2px `var(--bs-link-color)` bottom border + `font-weight: 600`
+- **Inactive state:** muted text `var(--bs-secondary-color)`, `font-weight: 500`
 - **Top bar height:** 52px
 - **Sub-nav height:** 42px
 - **Right side:** Global search input + user avatar (AvatarCircle component)
@@ -54,9 +67,9 @@ Other section sub-navs will be documented as their designs are finalized.
 
 | State | Element | Description |
 |---|---|---|
-| Default | Nav item | Gray text (`#6C757D`), no underline |
-| Hover | Nav item | Primary blue text (`#2E75B6`) |
-| Active | Nav item | Primary blue text + bold (600) + 2px blue bottom border |
+| Default | Nav item | Muted text (`var(--bs-secondary-color)`), no underline |
+| Hover | Nav item | Link-colour text (`var(--bs-link-color)`) |
+| Active | Nav item | Link-colour text + bold (600) + 2px `var(--bs-link-color)` bottom border |
 | Active | Sub-nav item | Same as nav item active state |
 
 ## Props / API
@@ -107,12 +120,15 @@ accessibility semantics (e.g. `aria-hidden="true"` for a mark paired with the vi
 
 ## Key Styles
 
+Colours resolve from Bootstrap runtime custom properties (`var(--bs-*)`), so the same rules
+paint both colour modes — see `app/assets/stylesheets/mpi_design_system/_nav_bar.scss` (#154).
+
 ```css
-.topbar { background: #fff; border-bottom: 1px solid #DEE2E6; height: 52px; }
-.subnav { background: #fff; border-bottom: 1px solid #DEE2E6; height: 42px; }
-.nav-item { font-size: 14px; padding: 14px 12px; border-bottom: 2px solid transparent; }
-.nav-item.active { color: #2E75B6; border-bottom-color: #2E75B6; font-weight: 600; }
-.logo-text { font-weight: 300; letter-spacing: 0.12em; color: #1B2A4A; font-size: 14px; }
+.mds-navbar  { background: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color); height: 52px; }
+.mds-subnav  { background: var(--bs-tertiary-bg); border-bottom: 1px solid var(--bs-border-color); height: 42px; }
+.mds-navbar__section-link { font-size: 14px; padding: 14px 12px; border-bottom: 2px solid transparent; color: var(--bs-secondary-color); }
+.mds-navbar__section-link--active { color: var(--bs-link-color); border-bottom-color: var(--bs-link-color); font-weight: 600; }
+.mds-navbar__brand { font-weight: 300; letter-spacing: 0.12em; color: var(--bs-body-color); font-size: 14px; }
 ```
 
 ## Accessibility

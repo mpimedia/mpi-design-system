@@ -63,5 +63,10 @@ Each section may define its own sub-nav items. These will be documented as each 
 
 - Top bar: Bootstrap `navbar` with `nav-link` items
 - Sub-nav: Second `navbar` or `nav nav-tabs` bar below the main navbar
-- Active states use `$mpi-primary` (`#2E75B6`)
-- White background for both bars (V2 canonical style)
+- Active and hover states use `var(--bs-link-color)` — `#2E75B6` in light, `#82ACD3` in dark, both
+  AA-safe on their surfaces (#154). Not a frozen `$mpi-primary`: a compile-time Sass variable
+  cannot follow `data-bs-theme`, and `#2E75B6` on the dark navbar is only ~3.19:1 (~2.75:1 on the
+  dark sub-nav), below the 4.5:1 floor
+- Surfaces resolve from Bootstrap runtime tokens and follow the colour mode via `data-bs-theme`: the
+  top bar is `var(--bs-body-bg)`, the sub-nav is `var(--bs-tertiary-bg)`, borders are
+  `var(--bs-border-color)`. No fixed white background — #154 retired the "white for both bars" V2 style

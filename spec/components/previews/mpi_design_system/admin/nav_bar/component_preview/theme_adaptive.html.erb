@@ -1,0 +1,31 @@
+<%# Light and dark side by side. Each wrapper sets `data-bs-theme` and `bg-body`, so the
+    NavBar inside it resolves every colour — surface, borders, brand text, section links,
+    subnav, gear, active underlines, logo arms — from that colour mode. That is the whole
+    claim of the #154 conversion: no variant flag, the nav just follows the theme. %>
+<div data-bs-theme="light" class="bg-body p-3 mb-3">
+  <p class="text-body-secondary small mb-2">data-bs-theme="light"</p>
+  <%= render MpiDesignSystem::Admin::NavBar::Component.new(
+        current_section: :crm,
+        current_subsection: :contacts,
+        user_name: "Jane Cooper",
+        search_url: "#",
+        system_url: "/admin/system",
+        environment: :development,
+        sign_out_url: "/sign_out",
+        profile_url: "/profile"
+      ) %>
+</div>
+
+<div data-bs-theme="dark" class="bg-body p-3">
+  <p class="text-body-secondary small mb-2">data-bs-theme="dark"</p>
+  <%= render MpiDesignSystem::Admin::NavBar::Component.new(
+        current_section: :crm,
+        current_subsection: :contacts,
+        user_name: "Jane Cooper",
+        search_url: "#",
+        system_url: "/admin/system",
+        environment: :development,
+        sign_out_url: "/sign_out",
+        profile_url: "/profile"
+      ) %>
+</div>

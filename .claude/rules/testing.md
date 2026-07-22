@@ -182,6 +182,19 @@ selectors are unaffected. Confirm which form the parser emits with a one-line pr
 `not_to have_css("svg[viewBox=…]")` guard on the logo-mark override passed only because the
 camelCase selector never matched; lowercasing it turned the guard real.)
 
+**Related — a conversion that lives in an SCSS *partial* is invisible to `render_inline`; its
+proof is a compile guard plus a browser spec, never a component spec.** The inline-hex→utility
+conversions (#128 Badge, #149 Pagination) changed the *emitted markup* (class names / inline
+`style`), so `render_inline` + Capybara could pin them. A partial conversion (#154 `_nav_bar.scss`,
+`$var` → `var(--bs-*)`) changes only CSS *rules* — the `.mds-*` markup is byte-identical before and
+after, so a component spec asserting those classes stays green while proving nothing about the
+conversion (a false green *by construction*, not by weak assertion). Prove it where the change
+lives: a per-selector compile guard (`bin/verify-nav-bar-adaptive`, run from
+`yarn build:css:compat`) that the source is `var(--bs-*)`-driven, and a browser feature spec
+(`spec/features/nav_bar_theme_spec.rb`) reading `getComputedStyle` under both `data-bs-theme`
+modes — each proven by breaking it. Do not add a `render_inline` colour assertion for a partial
+conversion; it cannot see CSS. (#154.)
+
 ## A Guard Is Not Real Until You Have Watched It Fail
 
 The two shapes above are assertions that *can* fail but don't discriminate. This is the
