@@ -345,8 +345,13 @@ RSpec.describe MpiDesignSystem::Admin::NavBar::Component, type: :component do
       render_inline(described_class.new(current_section: :dashboard))
 
       expect(page).to have_css("a.mds-navbar__brand svg[viewbox='0 0 22 26'][aria-hidden='true']")
+      expect(page).to have_css("a.mds-navbar__brand svg[width='20'][height='24']")
       expect(page).to have_css("a.mds-navbar__brand svg polygon.mds-navbar__brand-arm[fill='currentColor']", count: 4)
       expect(page).to have_css("a.mds-navbar__brand svg polygon.mds-navbar__brand-center[fill='currentColor']", count: 1)
+      # Pin the geometry that STAYED through the tokenization — the fills moved to CSS but the
+      # points did not. Without these, deleting every `points` attribute ships green.
+      expect(page).to have_css("polygon.mds-navbar__brand-center[points='11,11 13,13 11,15 9,13']")
+      expect(page).to have_css("polygon.mds-navbar__brand-arm[points='1,0 6,0 12.5,11 10.5,13']")
       expect(page).not_to have_css("polygon[fill='#1B2A4A']")
       expect(page).not_to have_css("polygon[fill='#2E75B6']")
     end

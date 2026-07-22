@@ -69,6 +69,14 @@
         ) %>
   </section>
 
+  <%# NavBar brand mark (#155) — the tokenized default diamond. Rendered against the
+      compiled bundle (which now imports _nav_bar.scss) so the spec can read the COMPUTED
+      fill of each polygon and prove the arm/center classes resolve to their tokens rather
+      than falling back to the monochrome currentColor. %>
+  <section id="nav-bar-mark" class="mb-4">
+    <%= render MpiDesignSystem::Admin::NavBar::Component.new(current_section: :dashboard) %>
+  </section>
+
   <%# Same components under Bootstrap's dark colour mode. ActiveFilterBar pins a
       light background, so a theme-aware foreground would render light-on-light
       (1.16:1) unless the component pins its colour mode too. (#130) %>
