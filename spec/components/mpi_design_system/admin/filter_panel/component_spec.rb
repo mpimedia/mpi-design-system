@@ -176,6 +176,13 @@ RSpec.describe MpiDesignSystem::Admin::FilterPanel::Component, type: :component 
       "button.text-body[style*='justify-content: space-between'][style*='width: 100%']",
       text: "Tag Group"
     )
+    # section-button reset: transparent, borderless chrome. Dropping either
+    # `background: transparent` or `border: none` regresses the collapse toggle
+    # to a default grey button — a visible regression no colour test catches.
+    expect(page).to have_css(
+      "button.text-body[style*='background: transparent'][style*='border: none']",
+      text: "Tag Group"
+    )
     # option-row spacing
     expect(page).to have_css("div.text-body[style*='padding: 4px 16px 4px 20px']")
     # count sizing
