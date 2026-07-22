@@ -202,7 +202,7 @@ After the PR merges:
 ```bash
 git fetch origin   # gh returns a SHA from GitHub; fetch puts that commit object in your local repo
 
-PR=<pr-number>
+PR=NNN   # the merged release PR's number
 MERGE_SHA=$(gh pr view "$PR" --json mergeCommit --jq .mergeCommit.oid)
 [ -n "$MERGE_SHA" ] || { echo "ABORT: no merge commit (PR not merged?)"; exit 1; }
 
