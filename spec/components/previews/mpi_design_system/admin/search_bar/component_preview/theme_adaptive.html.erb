@@ -1,0 +1,8 @@
+<%# Light and dark side by side. Each wrapper sets `data-bs-theme` and `bg-body`; the
+    icon prepend now uses `bg-body`, so it tracks the surface instead of forcing white. %>
+<% [ "light", "dark" ].each do |mode| %>
+  <div data-bs-theme="<%= mode %>" class="bg-body p-3 mb-3">
+    <p class="text-body-secondary small mb-2">data-bs-theme="<%= mode %>"</p>
+    <%= render MpiDesignSystem::Admin::SearchBar::Component.new(placeholder: "Search contacts...") %>
+  </div>
+<% end %>

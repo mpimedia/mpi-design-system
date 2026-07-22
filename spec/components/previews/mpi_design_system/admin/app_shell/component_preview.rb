@@ -69,4 +69,13 @@ class MpiDesignSystem::Admin::AppShell::ComponentPreview < ApplicationComponentP
       }
     )
   end
+
+  # The #154 conversion reaches the shell surfaces too — sidebar, breadcrumb, and
+  # main all resolve from Bootstrap runtime custom properties, so the whole frame
+  # follows `data-bs-theme`. Light and dark side by side. (#154)
+  #
+  # @label Theme Adaptive
+  def theme_adaptive
+    render_with_template
+  end
 end

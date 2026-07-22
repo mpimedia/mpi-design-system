@@ -19,6 +19,12 @@ Rails.application.routes.draw do
   # COMPUTED colours and prove the cascade resolves as intended.
   get "contrast_demo" => "contrast_demo#show"
 
+  # Demo page exercised by the nav_bar theme feature spec (#154) — renders the
+  # NavBar and AppShell inside data-bs-theme="light" and ="dark" wrappers against
+  # real compiled Bootstrap, so the spec can read COMPUTED colours and prove the
+  # nav surfaces/foregrounds adapt to the colour mode and clear WCAG AA.
+  get "nav_theme_demo" => "nav_theme_demo#show"
+
   if Rails.env.development?
     mount Lookbook::Engine, at: "/lookbook"
     root to: redirect("/lookbook")

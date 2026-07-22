@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+#
+# Verifies the theme-adaptive NavBar partial (#154). `_nav_bar.scss` was
+# converted so every colour resolves from a Bootstrap runtime CSS custom
+# property (var(--bs-*)) instead of a compile-time Sass variable, which is what
+# lets the nav follow `data-bs-theme`. This is the compile-level guard for that
+# conversion; the browser paint proof lives in spec/features/nav_bar_theme_spec.rb.
+#
+# It runs against the STANDALONE-compiled fixture (spec/fixtures/scss/
+# nav_bar_adaptive.scss -> tmp/compat/nav_bar.css). Because that fixture imports
+# the partial with neither the MPI tokens nor Bootstrap in scope, any colour that
+# reverted to a `$mpi-*`/`$danger` Sass var would already have failed to compile
+# — so the file reaching this script at all proves it is Sass-var-free. This
+# script then proves the stronger claim: every colour is var(--bs-*)-driven (no
+# frozen hex/rgb/keyword slipped back in) and the promised-unchanged geometry
+# survived.
+#
+# Run via `yarn build:css:compat`. Fails loudly on any divergence. Prove it by
+# breaking it: revert one mapping in _nav_bar.scss to a hex literal and this
+# script must go red (see .claude/rules/frontend.md "prove a new build guard by
+# breaking it").
+set -euo pipefail
+
+CSS="${1:-tmp/compat/nav_bar.css}"
+
+if [ ! -f "$CSS" ]; then
+  echo "verify-nav-bar-adaptive: $CSS not found — compile the fixture first" >&2
+  exit 1
+fi
+
+failures=0
+
+# 1. POSITIVE — every runtime custom property the conversion depends on must
+#    actually reach the compiled output. A swapped or dropped mapping shows up
+#    here as a missing token.
+REQUIRED_VARS=(
+  "var(--bs-body-bg)"
+  "var(--bs-border-color)"
+  "var(--bs-body-color)"
+  "var(--bs-secondary-color)"
+  "var(--bs-link-color)"
+  "var(--bs-primary)"
+  "var(--bs-danger)"
+  "var(--bs-tertiary-bg)"
+)
+for v in "${REQUIRED_VARS[@]}"; do
+  if ! grep -qF "$v" "$CSS"; then
+    echo "  MISSING   $v — expected in the compiled nav styles but not found" >&2
+    failures=$((failures + 1))
+  fi
+done
+
+# 2. STRONG NEGATIVE — every colour-bearing declaration's value must be a
+#    var(--bs-*) (the only allowed non-var value is the `2px solid transparent`
+#    placeholder, which carries no palette). Any hex/rgb/hsl/bare-keyword colour
+#    that leaked back in is a frozen palette that would NOT follow data-bs-theme.
+#    A grep for `!grep hex` alone is too weak (it permits rgb()/named colours), so
+#    this asserts the value side of every colour property, not just the absence of
+#    hex.
+offenders=$(grep -E '^[[:space:]]*(background|color|border)[a-z-]*:' "$CSS" \
+  | grep -vE 'var\(--bs-|transparent' || true)
+if [ -n "$offenders" ]; then
+  echo "  NON-VAR   colour declaration(s) that do not resolve from var(--bs-*):" >&2
+  printf '%s\n' "$offenders" | sed 's/^/            /' >&2
+  failures=$((failures + 1))
+fi
+
+# Belt-and-suspenders: no frozen colour value anywhere in the file.
+if grep -iEq '#[0-9a-f]{3,8}|rgb\(|hsl\(' "$CSS"; then
+  echo "  FROZEN    a #hex / rgb() / hsl() colour value is present — must be var(--bs-*)" >&2
+  failures=$((failures + 1))
+fi
+
+# 3. GEOMETRY — the conversion promised to touch colour only. These fixed
+#    dimensions must survive byte-for-byte.
+GEOMETRY=(
+  "height: 10px"
+  "height: 52px"
+  "height: 42px"
+  "width: 180px"
+)
+for g in "${GEOMETRY[@]}"; do
+  if ! grep -qF "$g" "$CSS"; then
+    echo "  GEOMETRY  '$g' missing — a non-colour dimension changed" >&2
+    failures=$((failures + 1))
+  fi
+done
+
+if [ "$failures" -gt 0 ]; then
+  echo "" >&2
+  echo "NavBar adaptive check FAILED with ${failures} problem(s)." >&2
+  echo "Every colour in _nav_bar.scss must resolve from a Bootstrap var(--bs-*)." >&2
+  exit 1
+fi
+
+echo "NavBar adaptive OK: _nav_bar.scss compiles standalone; every colour is var(--bs-*)-driven (no frozen hex/rgb/keyword) and the 10px/52px/42px + 180px geometry survives"

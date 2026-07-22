@@ -101,6 +101,7 @@ Then import the MPI tokens in `application.scss` using **one** of the two entry 
   ```scss
   @import "mpi_design_system/tokens";
   @import "bootstrap/scss/bootstrap";
+  @import "mpi_design_system/nav_bar";
   ```
 
 - **Modern Sass-module pipeline** — `@use` the dependency-free values module and feed the
@@ -115,11 +116,17 @@ Then import the MPI tokens in `application.scss` using **one** of the two entry 
   $info: mpi.$mpi-info;
   $body-color: mpi.$mpi-text;
   @import "bootstrap/scss/bootstrap";
+  @import "mpi_design_system/nav_bar";
   ```
 
   Map every token you rely on — Bootstrap keeps its own default for any you skip. In
   particular, an unmapped `$info` leaves Bootstrap's cyan (`#0DCAF0`) on `btn-info` /
   `text-bg-info`, which is outside the MPI palette.
+
+  The `nav_bar` partial styles the `NavBar` and `AppShell` components. Import it **after**
+  Bootstrap: it resolves entirely from Bootstrap's runtime CSS custom properties
+  (`var(--bs-*)`) — it has no compile-time Sass-variable dependency of its own — so it is
+  theme-adaptive and follows `data-bs-theme` automatically.
 
 ### 4. Use a component
 

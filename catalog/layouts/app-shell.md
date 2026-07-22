@@ -10,15 +10,32 @@ Global application frame used on every page of every MPI app. Provides the Nexus
 
 ## Design Decisions
 
-- **Brand mark:** Nexus SVG diamond logo (navy arms + primary blue center diamond) + "MARKAZ" text (`font-weight: 300`, `letter-spacing: 0.12em`, `color: #1B2A4A`). NOT "X MARKAZ" text -- corrected after design review. The default mark's fills are token-sourced (`.mds-navbar__brand-arm` → `$mpi-brand-navy`, `.mds-navbar__brand-center` → `$mpi-primary`, with a `currentColor` fallback), not hardcoded hex. Callers can override the whole mark by forwarding `logo_mark:` to NavBar
-- **White background:** Canonical style (V2). Both top bar and sub-nav use white background with bottom border (`#DEE2E6`)
+- **Theme-adaptive colours (#154):** every colour in `_nav_bar.scss` (which styles this shell)
+  resolves from a Bootstrap **runtime CSS custom property** (`var(--bs-*)`), not a frozen hex, so
+  the whole frame follows `data-bs-theme`. The values below still resolve under the default (light)
+  MPI configuration, but they are now the consumer's mapped Bootstrap tokens.
+- **Brand mark:** Nexus SVG diamond logo — navy arms drawn in `currentColor` (inheriting the brand
+  link's `var(--bs-body-color)`, applied via `.mds-navbar__brand-arm`) + a primary-blue centre
+  diamond in `var(--bs-link-color)` (`.mds-navbar__brand-center`) + "MARKAZ" text
+  (`font-weight: 300`, `letter-spacing: 0.12em`, `color: var(--bs-body-color)`). NOT "X MARKAZ"
+  text -- corrected after design review. Callers can override the whole mark by forwarding
+  `logo_mark:` to NavBar (see NavBar Props / API).
+- **Surfaces:** top bar is `var(--bs-body-bg)`, sub-nav / main content / breadcrumb are
+  `var(--bs-tertiary-bg)`, all with a `var(--bs-border-color)` bottom border. (Before #154 both bars
+  were a frozen white `#fff`.)
 - **Top bar height:** 52px. Sub-nav height: 42px
 - **Level 1 nav:** 6 items -- Dashboard, Content, CRM, Rights & Avails, Releases, Screenings
 - **Level 2 nav:** Section-specific. CRM: Dashboard, Contacts, Accounts, Engagements. Other sections TBD
-- **Global search:** Right-aligned input with search icon, contextual placeholder based on current section. 240px wide, `background: #F5F7FA`, `border-radius: 6px`
-- **User avatar:** 32px AvatarCircle component with user initials, primary blue (`#2E75B6`), right of search
-- **Content sidebar:** Section-specific (confirmed `tokens/components.md`). Content section gets a title list sidebar with Titles/Library tabs, search, label filter chips, and a scrollable title list with metadata scores. Other sections do not have a sidebar by default
-- **Content area:** `background: #F5F7FA`, `padding: 24px`. All page content renders here
+- **Global search:** Right-aligned input with search icon, contextual placeholder based on current
+  section. 240px wide, `border-radius: 6px`. The icon prepend uses `bg-body` so it follows the colour
+  mode instead of staying a white patch in dark
+- **User avatar:** 32px AvatarCircle component with user initials on primary blue (`var(--bs-primary)`,
+  a fixed status hue), right of search
+- **Content sidebar:** Section-specific (confirmed `tokens/components.md`). Content section gets a title
+  list sidebar (`var(--bs-body-bg)` surface, `var(--bs-border-color)` right border) with Titles/Library
+  tabs, search, label filter chips, and a scrollable title list with metadata scores. Other sections do
+  not have a sidebar by default
+- **Content area:** `background: var(--bs-tertiary-bg)`, `padding: 24px`. All page content renders here
 - **Content Dashboard question:** Open -- Badie wants content search easily accessible. May get a dedicated Content Dashboard or the global Dashboard may default to showing title search. This is a product decision to be resolved separately
 
 ## Variants
@@ -73,13 +90,16 @@ end
 
 ## Key Styles
 
+Colours resolve from Bootstrap runtime custom properties (`var(--bs-*)`), so the same rules paint
+both colour modes -- see `app/assets/stylesheets/mpi_design_system/_nav_bar.scss` (#154).
+
 ```css
-.topbar { background: #fff; border-bottom: 1px solid #DEE2E6; height: 52px; padding: 0 24px; }
-.subnav { background: #fff; border-bottom: 1px solid #DEE2E6; height: 42px; padding: 0 24px; }
-.nav-item { color: #6C757D; padding: 14px 12px; font-size: 14px; font-weight: 500; }
-.nav-item.active { color: #2E75B6; border-bottom: 2px solid #2E75B6; font-weight: 600; }
-.sidebar { width: 180px; border-right: 1px solid #DEE2E6; background: #fff; padding: 16px; }
-.content-area { padding: 24px; background: #F5F7FA; }
+.mds-navbar          { background: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color); height: 52px; }
+.mds-subnav          { background: var(--bs-tertiary-bg); border-bottom: 1px solid var(--bs-border-color); height: 42px; }
+.mds-navbar__section-link         { color: var(--bs-secondary-color); padding: 14px 12px; font-size: 14px; font-weight: 500; }
+.mds-navbar__section-link--active { color: var(--bs-link-color); border-bottom-color: var(--bs-link-color); font-weight: 600; }
+.mds-shell__sidebar  { width: 180px; border-right: 1px solid var(--bs-border-color); background: var(--bs-body-bg); padding: 16px; }
+.mds-shell__main     { padding: 24px; background: var(--bs-tertiary-bg); }
 ```
 
 ## Accessibility
