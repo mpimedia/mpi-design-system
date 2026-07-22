@@ -74,6 +74,15 @@ routinely survive a narrow sweep and ship green:
   numbers; a line-scoped sweep misses second occurrences in the same file. (Reference: #128
   tokenized Badge's filled contrast; the external review caught a retired `bg-warning` +
   `text-dark` example still in `.claude/rules/testing.md` that a line-scoped sweep skipped.)
+- **Re-run the sweep against the *rebased* file, not the one you branched from — a sibling PR can
+  re-introduce the pattern you're removing.** A conversion often sits in review while another PR
+  touches the same component; its new rules land in your file on rebase and, because they compile,
+  ship green through your already-passing guards. Before finalizing a conversion, re-grep the
+  *rebased* artifact (e.g. `grep '\$' the-partial` for a Sass-var conversion), not the version at
+  branch time. (Reference: #154 converted `_nav_bar.scss` to `var(--bs-*)`; #155 merged mid-review
+  and added `.mds-navbar__brand-arm { fill: $mpi-brand-navy }` / `-center { fill: $mpi-primary }` —
+  two fresh frozen fills the rebase surfaced, which #154 then had to convert too, and whose
+  per-selector bindings the compile guard had to grow.)
 
 ## Component Catalog First
 
@@ -190,6 +199,16 @@ Rules:
   tokenised the NavBar mark's fills; without importing `_nav_bar.scss` in the dummy app the mark
   rendered monochrome in Lookbook, and `yarn build:css` could not see the rule at all — a grep
   guard against it would have false-passed.)
+- **A partial's compile guard must pin each selector's binding, not merely that a token appears —
+  and be proven by a *swap*, not only a deletion.** A guard that greps "`var(--bs-body-bg)` occurs
+  somewhere" false-greens on a token *swap* (navbar↔subnav) because both tokens still appear, and
+  on a raw colour in a property it never scanned (`fill`, `outline`, `box-shadow`). Parse the
+  compiled `.mds-*` CSS and assert `selector{property:value}` for every rule, and reject a raw
+  colour (hex/rgb/hsl/named) in *any* declaration. Prove it by swapping two valid tokens, not just
+  by deleting one — a deletion-only test passes a guard that cannot tell two tokens apart.
+  (Reference: #154's `bin/verify-nav-bar-adaptive` began as a token-presence check; the PR review
+  caught that a navbar↔subnav swap and a `fill: red` both shipped green, so it was rewritten as a
+  per-selector binding proof.)
 
 ## Stimulus Controllers
 
