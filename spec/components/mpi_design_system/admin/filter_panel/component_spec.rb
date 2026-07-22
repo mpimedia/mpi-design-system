@@ -49,17 +49,18 @@ RSpec.describe MpiDesignSystem::Admin::FilterPanel::Component, type: :component 
   it "renders option rows as body-text rows wrapping their checkbox" do
     render_inline(described_class.new(sections: sections))
 
-    # Structurally specific: the checkbox must be a descendant of the .text-body
-    # row itself, so the class landing on an ancestor would not false-pass.
-    expect(page).to have_css("div.text-body input[type='checkbox'][name='tag_group[]'][value='distribution']")
-    expect(page).to have_css("div.text-body input[type='checkbox'][name='tag_group[]'][value='outreach']")
-    expect(page).to have_css("div.text-body input[type='checkbox'][name='tag_group[]'][value='press_festival']")
+    # Structurally specific via child combinators: text-body must be on the option
+    # ROW that directly wraps `<label> > <input>`. `div.text-body input` alone would
+    # false-pass if the class moved to an ancestor div (.filter-section / .pb-2). (Codex)
+    expect(page).to have_css("div.text-body > label > input[type='checkbox'][name='tag_group[]'][value='distribution']")
+    expect(page).to have_css("div.text-body > label > input[type='checkbox'][name='tag_group[]'][value='outreach']")
+    expect(page).to have_css("div.text-body > label > input[type='checkbox'][name='tag_group[]'][value='press_festival']")
   end
 
   it "renders checked options" do
     render_inline(described_class.new(sections: sections))
 
-    expect(page).to have_css("div.text-body input[type='checkbox'][value='outreach'][checked]")
+    expect(page).to have_css("div.text-body > label > input[type='checkbox'][value='outreach'][checked]")
   end
 
   it "renders option labels" do
@@ -101,7 +102,7 @@ RSpec.describe MpiDesignSystem::Admin::FilterPanel::Component, type: :component 
     render_inline(described_class.new(sections: sections_no_count))
 
     # Positive first: prove the option row rendered, then the absence of its count.
-    expect(page).to have_css("div.text-body input[type='checkbox'][value='7d']")
+    expect(page).to have_css("div.text-body > label > input[type='checkbox'][value='7d']")
     expect(page).to have_text("Last 7 days")
     expect(page).not_to have_css("span.text-body-secondary")
   end
@@ -156,39 +157,52 @@ RSpec.describe MpiDesignSystem::Admin::FilterPanel::Component, type: :component 
     expect(page).to have_css("aside.bg-body.border[aria-label='Filters']")
   end
 
-  # Guard what survives: the conversion stripped colour but kept the geometry,
-  # layout, and typography inline. These declarations have no Bootstrap
-  # equivalent here, so pin one surviving declaration per changed helper —
-  # otherwise the next edit that drops one ships green. (See
-  # .claude/rules/testing.md "guard what survives", modelled on #149 Pagination.)
-  it "keeps the non-colour geometry, layout, and typography that has no Bootstrap equivalent" do
+  # Guard what survives (EXACT match): the conversion stripped colour but kept the
+  # geometry, layout, typography, and button resets inline. Per .claude/rules/testing.md
+  # "guard what survives" (#149) — and Codex's PR review — pin the COMPLETE surviving
+  # inline style of every changed element, not one representative declaration, so any
+  # later edit that drops, adds, or reorders a survivor reddens rather than shipping
+  # green. (render_inline proves the emitted style string, not computed paint.)
+  it "keeps every surviving non-colour inline style of each converted element exactly" do
     render_inline(described_class.new(sections: sections))
 
-    # panel geometry
-    expect(page).to have_css("aside.bg-body.border[style*='min-width: 220px']")
-    # title typography
+    # panel <aside>
     expect(page).to have_css(
-      "div.text-body[style*='font-weight: 700'][style*='letter-spacing: 0.06em']",
+      "aside.bg-body.border[style='border-radius: 8px; padding: 0; min-width: 220px']"
+    )
+    # title <div>
+    expect(page).to have_css(
+      "div.text-body[style='font-size: 13px; font-weight: 700; text-transform: uppercase; " \
+      "letter-spacing: 0.06em; padding: 14px 16px 10px']",
       text: "Filters"
     )
-    # section-button layout
+    # section-header <button> — incl. the transparent/borderless reset that keeps it
+    # chromeless; dropping either reset regresses the toggle to a default grey button.
     expect(page).to have_css(
-      "button.text-body[style*='justify-content: space-between'][style*='width: 100%']",
+      "button.text-body[style='display: flex; align-items: center; " \
+      "justify-content: space-between; padding: 10px 16px; cursor: pointer; border: none; " \
+      "background: transparent; width: 100%; font-size: 13px; font-weight: 600; text-align: left']",
       text: "Tag Group"
     )
-    # section-button reset: transparent, borderless chrome. Dropping either
-    # `background: transparent` or `border: none` regresses the collapse toggle
-    # to a default grey button — a visible regression no colour test catches.
+    # option row <div>
     expect(page).to have_css(
-      "button.text-body[style*='background: transparent'][style*='border: none']",
-      text: "Tag Group"
+      "div.text-body[style='display: flex; align-items: center; justify-content: space-between; " \
+      "padding: 4px 16px 4px 20px; font-size: 13px']"
     )
-    # option-row spacing
-    expect(page).to have_css("div.text-body[style*='padding: 4px 16px 4px 20px']")
-    # count sizing
-    expect(page).to have_css("span.text-body-secondary[style*='font-size: 11px']", text: "42")
-    # chevron transition (both chevrons keep it)
-    expect(page).to have_css("i.bi.bi-chevron-down[style*='transition: transform 0.2s ease']", count: 2)
+    # count <span>
+    expect(page).to have_css("span.text-body-secondary[style='font-size: 11px;']", text: "42")
+    # chevron <i> — expanded (no rotate)
+    expect(page).to have_css(
+      "i.bi.bi-chevron-down.text-body-secondary" \
+      "[style='font-size: 12px; transition: transform 0.2s ease;']",
+      count: 1
+    )
+    # chevron <i> — collapsed (adds the rotate)
+    expect(page).to have_css(
+      "i.bi.bi-chevron-down.text-body-secondary" \
+      "[style='font-size: 12px; transition: transform 0.2s ease; transform: rotate(-90deg);']",
+      count: 1
+    )
   end
 
   # Absence guard, paired after the positive card assertion: the conversion's
