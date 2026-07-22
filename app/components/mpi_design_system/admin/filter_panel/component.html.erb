@@ -1,15 +1,16 @@
-<aside style="<%= panel_styles %>" aria-label="Filters">
-  <div style="<%= header_styles %>">Filters</div>
+<aside class="bg-body border" style="<%= panel_styles %>" aria-label="Filters">
+  <div class="text-body" style="<%= header_styles %>">Filters</div>
 
   <form action="<%= @form_action %>" method="get">
     <% @sections.each_with_index do |section, index| %>
       <% unless index == 0 %>
-        <hr style="<%= divider_styles %>">
+        <hr class="border-top opacity-100 m-0">
       <% end %>
 
       <div class="filter-section">
         <button
           type="button"
+          class="text-body"
           style="<%= section_header_styles %>"
           data-bs-toggle="collapse"
           data-bs-target="#<%= section_id(index) %>"
@@ -17,7 +18,7 @@
           aria-controls="<%= section_id(index) %>"
         >
           <%= section[:title] %>
-          <i class="bi bi-chevron-down"
+          <i class="bi bi-chevron-down text-body-secondary"
              aria-hidden="true"
              style="<%= section_collapsed?(section) ? chevron_collapsed_styles : chevron_styles %>"></i>
         </button>
@@ -26,7 +27,7 @@
              class="collapse<%= ' show' unless section_collapsed?(section) %>">
           <div class="pb-2">
             <% section[:options]&.each do |option| %>
-              <div style="<%= option_styles %>">
+              <div class="text-body" style="<%= option_styles %>">
                 <label style="<%= option_label_styles %>">
                   <input type="checkbox"
                          name="<%= section[:field_name] %>"
@@ -37,7 +38,7 @@
                   <%= option[:label] %>
                 </label>
                 <% unless option[:count].nil? %>
-                  <span style="<%= count_styles %>"><%= option[:count] %></span>
+                  <span class="text-body-secondary" style="<%= count_styles %>"><%= option[:count] %></span>
                 <% end %>
               </div>
             <% end %>

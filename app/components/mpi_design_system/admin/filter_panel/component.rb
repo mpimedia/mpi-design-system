@@ -19,8 +19,6 @@ module MpiDesignSystem
 
         def panel_styles
           [
-            "background: #fff",
-            "border: 1px solid #DEE2E6",
             "border-radius: 8px",
             "padding: 0",
             "min-width: 220px"
@@ -33,7 +31,6 @@ module MpiDesignSystem
             "font-weight: 700",
             "text-transform: uppercase",
             "letter-spacing: 0.06em",
-            "color: #1B2A4A",
             "padding: 14px 16px 10px"
           ].join("; ")
         end
@@ -50,7 +47,6 @@ module MpiDesignSystem
             "width: 100%",
             "font-size: 13px",
             "font-weight: 600",
-            "color: #1B2A4A",
             "text-align: left"
           ].join("; ")
         end
@@ -61,8 +57,7 @@ module MpiDesignSystem
             "align-items: center",
             "justify-content: space-between",
             "padding: 4px 16px 4px 20px",
-            "font-size: 13px",
-            "color: #1B2A4A"
+            "font-size: 13px"
           ].join("; ")
         end
 
@@ -76,19 +71,15 @@ module MpiDesignSystem
         end
 
         def count_styles
-          "font-size: 11px; color: #6C757D;"
-        end
-
-        def divider_styles
-          "border: none; border-top: 1px solid #DEE2E6; margin: 0;"
+          "font-size: 11px;"
         end
 
         def chevron_styles
-          "font-size: 12px; color: #6C757D; transition: transform 0.2s ease;"
+          "font-size: 12px; transition: transform 0.2s ease;"
         end
 
         def chevron_collapsed_styles
-          "font-size: 12px; color: #6C757D; transition: transform 0.2s ease; transform: rotate(-90deg);"
+          "font-size: 12px; transition: transform 0.2s ease; transform: rotate(-90deg);"
         end
 
         def section_id(index)
