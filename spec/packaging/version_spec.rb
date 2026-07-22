@@ -12,11 +12,13 @@ require "spec_helper"
 # components (#130), and the changelog release guard (#127); v0.8.0 (#149) makes
 # Admin::Pagination theme-adaptive — the Track 2 pilot conversion (epic #147);
 # v0.9.0 releases the NavBar/AppShell theme-adaptive conversion (#154, phase 6) and the
-# StatCard/AvatarStack/ActiveFilterBar small conversions (#150, phase 2). This spec
+# StatCard/AvatarStack/ActiveFilterBar small conversions (#150, phase 2); v0.10.0 batches
+# the FilterChipBar/DataTable/TagChip semantic conversion (#151, phase 3) and the FilterPanel
+# theme-adaptive conversion (#152, phase 4 — the AvatarCircle half is split to #169). This spec
 # fails if the constant regresses, keeping lib/mpi_design_system/version.rb in lockstep
 # with CHANGELOG.md and the git tag.
 RSpec.describe "MpiDesignSystem::VERSION" do
-  it "is 0.9.0" do
-    expect(MpiDesignSystem::VERSION).to eq("0.9.0")
+  it "is 0.10.0" do
+    expect(MpiDesignSystem::VERSION).to eq("0.10.0")
   end
 end
