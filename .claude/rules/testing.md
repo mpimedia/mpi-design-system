@@ -270,6 +270,34 @@ fail *closed*, which is luck rather than design. The instructive part is the sel
 the author executed the gate whose logic he doubted and skipped the line that looked obvious,
 so the doubted line got fixed and the obvious one shipped broken. Run all of them.
 
+**Verifying the gate is not verifying the value it reads.** #163 documented a release runbook whose
+CI-green gate was the exact `sort -u` form above — already verified against
+`success`/`failure`/`skipped`/`cancelled`/`empty`. It still shipped **fail-open**, because the bug
+was in the command that *produces* `$CONCLUSIONS`, not in the gate. Two `gh` traps, both reproduced
+by execution:
+
+```bash
+# FAIL-OPEN — a still-running check has conclusion null, which gh renders as a BLANK line, and $()
+# strips a trailing blank, so [success, <pending>] collapses to "success" and the gate proceeds.
+CONCLUSIONS=$(gh api "$url" --jq '.check_runs[].conclusion')
+
+# CLOSED — map null to a non-success token so a pending check can't vanish; --paginate past the
+# 30-results-per-page default; and || abort, because gh streams pages and a mid-pagination failure
+# otherwise leaves a partial, green-looking list in the variable (VAR=$(cmd) ignores cmd's status).
+CONCLUSIONS=$(gh api --paginate "$url" --jq '.check_runs[] | .conclusion // "pending"') \
+  || { echo "ABORT: could not read CI checks"; exit 1; }
+```
+
+The bug the author cannot see is the one in the input, not the assertion. #163 shipped that
+fail-open plus a `git tag` that ran before the `git push` it should have gated — and the *first
+round of fixes* introduced two more (a substring `grep` version check that also matched
+`OLD_VERSION =` and treated `.` as a wildcard; `--paginate` swallowing a failed read). Every one
+was caught by an **independent model told to break the runbook**, across two rounds — none by the
+author's own failure-case tests, which were real but tested the cases the author already imagined.
+For a step awkward to retract, that second adversary is not optional polish; it is the layer that
+catches the fail-open you wrote and therefore cannot see. (The hardened block lives in
+`CONTRIBUTING.md` § Release.)
+
 ## Anti-Patterns
 
 - Never assert only that a component "renders without error" — that is a false green
@@ -281,6 +309,10 @@ so the doubted line got fixed and the obvious one shipped broken. Run all of the
 - Never publish a command, gate, or runbook step you have not executed against its failure
   case — a check in prose is still a check, and it is the kind no suite will ever run for you
   — see **A check written in documentation is still a check** above
+- Never assume that verifying a gate covers the command that produces its input — in #163 the
+  `sort -u` CI gate was sound while the `gh` producer feeding it silently dropped a still-running
+  check; the fail-open lived in the producer, and only an independent adversary caught it — see
+  **A check written in documentation is still a check** above
 - Never test private methods — test through the rendered output
 - Never reference models, the database, or request specs — the engine has none (browser
   feature specs exist, but only for genuine JS behavior — see Stack; default to `render_inline`)
