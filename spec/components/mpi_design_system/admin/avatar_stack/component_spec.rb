@@ -116,12 +116,16 @@ RSpec.describe MpiDesignSystem::Admin::AvatarStack::Component, type: :component 
 
     # AvatarStack's own only hex is the chip's background/foreground pair — its visible
     # avatars are AvatarCircle sub-renders, whose palette is swept by AvatarCircle's own
-    # spec, so an unscoped rendered_content sweep would red on them. Scoped to the chip's
-    # style, deleting the two intentional colours must leave it hex-free — catching any
-    # OTHER hardcoded hex introduced into the chip. (A re-pinned white ring is caught by
-    # the `solid #fff` guard above, not here: deleting the derived #fff foreground would
-    # also mask it in this residual.)
-    it "emits no chip hex beyond the two intentional overflow colours" do
+    # spec, so an unscoped rendered_content sweep would red on them.
+    #
+    # A global gsub of the two allowed hex strings is a false green: it deletes those
+    # values from ANY property, so a NEW `outline: 1px solid #64748B` (a hex re-introduced
+    # in a different declaration) would be gsubbed away and escape detection. Instead,
+    # parse the style into `property: value` declarations and assert EXACTLY the two
+    # permitted declarations carry a hex — any hex in a third declaration reddens here.
+    # (The `solid #fff`/`solid #ffffff` ring guards above stay: a re-pinned white ring
+    # is a hex in the derived-foreground's own value, which this pair-level check allows.)
+    it "permits hex in exactly the two intentional chip declarations and nowhere else" do
       render_inline(described_class.new(names: names, max: 4))
 
       chip = page.find("span[aria-hidden='true']")
@@ -129,11 +133,14 @@ RSpec.describe MpiDesignSystem::Admin::AvatarStack::Component, type: :component 
 
       background = described_class::OVERFLOW_COLOR
       foreground = MpiDesignSystem::ColorContrast.accessible_foreground(background)
-      residual = chip[:style]
-        .gsub(/#{Regexp.escape(background)}/i, "")
-        .gsub(/#{Regexp.escape(foreground)}/i, "")
 
-      expect(residual).not_to match(hex_literal)
+      declarations = chip[:style].split(";").map(&:strip).reject(&:empty?)
+      hex_bearing = declarations.select { |declaration| declaration.match?(hex_literal) }
+
+      expect(hex_bearing).to contain_exactly(
+        "background-color: #{background}",
+        "color: #{foreground}"
+      )
     end
   end
 end

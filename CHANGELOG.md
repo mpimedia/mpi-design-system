@@ -11,9 +11,10 @@ include breaking changes).
 
 ### Changed
 - **`Admin::StatCard`, `Admin::AvatarStack`, and `Admin::ActiveFilterBar` are theme-adaptive** —
-  the three components no longer pin a light palette in inline styles; every colour now resolves
-  from a Bootstrap semantic utility, so each follows `data-bs-theme` and the consuming app's mapped
-  tokens. **StatCard**: the card is `bg-body border rounded-3` (was `#fff` / `1px solid #DEE2E6` /
+  the three components no longer pin a light palette in inline styles; every converted colour now
+  resolves from a Bootstrap semantic utility (the one documented exception is AvatarStack's
+  `#64748B` chip background, which has no Bootstrap semantic equivalent — see below), so each
+  follows `data-bs-theme` and the consuming app's mapped tokens. **StatCard**: the card is `bg-body border rounded-3` (was `#fff` / `1px solid #DEE2E6` /
   `border-radius: 8px` — `rounded-3` is `--bs-border-radius-lg` = 8px, so the radius is preserved),
   the label `text-body-secondary` (was `#6C757D`), the value `text-body` or, when `alert:`,
   `text-danger` (was `#1B2A4A` / `#DC3545`), and the trend `text-success-emphasis` /

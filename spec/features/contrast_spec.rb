@@ -147,6 +147,60 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
       expect(background).to eq(MpiDesignSystem::Admin::AvatarStack::Component::OVERFLOW_COLOR)
       expect(measured).to be >= 4.5
     end
+
+    # #150: the separator ring is `border: 2px solid var(--bs-body-bg)`. render_inline
+    # can only see the literal `var(--bs-body-bg)` string in the style attribute — it
+    # cannot prove the variable RESOLVES. A browser can: an unresolved/transparent ring
+    # would compute rgba(0, 0, 0, 0) (or the currentColor fallback), not the surface
+    # colour. In light mode `--bs-body-bg` is the page body bg (#FFFFFF).
+    it "resolves the ring border to the light body background (var(--bs-body-bg) = #FFFFFF)" do
+      expect(page).to have_css("#stack span[aria-hidden='true']")
+      expect(border_color_of("#stack span[aria-hidden='true']")).to eq("rgb(255, 255, 255)")
+    end
+
+    # And the whole point of the conversion: under data-bs-theme='dark' the ring tracks
+    # the dark surface (--bs-body-bg = #212529) instead of staying the retired white.
+    it "tracks the dark surface for the ring under data-bs-theme='dark' (#212529)" do
+      expect(page).to have_css("#dark-stack span[aria-hidden='true']")
+      expect(border_color_of("#dark-stack span[aria-hidden='true']")).to eq("rgb(33, 37, 41)")
+    end
+  end
+
+  # StatCard (#150). render_inline proves the `-emphasis` trend classes and `.text-body`
+  # value class are EMITTED (the unit spec covers that); only a browser proves they PAINT
+  # an AA-clean colour once the runtime `--bs-*-text-emphasis` / `--bs-body-color` chain
+  # resolves against the compiled bundle. The 12px trend is small text (AA 4.5:1); this is
+  # the external-oracle proof that the deliberate `-emphasis` choice actually clears it in
+  # BOTH colour modes, and that the value colour resolves. Painted values measured in Chrome.
+  describe "StatCard" do
+    {
+      "light" => { root: "#stat-card", trend_fg: "#0E402B", value_fg: "#1B2A4A", surface: "#FFFFFF" },
+      "dark" => { root: "#dark-stat-card", trend_fg: "#7AC6A6", value_fg: "#DEE2E6", surface: "#212529" }
+    }.each do |mode, expected|
+      context "in #{mode} mode" do
+        # Pinning the painted trend_fg is load-bearing: base `.text-success` would paint
+        # #22A06B (3.33:1 on the light card — below the 4.5:1 small-text floor), and a
+        # dropped class would fall back to inherited body colour. Only the exact
+        # `-emphasis` value distinguishes "the AA fix resolved" from either.
+        it "paints the -emphasis trend token AA-clean on the card surface (12px small text, 4.5:1)" do
+          measured, foreground, background = ratio_for("#{expected[:root]} .text-success-emphasis")
+
+          expect(foreground).to eq(expected[:trend_fg])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} trend #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        it "paints the value in the adaptive body colour above the AA floor" do
+          measured, foreground, background = ratio_for("#{expected[:root]} .text-body")
+
+          expect(foreground).to eq(expected[:value_fg])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} value #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+      end
+    end
   end
 
   # The load-bearing part of this spec. Everything below is about whether the
@@ -211,6 +265,11 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
       foreground = computed("#dark-active-filter-bar .text-body-secondary", "color")
       background = computed("#dark-active-filter-bar [role='toolbar']", "backgroundColor")
 
+      # Pin the PAINTED foreground, not just the ratio. `.text-body-secondary` composites
+      # to rgba(dark body-color, .75) over the #343A40 bar = #B4B8BD (measured in Chrome).
+      # Without this, dropping the class lets the label fall back to inherited body colour
+      # and the ratio alone can't tell "the token resolved" from "something else painted".
+      expect(foreground).to eq("#B4B8BD")
       expect(background).to eq("#343A40")
       expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5,
         "dark-mode label #{foreground} on adaptive bar #{background} = " \
@@ -405,6 +464,13 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
 
       # #150: the light bar now computes `--bs-secondary-bg` (#E9ECEF), not the retired
       # pinned `#F5F7FA`. The label follows the surface instead of assuming it.
+      #
+      # Pin the PAINTED foreground too: `.text-body-secondary` composites to
+      # rgba(MPI navy body-color, .75) over #E9ECEF = #4F5B73 (measured in Chrome). The
+      # ratio alone is a false green here — if the class stopped applying the label falls
+      # back to inherited navy body text (#1B2A4A), which STILL clears AA on this light
+      # bar, so only the painted value distinguishes "token resolved" from "fell back".
+      expect(foreground).to eq("#4F5B73")
       expect(background).to eq("#E9ECEF")
       expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5
     end

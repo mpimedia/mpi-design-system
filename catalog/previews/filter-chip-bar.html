@@ -22,7 +22,7 @@
     .group-chip.all .count { color: #6C757D; }
 
     /* Active filter pills — from Screen 6 */
-    .active-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-right: 8px; white-space: nowrap; }
+    .active-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bs-secondary-color); margin-right: 8px; white-space: nowrap; }
     /*
       Static hand-authored snapshot — the live ViewComponent is canonical, and
       catalog/previews/screenshots/filter-chip-bar.png is stale pending regeneration.
@@ -37,21 +37,35 @@
       Note the `pill-close` has NO opacity: the retired `opacity: 0.8` faded white
       to an effective #D5E3F0 over the pill — 3.71:1, below the WCAG AA floor (#130).
     */
-    /* #150: the ActiveFilterBar surface is now `.bg-body-secondary.rounded` (adaptive),
-       so the active-pill rows below sit on `--bs-secondary-bg`. MPI does not override
-       $secondary-bg or $body-bg, so these equal stock Bootstrap (#E9ECEF / #FFF) — they
-       are declared for drift-safety and to document the surface, and flip correctly if a
-       consumer ever overrides the token or the mockup gains a data-bs-theme="dark" block. */
+    /* #150: the ActiveFilterBar surface is now `.bg-body-secondary.rounded` (adaptive), so
+       the active-pill rows below sit on `--bs-secondary-bg`, and the ACTIVE label + Clear-all
+       resolve from `--bs-secondary-color` / `--bs-link-color` (the shipped component renders
+       them via `.text-body-secondary`). This page loads STOCK Bootstrap from a CDN, whose
+       tokens are grey/indigo, so we mirror the engine's `_tokens.scss` mapping here: MPI does
+       not override $secondary-bg or $body-bg (so #E9ECEF / #FFF equal stock), but $body-color
+       maps to MPI navy #1B2A4A — so `--bs-secondary-color` is rgba(navy, .75), not stock grey,
+       and $link-color maps to $primary #2E75B6. The `[data-bs-theme="dark"]` block below mirrors
+       the dark values the engine produces (Bootstrap's dark $secondary-bg/$secondary-color plus
+       MPI's dark link #82ACD3), so the dark active-bar example paints readably rather than in
+       stock Bootstrap's palette. */
     :root {
       --bs-primary-rgb: 46, 117, 182;
       --bs-secondary-bg: #E9ECEF;
       --bs-body-bg: #FFFFFF;
+      --bs-secondary-color: rgba(27, 42, 74, 0.75);
+      --bs-link-color: #2E75B6;
+    }
+    [data-bs-theme="dark"] {
+      --bs-secondary-bg: #343A40;
+      --bs-body-bg: #212529;
+      --bs-secondary-color: rgba(222, 226, 230, 0.75);
+      --bs-link-color: #82ACD3;
     }
     .active-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 12px; font-weight: 500; text-decoration: none; white-space: nowrap; }
     .active-pill .pill-close { font-size: 10px; cursor: pointer; margin-left: 2px; }
     .active-pill .pill-close:hover { text-decoration: none; }
-    .clear-all { font-size: 13px; color: #6C757D; text-decoration: none; margin-left: 8px; }
-    .clear-all:hover { color: #2E75B6; text-decoration: underline; }
+    .clear-all { font-size: 13px; color: var(--bs-secondary-color); text-decoration: none; margin-left: 8px; }
+    .clear-all:hover { color: var(--bs-link-color); text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -108,6 +122,20 @@
     <div class="bg-body-secondary rounded d-flex align-items-center flex-wrap gap-2" style="max-width:800px; padding:10px 16px;">
       <span class="active-label">ACTIVE:</span>
       <span class="active-pill rounded-pill text-bg-primary">Location: Los Angeles <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Location: Los Angeles"><i class="bi bi-x"></i></button></span>
+      <a class="clear-all" href="#">Clear all</a>
+    </div>
+  </div>
+
+  <!-- Active filter pills — dark colour mode (#150) -->
+  <!-- The #150 conversion drops the `data-bs-theme="light"` pin so the bar tracks the
+       colour mode. `.bg-body-secondary` flips to #343A40, the ACTIVE label and Clear-all
+       (via --bs-secondary-color) stay readable, and the pills keep MPI primary. -->
+  <div class="preview-section" data-bs-theme="dark" style="background:#212529; padding:16px; border-radius:8px;">
+    <div class="preview-label">Active Filter Pills — Dark Mode (Adaptive Surface)</div>
+    <div class="bg-body-secondary rounded d-flex align-items-center flex-wrap gap-2" style="max-width:800px; padding:10px 16px;">
+      <span class="active-label">ACTIVE:</span>
+      <span class="active-pill rounded-pill text-bg-primary">Keyword: investors <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Keyword: investors"><i class="bi bi-x"></i></button></span>
+      <span class="active-pill rounded-pill text-bg-primary">Group: Buyers <button style="background:none;border:none;color:inherit;padding:0;font-size:10px;cursor:pointer;margin-left:2px;" aria-label="Remove filter: Group: Buyers"><i class="bi bi-x"></i></button></span>
       <a class="clear-all" href="#">Clear all</a>
     </div>
   </div>

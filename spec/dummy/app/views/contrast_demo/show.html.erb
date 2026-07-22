@@ -37,6 +37,21 @@
         ) %>
   </section>
 
+  <%# StatCard (#150) — the card surface, value, and trend all resolve from Bootstrap
+      utilities after the conversion. render_inline proves the classes are emitted; only
+      a browser proves the `-emphasis` trend token actually PAINTS an AA-clean small-text
+      colour on the card surface, and that `.text-body` resolves for the value. Rendered
+      again inside #dark-mode below so the spec measures both colour modes. %>
+  <section id="stat-card" class="mb-4">
+    <%= render MpiDesignSystem::Admin::StatCard::Component.new(
+          label: "Total Contacts",
+          value: "2,307",
+          trend_text: "34 this month",
+          trend_direction: :up,
+          trend_sentiment: :positive
+        ) %>
+  </section>
+
   <section id="active-filter-bar" class="mb-4">
     <%= render MpiDesignSystem::Admin::ActiveFilterBar::Component.new(
           filters: [
@@ -107,6 +122,27 @@
     </div>
     <div id="dark-avatars">
       <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: "Mona Habib") %>
+    </div>
+    <%# #150: the AvatarStack `+N` chip's separator ring is `var(--bs-body-bg)`. Inside
+        this dark section `--bs-body-bg` resolves to Bootstrap's dark default (#212529),
+        so the ring border must compute rgb(33, 37, 41) — proving the var resolved rather
+        than pinning a light #fff. %>
+    <div id="dark-stack" class="mb-3">
+      <%= render MpiDesignSystem::Admin::AvatarStack::Component.new(
+            names: [ "Alice Wong", "Bob Smith", "Carol Davis", "Dave Ruiz", "Eve Fox", "Frank Ito" ],
+            max: 4
+          ) %>
+    </div>
+    <%# #150: StatCard under dark mode. The `-emphasis` trend token and `.text-body` value
+        must stay AA against the dark card surface (--bs-body-bg = #212529). %>
+    <div id="dark-stat-card" class="mb-3">
+      <%= render MpiDesignSystem::Admin::StatCard::Component.new(
+            label: "Total Contacts",
+            value: "2,307",
+            trend_text: "34 this month",
+            trend_direction: :up,
+            trend_sentiment: :positive
+          ) %>
     </div>
   </section>
 </main>

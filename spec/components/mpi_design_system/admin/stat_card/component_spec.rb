@@ -161,20 +161,39 @@ RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
       )
     end
 
-    it "emits no literal hex anywhere in the markup" do
-      # alert value (.text-danger) AND a positive trend (.text-success-emphasis) in
-      # one render, so every colour helper the component can emit is exercised.
-      render_inline(described_class.new(
-        label: "Overdue", value: "12", alert: true,
-        trend_text: "3 since yesterday", trend_direction: :up, trend_sentiment: :positive
-      ))
+    it "emits no literal hex in any colour-bearing branch" do
+      # A single render can show at most one value branch (alert is card-wide) and one
+      # trend sentiment, so sweeping one render leaves the others unswept — a hex
+      # re-introduced in an unrendered branch ships green. Sweep every colour-bearing
+      # branch: the default value (.text-body), the alert value (.text-danger), and each
+      # TREND_SENTIMENTS member (.text-success-emphasis / .text-danger-emphasis /
+      # .text-body-secondary), driving the sentiment set off the constant so a new
+      # sentiment is swept automatically.
+      trend_class = {
+        positive: "text-success-emphasis",
+        negative: "text-danger-emphasis",
+        neutral: "text-body-secondary"
+      }
 
-      # Prove the markup actually rendered — a regex over an empty string passes forever.
-      expect(page).to have_css("div.bg-body[role='alert']")
-      expect(page).to have_css("div.text-danger", text: "12")
-      expect(page).to have_css("div.text-success-emphasis", text: "3 since yesterday")
+      branches = [
+        { args: { label: "Accounts", value: "418" }, css: "div.text-body", text: "418" },
+        { args: { label: "Overdue", value: "12", alert: true }, css: "div.text-danger", text: "12" }
+      ]
+      described_class::TREND_SENTIMENTS.each do |sentiment|
+        branches << {
+          args: { label: "Total", value: "100", trend_text: "34 this month", trend_sentiment: sentiment },
+          css: "div.#{trend_class.fetch(sentiment)}", text: "34 this month"
+        }
+      end
 
-      expect(rendered_content).not_to match(hex_literal)
+      branches.each do |branch|
+        render_inline(described_class.new(**branch[:args]))
+
+        # Prove the branch actually rendered — a regex over an empty string passes forever.
+        expect(page).to have_css(branch[:css], text: branch[:text])
+        expect(rendered_content).not_to match(hex_literal),
+          "hex literal leaked in branch #{branch[:args]}"
+      end
     end
 
     it "emits no colour, background, or border declaration in the inline styles that remain" do
