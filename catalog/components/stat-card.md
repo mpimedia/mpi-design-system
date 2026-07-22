@@ -10,12 +10,15 @@ Top-level metric card for dashboards. Displays an ALL-CAPS label, a large number
 
 ## Design Decisions
 
-- **Visible borders:** Cards have `border: 1px solid #DEE2E6` — confirmed, not borderless
-- **Label style:** ALL-CAPS, 11px, `font-weight: 600`, `letter-spacing: 0.06em`, gray (`#6C757D`)
-- **Number size:** 32px, `font-weight: 700`, brand navy (`#1B2A4A`) — or danger red for alerts
-- **Trend indicators:** Arrow icon + descriptive text below the number
-- **Background:** White card on `#F5F7FA` page background
-- **Border radius:** 8px
+Colour comes from Bootstrap 5.3 semantic utilities, so the card tracks `data-bs-theme`
+instead of pinning a light palette. Only geometry (padding, font sizes/weights) is inline. (#150)
+
+- **Visible borders:** Cards carry `.border` (theme-adaptive `--bs-border-color`), not a pinned `#DEE2E6` — confirmed, not borderless
+- **Label style:** ALL-CAPS, 11px, `font-weight: 600`, `letter-spacing: 0.06em`, coloured by `.text-body-secondary` (adaptive) rather than a pinned gray
+- **Number size:** 32px, `font-weight: 700`, `.text-body` (adaptive — brand navy in light mode) — or `.text-danger` for alerts. At 32px the value is *large text* (AA 3:1), which base `.text-danger` clears in both modes (4.53 light / 3.41 dark) while staying semantically red
+- **Trend indicators:** Arrow icon + descriptive text below the number, coloured by `.text-success-emphasis` (positive) / `.text-danger-emphasis` (negative) / `.text-body-secondary` (neutral). The 12px trend is *small text* (AA 4.5:1), so the `-emphasis` variants are used deliberately — base `.text-success` (3.33:1) and `.text-danger` (3.41:1) fail AA at that size and do not follow the colour mode; the emphasis tokens pass (7.7–13.7:1) and are adaptive
+- **Surface:** `.bg-body` card (adaptive — white in light mode) on the page background
+- **Border radius:** `.rounded-3` == `--bs-border-radius-lg` == 8px, preserving the retired literal
 
 ## Variants
 
@@ -39,8 +42,8 @@ Top-level metric card for dashboards. Displays an ALL-CAPS label, a large number
 
 | State | Description |
 |---|---|
-| Default | Standard metric display |
-| Alert | Number displayed in danger red (`#DC3545`) — for metrics that need attention |
+| Default | Standard metric display — value in `.text-body` |
+| Alert | Number displayed in danger red via `.text-danger` (adaptive) — for metrics that need attention |
 | Loading | Skeleton placeholder or spinner in place of number |
 
 ## Props / API
@@ -59,21 +62,34 @@ end
 
 ## Bootstrap Classes
 
-- `card` with custom border and radius — or custom `.stat-card`
+- Card surface: `.bg-body .border .rounded-3` — adaptive surface, border and 8px radius
 - `row g-3`, `col-3` — 4-card dashboard layout
 - `bi-arrow-up`, `bi-arrow-down` — trend direction icons
-- Text colors: `text-success` (green), `text-danger` (red), `text-muted` (gray)
+- Label: `.text-body-secondary`
+- Value: `.text-body` (default) / `.text-danger` (alert)
+- Trend: `.text-success-emphasis` (positive) / `.text-danger-emphasis` (negative) / `.text-body-secondary` (neutral) — `-emphasis` for AA at 12px
 
 ## Key Styles
 
+The card carries **no colour of its own** — surface, border, radius and every foreground
+come from Bootstrap utilities so they derive from the app's palette and colour mode. Only
+geometry is declared inline. The `-emphasis` trend variants are a deliberate small-text AA
+fix (base `.text-success`/`.text-danger` fail 4.5:1 at 12px). (#150)
+
 ```css
-.stat-card { background: #fff; border: 1px solid #DEE2E6; border-radius: 8px; padding: 20px; }
-.stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; }
-.stat-value { font-size: 32px; font-weight: 700; color: #1B2A4A; line-height: 1.1; }
+/* Card: classes `bg-body border rounded-3`, no background/border/radius declaration.
+   rounded-3 == --bs-border-radius-lg == 8px (the retired literal). */
+.stat-card { padding: 20px; }
+
+/* Label: class `text-body-secondary`, no `color` declaration. */
+.stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* Value: class `text-body` (or `text-danger` when alert), no `color` declaration. */
+.stat-value { font-size: 32px; font-weight: 700; line-height: 1.1; }
+
+/* Trend: classes text-success-emphasis / text-danger-emphasis / text-body-secondary,
+   no `color` declaration. */
 .stat-trend { font-size: 12px; font-weight: 500; }
-.trend-up { color: #22A06B; }
-.trend-down { color: #DC3545; }
-.trend-neutral { color: #6C757D; }
 ```
 
 ## Accessibility

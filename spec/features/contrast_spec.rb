@@ -199,19 +199,21 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
     end
   end
 
-  # Bootstrap 5.3 colour modes. `.text-body-secondary` resolves through
-  # `--bs-body-color`, which flips to #dee2e6 under `data-bs-theme="dark"`.
-  # ActiveFilterBar pins a LIGHT background, so without pinning its colour mode
-  # too the label rendered at 1.16:1 in dark mode — a regression introduced by
-  # the fix itself and invisible to a light-mode-only suite. (#130)
+  # Bootstrap 5.3 colour modes. After #150 ActiveFilterBar's surface is
+  # `.bg-body-secondary` (adaptive), so the bar AND its `.text-body-secondary` label
+  # flip together with `data-bs-theme` — the inverse of #130, which had to PIN the bar's
+  # colour mode because its surface was a frozen light hex ($mpi-background) that would
+  # have rendered light-on-light (1.16:1) under a theme-aware label. With an adaptive
+  # surface the pin is gone and the dark bar computes `--bs-secondary-bg` = #343A40, the
+  # value the engine leaves at Bootstrap's dark default. (#150)
   describe "under data-bs-theme='dark'" do
-    it "keeps the ActiveFilterBar label readable against its pinned light bar" do
+    it "flips the ActiveFilterBar surface with the colour mode and keeps its label readable" do
       foreground = computed("#dark-active-filter-bar .text-body-secondary", "color")
       background = computed("#dark-active-filter-bar [role='toolbar']", "backgroundColor")
 
-      expect(background).to eq("#F5F7FA")
+      expect(background).to eq("#343A40")
       expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5,
-        "dark-mode label #{foreground} on pinned light bar #{background} = " \
+        "dark-mode label #{foreground} on adaptive bar #{background} = " \
         "#{MpiDesignSystem::ColorContrast.ratio(foreground, background).round(2)}:1"
     end
 
@@ -397,11 +399,13 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
   end
 
   describe "muted text" do
-    it "paints the ActiveFilterBar label above the AA floor against the bar" do
+    it "paints the ActiveFilterBar label above the AA floor against the adaptive bar" do
       foreground = computed("#active-filter-bar .text-body-secondary", "color")
       background = computed("#active-filter-bar [role='toolbar']", "backgroundColor")
 
-      expect(background).to eq("#F5F7FA")
+      # #150: the light bar now computes `--bs-secondary-bg` (#E9ECEF), not the retired
+      # pinned `#F5F7FA`. The label follows the surface instead of assuming it.
+      expect(background).to eq("#E9ECEF")
       expect(MpiDesignSystem::ColorContrast.ratio(foreground, background)).to be >= 4.5
     end
 

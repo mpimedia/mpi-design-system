@@ -6,8 +6,12 @@
   <% end %>
   <% if overflow? %>
     <div style="margin-left: -8px; position: relative; z-index: 0;">
+      <%# The separator ring tracks the body background (var(--bs-body-bg)) so it stays
+          the surface colour in either colour mode rather than pinning #fff. The chip's
+          own background (#64748B, $mpi-tag-internal) has no Bootstrap semantic
+          equivalent, and its foreground is the #130-derived AA pair — both kept. %>
       <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-semibold"
-            style="width: <%= dimension %>px; height: <%= dimension %>px; font-size: 11px; background-color: <%= overflow_background_color %>; color: <%= overflow_foreground_color %>; border: 2px solid #fff; line-height: 1;"
+            style="width: <%= dimension %>px; height: <%= dimension %>px; font-size: 11px; background-color: <%= overflow_background_color %>; color: <%= overflow_foreground_color %>; border: 2px solid var(--bs-body-bg); line-height: 1;"
             aria-hidden="true">
         +<%= overflow_count %>
       </span>

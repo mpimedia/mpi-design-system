@@ -24,46 +24,47 @@ module MpiDesignSystem
 
         private
 
+        # Geometry only. The surface, border, and radius now come from Bootstrap
+        # utilities in the template (`bg-body border rounded-3`) so the card tracks
+        # `data-bs-theme` instead of pinning a light `#fff` / `#DEE2E6`. `rounded-3`
+        # resolves to `--bs-border-radius-lg` = 8px under this engine's configuration,
+        # preserving the retired literal. 20px has no Bootstrap equivalent, stays inline.
         def card_styles
-          [
-            "background: #fff",
-            "border: 1px solid #DEE2E6",
-            "border-radius: 8px",
-            "padding: 20px"
-          ].join("; ")
+          "padding: 20px"
         end
 
+        # Colour comes from `.text-body-secondary` in the template, not a pinned
+        # `#6C757D` — so the label follows the colour mode. Geometry only here.
         def label_styles
           [
             "font-size: 11px",
             "font-weight: 600",
             "text-transform: uppercase",
             "letter-spacing: 0.06em",
-            "color: #6C757D",
             "margin-bottom: 8px"
           ].join("; ")
         end
 
+        # Geometry only. The value's colour comes from `value_class` — `.text-danger`
+        # for alerts, `.text-body` otherwise — both theme-adaptive. At 32px the value is
+        # "large text" (AA 3:1), which `.text-danger` clears in both modes (4.53 light /
+        # 3.41 dark) while staying semantically red, so base danger is correct here.
         def value_styles
-          color = @alert ? "#DC3545" : "#1B2A4A"
           [
             "font-size: 32px",
             "font-weight: 700",
-            "color: #{color}",
             "line-height: 1.1"
           ].join("; ")
         end
 
+        # Geometry only. The trend's colour comes from `trend_class`. Unlike the 32px
+        # value, the 12px trend is "small text" (AA 4.5:1), so it uses the `-emphasis`
+        # variants, which pass AA in both modes where base `text-success`/`text-danger`
+        # do not.
         def trend_styles
-          color = case @trend_sentiment
-          when :positive then "#22A06B"
-          when :negative then "#DC3545"
-          else "#6C757D"
-          end
           [
             "font-size: 12px",
             "font-weight: 500",
-            "color: #{color}",
             "margin-top: 4px"
           ].join("; ")
         end
@@ -79,11 +80,19 @@ module MpiDesignSystem
           @trend_text.present?
         end
 
+        def value_class
+          @alert ? "text-danger" : "text-body"
+        end
+
+        # Small-text (12px) trend colour. The `-emphasis` variants are used deliberately:
+        # base `.text-success` (#22A06B = 3.33:1 on light) and `.text-danger`
+        # (#DC3545 = 3.41:1 on dark) both FAIL the 4.5:1 small-text floor and do not
+        # follow the colour mode. The emphasis tokens pass (7.7–13.7:1) and are adaptive.
         def trend_class
           case @trend_sentiment
-          when :positive then "text-success"
-          when :negative then "text-danger"
-          else "text-muted"
+          when :positive then "text-success-emphasis"
+          when :negative then "text-danger-emphasis"
+          else "text-body-secondary"
           end
         end
       end

@@ -77,9 +77,11 @@
     <%= render MpiDesignSystem::Admin::NavBar::Component.new(current_section: :dashboard) %>
   </section>
 
-  <%# Same components under Bootstrap's dark colour mode. ActiveFilterBar pins a
-      light background, so a theme-aware foreground would render light-on-light
-      (1.16:1) unless the component pins its colour mode too. (#130) %>
+  <%# Same components under Bootstrap's dark colour mode. After #150 ActiveFilterBar's
+      surface is `.bg-body-secondary` (adaptive), so the bar and its label flip to dark
+      together — the spec measures that the dark bar computes --bs-secondary-bg (#343A40)
+      and the label stays AA against it, where #130's pinned-light bar would instead have
+      rendered light-on-light (1.16:1). %>
   <section id="dark-mode" data-bs-theme="dark" class="p-3" style="background: #212529;">
     <div id="dark-active-filter-bar" class="mb-3">
       <%= render MpiDesignSystem::Admin::ActiveFilterBar::Component.new(

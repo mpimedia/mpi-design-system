@@ -52,7 +52,7 @@ Two filter bar patterns used in CRM list views. Group filter chips provide tag-g
 
 | Element | Description |
 |---|---|
-| Container | Horizontal flex row with `gap-2` |
+| Container | Horizontal flex row (`gap: 8px`) on a `.bg-body-secondary.rounded` bar — adaptive surface that follows `data-bs-theme`, replacing the pinned light `#F5F7FA` (#150) |
 | Label | "ACTIVE:" in gray, ALL-CAPS, 11px |
 | Pill | `.rounded-pill.text-bg-primary`, derived foreground, format: "Category: Value" |
 | Remove button | `×` icon (`bi-x`), `color: inherit` at full strength — **no opacity fade** |
@@ -86,6 +86,7 @@ end
 ## Bootstrap Classes
 
 - `d-flex`, `align-items-center`, `flex-wrap`, `gap-2` — layout
+- `.bg-body-secondary.rounded` — the `ActiveFilterBar` surface (adaptive, replaces the pinned light `#F5F7FA`; `.rounded` == `--bs-border-radius` == the retired 6px) (#150)
 - Custom `.group-chip` (pill, border, padding)
 - `.rounded-pill.text-bg-primary` — active pill fill and derived foreground (replaces the former custom `.active-pill`)
 - `.text-body-secondary` — labels, "Clear all", "Reset all"
