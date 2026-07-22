@@ -156,6 +156,23 @@ Rules:
 - Custom SCSS only when Bootstrap genuinely cannot express the design; keep it in a
   dedicated partial under `app/assets/stylesheets/mpi_design_system/` (existing example:
   `_nav_bar.scss`) and import it from `application.scss`
+- **Moving a component's colour from inline to CSS makes it depend on the component partial being
+  loaded — and that partial is not on the documented consumer path.** The engine ships SCSS as
+  source (`lib/mpi_design_system/engine.rb` — "No asset-pipeline initializer by design"); the
+  README's install snippet and the dummy app both import only `mpi_design_system/tokens` +
+  Bootstrap, **not** `_nav_bar.scss` (the only component partial). So converting an inline colour
+  (an SVG `fill="#…"`, an inline `style`) to token-sourced classes silently regresses to its
+  fallback anywhere the partial isn't imported — including the dev Lookbook until the dummy
+  stylesheet imports it. Two consequences: (1) verify the compiled colour against a stylesheet that
+  *actually imports the partial* — the engine `application.scss`, or the dummy `application.scss`
+  once it imports the component — **not** bare `yarn build:css`, which compiles the dummy app and
+  never saw the partial; grep the specific `selector{property:value}`, since Bootstrap emits the
+  token hex elsewhere (`--bs-primary: #2E75B6`). (2) Add a browser computed-style spec (the
+  `contrast_demo`/`contrast_spec` pattern) asserting a *painted* value only the correct rule can
+  produce — e.g. a two-tone mark whose centre must compute `$mpi-primary`, since a `currentColor`
+  fallback would paint it the arms' navy. (Reference: #155 tokenised the NavBar mark's fills;
+  without importing `_nav_bar.scss` in the dummy app the mark rendered monochrome in Lookbook, and
+  `yarn build:css` could not see the rule at all — a grep guard against it would have false-passed.)
 
 ## Stimulus Controllers
 
