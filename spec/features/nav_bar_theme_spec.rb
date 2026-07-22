@@ -67,10 +67,40 @@ RSpec.describe "NavBar theme adaptivity", type: :feature, js: true do
     [ measured, resolved[:foreground], resolved[:background] ]
   end
 
-  def computed(selector, property)
-    key = property == "color" ? :foreground : :background
+  # A SURFACE must be proven by its OWN opaque paint, never by the composited
+  # backdrop walk `resolve` uses. Every demo section is a `bg-body` wrapper, so if
+  # `.mds-navbar` / `.mds-shell__sidebar` lost its own `background` the walk would
+  # climb straight to that wrapper — which is the SAME body colour — and false-pass.
+  # So a surface assertion reads `getComputedStyle(el).backgroundColor` directly and
+  # checks it is opaque AND the expected value. (The walk stays only for FOREGROUND
+  # ratios, where compositing an alpha'd `--bs-secondary-color` over the real
+  # backdrop is exactly what's wanted.)
+  def own_background(selector)
+    page.evaluate_script(
+      "(() => { const e = document.querySelector(#{selector.to_json}); " \
+      "if (!e) throw new Error('no element matched #{selector}'); " \
+      "return getComputedStyle(e).backgroundColor; })()"
+    )
+  end
 
-    resolve(selector).fetch(key)
+  # Chrome returns opaque colours as `rgb(...)` (3 channels) and faded ones as
+  # `rgba(..., a)`; a dropped `background` reads as `rgba(0, 0, 0, 0)`.
+  def opaque?(raw)
+    channels = raw.scan(/[\d.]+/).map(&:to_f)
+    alpha = channels.length > 3 ? channels[3] : 1.0
+
+    alpha == 1.0
+  end
+
+  # Asserts a surface paints its OWN opaque background at the expected value.
+  def expect_surface(selector, expected_hex)
+    raw = own_background(selector)
+
+    expect(opaque?(raw)).to be(true),
+      "#{selector} own background is #{raw} (transparent) — the backdrop walk would " \
+      "false-pass on the bg-body wrapper behind it"
+    expect(rgb_to_hex(raw)).to eq(expected_hex),
+      "#{selector} own background #{rgb_to_hex(raw)} != expected #{expected_hex}"
   end
 
   # `getComputedStyle` returns border colours as `rgb()`; read the specific side
@@ -131,19 +161,48 @@ RSpec.describe "NavBar theme adaptivity", type: :feature, js: true do
       let(:nav) { expected[:nav] }
       let(:shell) { expected[:shell] }
 
-      describe "surfaces" do
+      describe "surfaces (own opaque paint, not the backdrop walk)" do
         it "paints the navbar on the adaptive body surface" do
-          expect(computed("#{nav} .mds-navbar", "backgroundColor")).to eq(expected[:navbar_bg])
+          expect_surface("#{nav} .mds-navbar", expected[:navbar_bg])
         end
 
         it "paints the subnav on the tertiary app-chrome surface" do
-          expect(computed("#{nav} .mds-subnav", "backgroundColor")).to eq(expected[:chrome_bg])
+          expect_surface("#{nav} .mds-subnav", expected[:chrome_bg])
         end
 
         it "paints the shell sidebar on the body surface and main/breadcrumb on tertiary" do
-          expect(computed("#{shell} .mds-shell__sidebar", "backgroundColor")).to eq(expected[:sidebar_bg])
-          expect(computed("#{shell} .mds-shell__main", "backgroundColor")).to eq(expected[:chrome_bg])
-          expect(computed("#{shell} .mds-shell__breadcrumb", "backgroundColor")).to eq(expected[:chrome_bg])
+          expect_surface("#{shell} .mds-shell__sidebar", expected[:sidebar_bg])
+          expect_surface("#{shell} .mds-shell__main", expected[:chrome_bg])
+          expect_surface("#{shell} .mds-shell__breadcrumb", expected[:chrome_bg])
+        end
+
+        # The SearchBar prepend was `bg-white` (a fixed white patch that stayed white
+        # in dark mode); #154 moved it to `bg-body`, which follows the colour mode.
+        it "paints the searchbar prepend on the adaptive body surface, not a fixed white patch" do
+          expect_surface("#{nav} .mds-navbar .input-group-text.bg-body", expected[:navbar_bg])
+        end
+
+        it "clears the 3:1 non-text UI floor on the search icon against the prepend surface" do
+          measured, fg, bg = ratio_for("#{nav} .mds-navbar .input-group-text.bg-body i.bi-search")
+
+          expect(bg).to eq(expected[:navbar_bg])
+          expect(measured).to be >= 3.0, "#{mode} search icon #{fg} on #{bg} = #{measured.round(2)}:1"
+        end
+
+        # The env strips are fixed status hues — primary/danger do NOT flip with the
+        # colour mode — so both are asserted identically in light and dark.
+        it "paints the development env bar on the fixed primary status hue" do
+          selector = "#{nav} .mds-env-bar--development"
+
+          expect(opaque?(own_background(selector))).to be(true)
+          expect(own_background(selector)).to eq("rgb(46, 117, 182)")
+        end
+
+        it "paints the staging env bar on the fixed danger status hue" do
+          selector = "#nav-staging-#{mode} .mds-env-bar--staging"
+
+          expect(opaque?(own_background(selector))).to be(true)
+          expect(own_background(selector)).to eq("rgb(220, 53, 69)")
         end
 
         it "paints the navbar, subnav and sidebar borders from the border token" do
@@ -185,6 +244,18 @@ RSpec.describe "NavBar theme adaptivity", type: :feature, js: true do
           expect(fg).to eq(expected[:link])
           expect(bg).to eq(expected[:chrome_bg])
           expect(measured).to be >= 4.5, "#{mode} active subnav #{fg} on #{bg} = #{measured.round(2)}:1"
+        end
+
+        # The DEFAULT (non-active) subnav link is `var(--bs-link-color)` too, not the
+        # muted `--bs-secondary-color` the section links use. A mapping to
+        # `var(--bs-primary)` would still paint #2E75B6 in dark — 2.75:1 on the tertiary
+        # subnav surface, below the floor — so the fg equality AND the ratio both catch it.
+        it "paints the default subnav link above the 4.5:1 floor against the tertiary surface" do
+          measured, fg, bg = ratio_for("#{nav} .mds-subnav__link:not(.mds-subnav__link--active)")
+
+          expect(fg).to eq(expected[:link])
+          expect(bg).to eq(expected[:chrome_bg])
+          expect(measured).to be >= 4.5, "#{mode} default subnav #{fg} on #{bg} = #{measured.round(2)}:1"
         end
 
         it "paints the gear glyph above the 3:1 non-text UI floor" do
@@ -247,6 +318,16 @@ RSpec.describe "NavBar theme adaptivity", type: :feature, js: true do
           expect(fg).to eq(expected[:link])
           expect(measured).to be >= 4.5, "#{mode} hovered gear #{fg} on #{bg} = #{measured.round(2)}:1"
         end
+
+        it "keeps the subnav link at the link colour on hover, above AA" do
+          page.find("#{nav} a.mds-subnav__link", text: "Dashboard").hover
+
+          measured, fg, bg = ratio_for("#{nav} .mds-subnav__link:not(.mds-subnav__link--active)")
+
+          expect(fg).to eq(expected[:link])
+          expect(bg).to eq(expected[:chrome_bg])
+          expect(measured).to be >= 4.5, "#{mode} hovered subnav #{fg} on #{bg} = #{measured.round(2)}:1"
+        end
       end
     end
   end
@@ -256,16 +337,16 @@ RSpec.describe "NavBar theme adaptivity", type: :feature, js: true do
   # both modes pinned light); these inequalities prove the flip actually happens.
   describe "surfaces differ between the two colour modes" do
     it "flips every nav surface and border between light and dark" do
-      expect(computed("#nav-light .mds-navbar", "backgroundColor"))
-        .not_to eq(computed("#nav-dark .mds-navbar", "backgroundColor"))
-      expect(computed("#nav-light .mds-subnav", "backgroundColor"))
-        .not_to eq(computed("#nav-dark .mds-subnav", "backgroundColor"))
-      expect(computed("#shell-light .mds-shell__sidebar", "backgroundColor"))
-        .not_to eq(computed("#shell-dark .mds-shell__sidebar", "backgroundColor"))
-      expect(computed("#shell-light .mds-shell__main", "backgroundColor"))
-        .not_to eq(computed("#shell-dark .mds-shell__main", "backgroundColor"))
-      expect(computed("#shell-light .mds-shell__breadcrumb", "backgroundColor"))
-        .not_to eq(computed("#shell-dark .mds-shell__breadcrumb", "backgroundColor"))
+      expect(own_background("#nav-light .mds-navbar"))
+        .not_to eq(own_background("#nav-dark .mds-navbar"))
+      expect(own_background("#nav-light .mds-subnav"))
+        .not_to eq(own_background("#nav-dark .mds-subnav"))
+      expect(own_background("#shell-light .mds-shell__sidebar"))
+        .not_to eq(own_background("#shell-dark .mds-shell__sidebar"))
+      expect(own_background("#shell-light .mds-shell__main"))
+        .not_to eq(own_background("#shell-dark .mds-shell__main"))
+      expect(own_background("#shell-light .mds-shell__breadcrumb"))
+        .not_to eq(own_background("#shell-dark .mds-shell__breadcrumb"))
       expect(border_rgb("#nav-light .mds-navbar", "Bottom"))
         .not_to eq(border_rgb("#nav-dark .mds-navbar", "Bottom"))
     end

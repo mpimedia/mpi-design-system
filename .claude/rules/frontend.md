@@ -164,7 +164,8 @@ Rules:
   `var(--bs-danger)` and `var(--bs-tertiary-bg)` — so it has **no compile-time Sass-var
   dependency** (it compiles standalone) and adapts to the colour mode like the rest of the system.
   Interactive link *text* maps to `var(--bs-link-color)` (AA-safe in dark: `#82ACD3`), **not**
-  `var(--bs-primary)` (stays `#2E75B6` → 3.3:1 on the dark navbar). The conversion is proven at the
+  `var(--bs-primary)` (which stays `#2E75B6` → ~3.19:1 on the dark navbar `#212529` and only ~2.75:1
+  on the dark subnav `#2B3035`, both below the 4.5:1 AA/UI floor). The conversion is proven at the
   compile level by `bin/verify-nav-bar-adaptive` (run from `yarn build:css:compat`, asserting every
   colour is `var(--bs-*)`-driven) and in a browser by `spec/features/nav_bar_theme_spec.rb` — both
   proven by breaking them. When a custom partial ships hardcoded hex to the emitted markup (e.g. an

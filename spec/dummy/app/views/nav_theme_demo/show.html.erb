@@ -26,6 +26,20 @@
     <%= render MpiDesignSystem::Admin::NavBar::Component.new(**nav_args) %>
   </section>
 
+  <%# Staging env variant — the env-bar strips are fixed status hues (primary for
+      development above, danger for staging) that do NOT flip with the colour mode,
+      so the feature spec asserts the danger strip against a staging NavBar in both
+      modes. %>
+  <% staging_nav_args = nav_args.merge(environment: :staging) %>
+
+  <section id="nav-staging-light" data-bs-theme="light" class="bg-body p-3 mb-4">
+    <%= render MpiDesignSystem::Admin::NavBar::Component.new(**staging_nav_args) %>
+  </section>
+
+  <section id="nav-staging-dark" data-bs-theme="dark" class="bg-body p-3 mb-4">
+    <%= render MpiDesignSystem::Admin::NavBar::Component.new(**staging_nav_args) %>
+  </section>
+
   <section id="shell-light" data-bs-theme="light" class="bg-body p-3 mb-4">
     <%= render MpiDesignSystem::Admin::AppShell::Component.new(
           current_section: :crm,

@@ -365,13 +365,17 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
     end
   end
 
-  # NavBar brand mark (#155). The default diamond's fills were tokenized from inline hex to
-  # `.mds-navbar__brand-arm`/`.mds-navbar__brand-center` classes (mapped to $mpi-brand-navy /
-  # $mpi-primary) with a `currentColor` fallback in markup. render_inline proves the classes
-  # and `fill="currentColor"` are emitted; only a browser proves the author CSS class wins over
-  # the presentation attribute and paints the two-tone. The load-bearing assertion is the
-  # CENTER: currentColor would fall back to the brand navy, so center == primary is exactly what
-  # distinguishes "the .mds-navbar__brand-center rule resolved" from "the fallback painted".
+  # NavBar brand mark. #155 tokenised the default diamond's fills from inline hex to the
+  # `.mds-navbar__brand-arm`/`.mds-navbar__brand-center` classes; #154 then made those classes
+  # theme-adaptive — arm `fill: var(--bs-body-color)`, centre `fill: var(--bs-link-color)` — with a
+  # `currentColor` fallback still in the markup. The contrast_demo page is unthemed (light), where
+  # `--bs-body-color` resolves to the brand navy (#1B2A4A) and `--bs-link-color` to primary
+  # (#2E75B6), so the painted values below are those. render_inline proves the classes and
+  # `fill="currentColor"` are emitted; only a browser proves the author CSS class wins over the
+  # presentation attribute and paints the two-tone. The load-bearing assertion is the CENTRE:
+  # currentColor would fall back to the arms' body-color (navy), so centre == link-color (primary)
+  # is exactly what distinguishes "the .mds-navbar__brand-center rule resolved" from "the fallback
+  # painted".
   describe "NavBar brand mark" do
     def fill_of(selector)
       page.evaluate_script(
@@ -381,12 +385,12 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
       )
     end
 
-    it "paints the arm polygons navy from $mpi-brand-navy, not the monochrome fallback" do
+    it "paints the arm polygons navy from var(--bs-body-color) (light: #1B2A4A), not the monochrome fallback" do
       expect(page).to have_css("#nav-bar-mark polygon.mds-navbar__brand-arm")
       expect(fill_of("#nav-bar-mark polygon.mds-navbar__brand-arm")).to eq("rgb(27, 42, 74)")
     end
 
-    it "paints the center polygon primary from $mpi-primary — the value the currentColor fallback cannot produce" do
+    it "paints the center polygon primary from var(--bs-link-color) (light: #2E75B6) — the value the currentColor fallback cannot produce" do
       expect(page).to have_css("#nav-bar-mark polygon.mds-navbar__brand-center")
       expect(fill_of("#nav-bar-mark polygon.mds-navbar__brand-center")).to eq("rgb(46, 117, 182)")
     end

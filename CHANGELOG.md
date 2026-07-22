@@ -22,7 +22,8 @@ include breaking changes).
   AA — muted text `#6C757D` → `var(--bs-secondary-color)` (a muted navy) and the app-chrome
   `#F5F7FA` → `var(--bs-tertiary-bg)` (`#F8F9FA`). Dark mode is new behaviour: interactive links
   map to `var(--bs-link-color)` (`#82ACD3` in dark = AA-safe), **not** `var(--bs-primary)`, which
-  stays `#2E75B6` (3.3:1 on the dark navbar, below the 4.5:1 floor). The partial now has **no
+  stays `#2E75B6` (~3.19:1 on the dark navbar `#212529` and only ~2.75:1 on the dark subnav
+  `#2B3035` — the worst surface — both below the 4.5:1 floor). The partial now has **no
   compile-time Sass-var dependency** — it compiles standalone, so consumers import it after
   Bootstrap (`@import "mpi_design_system/nav_bar";`). Geometry (heights, padding, weights, the
   avatar sizing) is byte-identical.
