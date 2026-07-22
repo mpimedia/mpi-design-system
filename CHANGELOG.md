@@ -7,7 +7,21 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-07-22
+
 ### Changed
+- **`Admin::FilterPanel` is theme-adaptive** — the filter panel stopped pinning a light palette in
+  inline styles; every converted colour now resolves from a Bootstrap semantic utility, so it
+  follows `data-bs-theme` and the consuming app's mapped tokens. The `<aside>` card is
+  `bg-body border` (was `#fff` / `1px solid #DEE2E6`); the panel title, section-toggle buttons, and
+  option rows are `text-body` (was `#1B2A4A` = MPI navy = `--bs-body-color`, exact in light); the
+  option counts and chevrons are `text-body-secondary` (was the fixed neutral grey `#6C757D`; now the
+  adaptive `rgba(body-color, .75)` = `#545F77` light / `#AFB3B7` dark — the one deliberate visible
+  shift, matching the #149/#150 treatment). The inter-section divider becomes a classes-only
+  `<hr class="border-top opacity-100 m-0">` — the utilities are `!important`, so they override the
+  `<hr>` reboot to paint a crisp `--bs-border-color` line that flips to `#495057` in dark. All
+  geometry/layout/typography and the button `transparent`/`none` resets stay inline. (#152, phase 4;
+  the AvatarCircle half of phase 4 is split to #169.)
 - **`Admin::FilterChipBar` and `Admin::DataTable` are theme-adaptive** — both stopped pinning
   a light palette in inline styles; every colour now resolves from a Bootstrap semantic
   utility, so they follow `data-bs-theme` and the consuming app's mapped tokens. A new shared
@@ -419,7 +433,8 @@ Initial internal version: the ViewComponent library, design tokens, Stimulus con
 and Lookbook previews, prior to the adoption-prep packaging corrections above. (No release
 tag was cut for 0.1.0.)
 
-[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.6.0...v0.7.0
