@@ -5,12 +5,13 @@
       <% @groups.each do |chip| %>
         <% if chip[:href] %>
           <a href="<%= chip[:href] %>"
-             style="<%= group_chip_styles(chip) %>"
+             class="<%= group_chip_classes(chip) %>"
+             style="<%= group_chip_styles %>"
              <% if chip[:selected] %>aria-current="page"<% end %>>
             <%= chip_label(chip) %>
           </a>
         <% else %>
-          <span style="<%= group_chip_styles(chip) %>">
+          <span class="<%= group_chip_classes(chip) %>" style="<%= group_chip_styles %>">
             <%= chip_label(chip) %>
           </span>
         <% end %>
@@ -29,6 +30,7 @@
           <%= pill_label(filter) %>
           <% if filter[:remove_url] %>
             <a href="<%= filter[:remove_url] %>"
+               class="text-reset bg-transparent border-0"
                style="<%= remove_btn_styles %>"
                aria-label="Remove filter: <%= pill_label(filter) %>"
                data-turbo-method="delete">

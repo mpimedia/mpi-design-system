@@ -256,6 +256,29 @@ Rules:
   `ratio(bg, accessible_foreground(bg)) >= 4.5` calls the code under test on both sides — wrong
   luminance math agrees with itself and still ships a failure. `bin/verify-contrast-oracle`
   compiles Bootstrap's own `color-contrast()` over the palette in CI for exactly this reason
+- **Mapping a bespoke multi-category palette onto Bootstrap semantics yields at most five distinct
+  *adaptive* hues — MPI maps `$info → $primary`.** The theme-adaptive families are
+  `primary`/`success`/`warning`/`danger`/`secondary` (`light`/`dark` are neutrals, not category
+  colours), and because `_tokens_values.scss` sets `$mpi-info: $mpi-primary`, `bg-info-subtle` /
+  `text-info-emphasis` render the *same blue* as `primary`. So a palette of more than five
+  categories collapses when mapped to semantics — the extras must double up. Present the collapse
+  honestly (state which categories share a hue) and rely on the always-present text label to carry
+  the identity; if per-category distinction is load-bearing, that is the real-token path — a
+  designer decision. (Reference: #151 mapped the 7-category `TagChip::Component::GROUPS`, and
+  `press_festival`/`production`/`vendors` all collapsed onto blue — Codex's plan review caught the
+  `info==primary` fact the plan had missed.)
+- **A solid `bg-#{semantic}` fill is a *fixed* hue, not theme-adaptive — it reads
+  `--bs-#{semantic}-rgb`, which Bootstrap does not shift under `data-bs-theme`.** Only
+  `-subtle`/`-emphasis`, `bg-body`, `text-body`/`text-body-secondary` and `--bs-link-color`
+  re-resolve per mode. Reserve solid `bg-#{semantic}` for **decorative** marks (a category/status
+  dot whose meaning is carried by an adjacent text label — WCAG 2.1 SC 1.4.11 exempts decorative
+  graphics), keep it a deliberate fixed identity hue like the nav env-bar's status strips, and
+  **prove ≥3:1 on the *resting* surface in both modes — do not claim contrast the `table-hover`
+  (or any hover) state violates.** A dot on a hovered `.table` row composites an inset shadow over
+  the backdrop and can dip below 3:1; that transient dip is acceptable only because the dot is
+  decorative. (Reference: #151 — DataTable's tag/status dots; Codex's PR review caught a CHANGELOG
+  claim that "each dot" was proven ≥3:1 which a never-hovering, two-variant browser guard did not
+  actually establish.)
 - Visible focus indicators on every focusable element
 
 ## Anti-Patterns

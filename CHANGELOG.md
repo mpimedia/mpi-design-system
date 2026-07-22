@@ -7,6 +7,43 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Changed
+- **`Admin::FilterChipBar` and `Admin::DataTable` are theme-adaptive** — both stopped pinning
+  a light palette in inline styles; every colour now resolves from a Bootstrap semantic
+  utility, so they follow `data-bs-theme` and the consuming app's mapped tokens. A new shared
+  map, `TagChip::Component::GROUP_VARIANTS`, translates each CRM tag group onto a Bootstrap
+  semantic (`press_festival`/`production`/`vendors` → `primary`, `outreach` → `success`,
+  `finance` → `warning`, `distribution` → `danger`, `internal` → `secondary`). Because MPI maps
+  `$info` → `$primary`, the palette offers **five** distinct adaptive hues, so the three cool
+  categories collapse onto blue — an accepted trade of the smallest-blast conversion; the tag's
+  always-present text label carries the identity (see `catalog/elements/tag-chip.md` § Semantic
+  Mapping). Mapping:
+  - **FilterChipBar** — selected chip `bg-#{sem}-subtle text-#{sem}-emphasis border border-#{sem}-subtle`
+    (AA in both modes, unlike the frozen hex pairs); unselected `border bg-body text-body`; the
+    active pill's `×` moved from inline `color: inherit` to `text-reset bg-transparent border-0`.
+  - **DataTable** — header muted via `text-body-secondary`, its 2px separator the `border-bottom`
+    utility with an inline `--bs-border-width: 2px` on the bottom edge only (`border-2` would box
+    all four sides of a `.table th`); name/tag text `text-body`, title/meta `text-body-secondary`;
+    the account link uses Bootstrap's default adaptive `--bs-link-color` (`#2E75B6` light,
+    `#82ACD3` dark) and keeps its natural underline; cells `align-middle`.
+
+  The tag/status **dots** are the one deliberate exception: `bg-#{sem}` reads `--bs-#{sem}-rgb`, a
+  **fixed identity hue across colour modes** (decorative — the adjacent label carries the meaning,
+  mirroring the nav env-bar's fixed status hues). Every variant (all five group hues, all three
+  status hues) is browser-proven ≥3:1 against the **resting** row backdrop in **both** themes;
+  because the dots are decorative — the text label conveys the category — the transient dip below
+  3:1 on a **hovered** row (`table-hover` composites an inset shadow over the backdrop) is
+  acceptable per WCAG 2.1 SC 1.4.11 and is deliberately not claimed. `TagChip`'s own rendering still uses the frozen hex pairs this
+  phase; converting the remaining `GROUPS` consumers is a tracked follow-up. Both partials are
+  proven in a real browser (`spec/features/contrast_spec.rb`) — painted value **and** ratio, in
+  both colour modes. No public API change to the components' parameters. (#151 — Track 2 phase 3,
+  epic #147)
+
+  **Removed (internal, pre-1.0):** `DataTable::Component::STATUS_COLORS` and
+  `DataTable::Component::TAG_DOT_COLORS` — the two frozen hex maps the conversion replaced with
+  `STATUS_VARIANTS` and the shared `GROUP_VARIANTS`. Both were public Ruby constants; no consumer
+  call sites were found. Formally breaking only if an app referenced them directly.
+
 ## [0.9.0] - 2026-07-22
 
 ### Changed

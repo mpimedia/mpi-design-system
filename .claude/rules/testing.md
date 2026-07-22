@@ -218,6 +218,17 @@ Prove it by adding one and watching red. (Reference: #150 — `AvatarStack` keep
 `+N` overflow chip; the first residual sweep string-deleted it and would have masked the same hex
 reused elsewhere, caught by external review.)
 
+**Related — a theme-adaptivity guard must forbid the colour-bearing *properties by name*, not only
+literal-colour *values*.** A guard that rejects `color`/`background` declarations plus hex/rgb/hsl
+literals still lets `border: 1px solid red` (a *named* colour) and `border: none` through — the exact
+inline-border regression a hex→utility conversion removes. Parse each surviving inline declaration and
+reject any whose property is `color` / `background(-color)` /
+`border(-top|right|bottom|left|color|style|width)` / `outline` / `box-shadow` / `opacity` (allow the
+geometry custom property `--bs-border-width` and `border-radius`), and add named colours to the value
+scan. Prove it by injecting `border: 1px solid red` into a style helper and watching red. (Reference:
+#151 — the FilterChipBar/DataTable conversion's first guard rejected only hex/rgb/hsl values and
+`color`/`background` properties, so a named-colour or `none` border passed; caught by external review.)
+
 ## A Guard Is Not Real Until You Have Watched It Fail
 
 The two shapes above are assertions that *can* fail but don't discriminate. This is the

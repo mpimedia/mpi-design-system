@@ -65,4 +65,45 @@ RSpec.describe MpiDesignSystem::Admin::TagChip::Component, type: :component do
 
     expect(page).to have_css("span[style*='border-radius: 999px']")
   end
+
+  # GROUP_VARIANTS is the shared tag-group -> Bootstrap-semantic mapping that
+  # FilterChipBar and DataTable consume (#151). Every GROUPS key must have a mapping,
+  # or a converted consumer would hit `nil` and silently fall back to `secondary`.
+  describe "GROUP_VARIANTS mapping (#151)" do
+    it "maps every GROUPS key to a semantic variant" do
+      expect(described_class::GROUP_VARIANTS.keys).to match_array(described_class::GROUPS.keys)
+    end
+
+    # The consumer loops (FilterChipBar/DataTable) read this same constant, so a
+    # semantic REMAP (e.g. distribution: :danger -> :success) would render and assert
+    # the new value identically and ship green there. Pinning the exact mapping makes
+    # any category recolour a deliberate, test-updating change — the crux design
+    # decision of #151 (info==primary collapses the three cool categories onto blue).
+    it "maps each category to its issue-specified semantic" do
+      expect(described_class::GROUP_VARIANTS).to eq(
+        press_festival: :primary,
+        production: :primary,
+        vendors: :primary,
+        outreach: :success,
+        finance: :warning,
+        distribution: :danger,
+        internal: :secondary
+      )
+    end
+
+    it "maps only to real Bootstrap theme colours" do
+      valid = %i[primary secondary success warning danger info light dark]
+      expect(described_class::GROUP_VARIANTS.values.uniq - valid).to be_empty
+    end
+
+    # TagChip's OWN rendering stays hex this phase — the conversion is limited to the
+    # two list-view consumers. This pins that scope: the chip still emits its frozen
+    # colour pair, so a future TagChip conversion is a deliberate, tested change rather
+    # than an accident. (#151 follow-up)
+    it "leaves TagChip's own rendering on the frozen hex palette" do
+      render_inline(described_class.new(label: "Distribution", group: :distribution))
+
+      expect(page).to have_css("span[style*='color: #E8733A'][style*='background-color: #FEF3EC']", text: "Distribution")
+    end
+  end
 end

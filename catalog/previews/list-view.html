@@ -7,18 +7,34 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    /* Stock CDN Bootstrap ships indigo #0D6EFD; the engine compiles it with MPI's
-       tokens. The converted pagination slice below uses semantic utilities, so
-       without these the bar would paint Bootstrap's palette instead of MPI's.
-       Mirrors _tokens.scss. (Same pattern as filter-chip-bar.html.) The rest of
-       this mockup still pins literals and is converted in later Track 2 phases. */
+    /* Stock CDN Bootstrap ships indigo #0D6EFD and its own success/warning; the engine
+       compiles it with MPI's tokens. The converted pagination (#149), FilterChipBar and
+       DataTable (#151) slices below use semantic utilities, so without these overrides
+       they would paint Bootstrap's palette instead of MPI's. Mirrors _tokens.scss +
+       Bootstrap's derived subtle/emphasis for the tokens MPI overrides. The nav,
+       sub-group pills, toolbar and health badges still pin literals and are converted in
+       later Track 2 phases. */
     :root {
       --bs-primary: #2E75B6;
       --bs-primary-rgb: 46, 117, 182;
       --bs-primary-text-emphasis: #122F49;
+      --bs-primary-bg-subtle: #D5E3F0;
+      --bs-primary-border-subtle: #ABC8E2;
+      --bs-success: #22A06B;
+      --bs-success-rgb: 34, 160, 107;
+      --bs-warning: #D4772C;
+      --bs-warning-rgb: 212, 119, 44;
+      --bs-danger: #DC3545;
+      --bs-danger-rgb: 220, 53, 69;
+      --bs-danger-text-emphasis: #58151C;
+      --bs-danger-bg-subtle: #F8D7DA;
+      --bs-danger-border-subtle: #F1AEB5;
+      --bs-link-color: #2E75B6;
+      --bs-link-color-rgb: 46, 117, 182;
       --bs-body-color: #1B2A4A;
       --bs-body-color-rgb: 27, 42, 74;
       --bs-secondary-color: rgba(27, 42, 74, 0.75);
+      --bs-border-color: #DEE2E6;
     }
     body { padding: 0; background: #F5F7FA; margin: 0; }
     .preview-wrapper { padding: 32px; }
@@ -38,12 +54,12 @@
 
     /* Filter chips */
     .group-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-right: 6px; }
-    .group-chip { display: inline-flex; align-items: center; gap: 3px; padding: 4px 10px; border-radius: 999px; border: 1px solid #DEE2E6; background: #fff; font-size: 12px; font-weight: 500; color: #1B2A4A; text-decoration: none; }
-    .group-chip .count { font-weight: 600; color: #6C757D; font-size: 11px; }
-    .group-chip.selected { border-color: #E8733A; background: #FEF3EC; color: #E8733A; }
-    .group-chip.selected .count { color: #E8733A; }
-    .group-chip.selected-all { border-color: #2E75B6; background: #EBF3FB; color: #2E75B6; }
-    .group-chip.selected-all .count { color: #2E75B6; }
+    /* Group chips — geometry only after #151. Colour comes from Bootstrap semantic
+       utilities in the markup (bg-body/text-body unselected; bg-#{sem}-subtle /
+       text-#{sem}-emphasis / border-#{sem}-subtle selected), which paint the MPI palette
+       via the :root overrides above. */
+    .group-chip { display: inline-flex; align-items: center; gap: 3px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; text-decoration: none; }
+    .group-chip .count { font-weight: 600; font-size: 11px; }
 
     /* Sub-group filter pills */
     .subgroup-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; padding: 8px 12px; background: #fff; border: 1px solid #DEE2E6; border-radius: 6px; }
@@ -66,16 +82,22 @@
     .sort-dropdown { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid #DEE2E6; border-radius: 5px; background: #fff; font-size: 12px; color: #1B2A4A; cursor: pointer; }
     .sort-dropdown .bi { font-size: 10px; color: #6C757D; }
 
-    /* Table */
-    th { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; white-space: nowrap; }
+    /* Table — geometry only after #151; the DataTable text colour comes from Bootstrap
+       semantic utilities in the markup (text-body-secondary on th/title/meta, text-body
+       on contact/account names), which paint the MPI palette via the :root overrides
+       above. Matches the standalone data-table.html. The avatar keeps its own hex
+       palette (AvatarCircle, out of scope). */
+    th { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
     .avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; font-weight: 600; flex-shrink: 0; width: 32px; height: 32px; font-size: 11px; }
-    .contact-name { font-weight: 600; color: #1B2A4A; font-size: 13px; }
-    .contact-title { font-size: 11px; color: #6C757D; }
+    .contact-name { font-weight: 600; font-size: 13px; }
+    .contact-title { font-size: 11px; }
     .tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 500; white-space: nowrap; }
     .tag-dot { width: 5px; height: 5px; border-radius: 50%; margin-right: 4px; }
-    .account-link { color: #2E75B6; text-decoration: none; font-size: 12px; }
-    .meta-text { font-size: 12px; color: #6C757D; }
-    .account-name { font-weight: 600; color: #1B2A4A; font-size: 13px; }
+    /* No colour class -> paints --bs-link-color (MPI primary via :root) and keeps its
+       underline as the navigation affordance. (#151) */
+    .account-link { font-size: 12px; }
+    .meta-text { font-size: 12px; }
+    .account-name { font-weight: 600; font-size: 13px; }
 
     /* Health badge */
     .health-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
@@ -136,14 +158,14 @@
           <!-- Group filter chips -->
           <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
             <span class="group-label">GROUPS:</span>
-            <a class="group-chip" href="#">All <span class="count">2,307</span></a>
-            <a class="group-chip selected" href="#">Buyers <span class="count">342</span></a>
-            <a class="group-chip" href="#">Press <span class="count">289</span></a>
-            <a class="group-chip" href="#">Festivals <span class="count">156</span></a>
-            <a class="group-chip" href="#">Sellers <span class="count">98</span></a>
-            <a class="group-chip" href="#">Institutional <span class="count">67</span></a>
-            <a class="group-chip" href="#">Organizations <span class="count">45</span></a>
-            <a class="group-chip" href="#">Internal <span class="count">23</span></a>
+            <a class="group-chip border bg-body text-body" href="#">All <span class="count">2,307</span></a>
+            <a class="group-chip border border-danger-subtle bg-danger-subtle text-danger-emphasis" href="#" aria-current="page">Buyers <span class="count">342</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Press <span class="count">289</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Festivals <span class="count">156</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Sellers <span class="count">98</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Institutional <span class="count">67</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Organizations <span class="count">45</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Internal <span class="count">23</span></a>
           </div>
 
           <!-- Sub-group filter pills (shown when Buyers is selected) -->
@@ -176,14 +198,14 @@
           </div>
 
           <!-- Data table -->
-          <div class="bg-white rounded" style="border:1px solid #DEE2E6;">
+          <div class="bg-body rounded border">
             <table class="table table-hover mb-0" style="font-size:13px;">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Tags</th>
-                  <th>Last Engagement</th>
-                  <th>Account</th>
+                  <th class="text-body-secondary">Name</th>
+                  <th class="text-body-secondary">Tags</th>
+                  <th class="text-body-secondary">Last Engagement</th>
+                  <th class="text-body-secondary">Account</th>
                 </tr>
               </thead>
               <tbody>
@@ -191,46 +213,46 @@
                   <td>
                     <div class="d-flex align-items-center gap-2">
                       <div class="avatar" style="background:#1B2A4A;">SC</div>
-                      <div><div class="contact-name">Sarah Chen</div><div class="contact-title">Dir. of Acquisitions</div></div>
+                      <div><div class="contact-name text-body">Sarah Chen</div><div class="contact-title text-body-secondary">Dir. of Acquisitions</div></div>
                     </div>
                   </td>
                   <td class="align-middle">
                     <div class="d-flex flex-wrap gap-2">
-                      <span class="tag"><span class="tag-dot" style="background:#E8733A;"></span>Acquisitions</span>
-                      <span class="tag"><span class="tag-dot" style="background:#E8733A;"></span>Streaming</span>
-                      <span class="tag"><span class="tag-dot" style="background:#2E75B6;"></span>Festival</span>
+                      <span class="tag"><span class="tag-dot bg-danger"></span>Acquisitions</span>
+                      <span class="tag"><span class="tag-dot bg-danger"></span>Streaming</span>
+                      <span class="tag"><span class="tag-dot bg-primary"></span>Festival</span>
                     </div>
                   </td>
-                  <td class="align-middle meta-text">2 days ago</td>
+                  <td class="align-middle meta-text text-body-secondary">2 days ago</td>
                   <td class="align-middle"><a class="account-link" href="#">Magnolia Pictures</a></td>
                 </tr>
                 <tr>
                   <td>
                     <div class="d-flex align-items-center gap-2">
                       <div class="avatar" style="background:#E8733A;">JP</div>
-                      <div><div class="contact-name">James Park</div><div class="contact-title">VP Content</div></div>
+                      <div><div class="contact-name text-body">James Park</div><div class="contact-title text-body-secondary">VP Content</div></div>
                     </div>
                   </td>
                   <td class="align-middle">
-                    <span class="tag"><span class="tag-dot" style="background:#E8733A;"></span>Streaming</span>
+                    <span class="tag"><span class="tag-dot bg-danger"></span>Streaming</span>
                   </td>
-                  <td class="align-middle meta-text">1 week ago</td>
+                  <td class="align-middle meta-text text-body-secondary">1 week ago</td>
                   <td class="align-middle"><a class="account-link" href="#">MUBI</a></td>
                 </tr>
                 <tr>
                   <td>
                     <div class="d-flex align-items-center gap-2">
                       <div class="avatar" style="background:#22A06B;">ML</div>
-                      <div><div class="contact-name">Maria Lopez</div><div class="contact-title">Acquisitions Manager</div></div>
+                      <div><div class="contact-name text-body">Maria Lopez</div><div class="contact-title text-body-secondary">Acquisitions Manager</div></div>
                     </div>
                   </td>
                   <td class="align-middle">
                     <div class="d-flex flex-wrap gap-2">
-                      <span class="tag"><span class="tag-dot" style="background:#E8733A;"></span>Buyer — All Rights</span>
-                      <span class="tag"><span class="tag-dot" style="background:#2E75B6;"></span>Fest — Programmer</span>
+                      <span class="tag"><span class="tag-dot bg-danger"></span>Buyer — All Rights</span>
+                      <span class="tag"><span class="tag-dot bg-primary"></span>Fest — Programmer</span>
                     </div>
                   </td>
-                  <td class="align-middle meta-text">3 days ago</td>
+                  <td class="align-middle meta-text text-body-secondary">3 days ago</td>
                   <td class="align-middle"><a class="account-link" href="#">Kino Lorber</a></td>
                 </tr>
               </tbody>
@@ -285,13 +307,16 @@
           <!-- Group filter chips (All selected) -->
           <div class="d-flex align-items-center flex-wrap gap-2 mb-3">
             <span class="group-label">GROUPS:</span>
-            <a class="group-chip selected-all" href="#">All <span class="count">418</span></a>
-            <a class="group-chip" href="#">Buyers <span class="count">185</span></a>
-            <a class="group-chip" href="#">Press <span class="count">72</span></a>
-            <a class="group-chip" href="#">Festivals <span class="count">64</span></a>
-            <a class="group-chip" href="#">Sellers <span class="count">41</span></a>
-            <a class="group-chip" href="#">Institutional <span class="count">33</span></a>
-            <a class="group-chip" href="#">Organizations <span class="count">23</span></a>
+            <!-- "All" carries no group, so a selected "All" renders the NEUTRAL surface
+                 (bg-body text-body) with aria-current — the component gives a group-less
+                 chip no colour, only programmatic state. (#151) -->
+            <a class="group-chip border bg-body text-body" href="#" aria-current="page">All <span class="count">418</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Buyers <span class="count">185</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Press <span class="count">72</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Festivals <span class="count">64</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Sellers <span class="count">41</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Institutional <span class="count">33</span></a>
+            <a class="group-chip border bg-body text-body" href="#">Organizations <span class="count">23</span></a>
           </div>
 
           <!-- Toolbar: showing count, list/card toggle, sort dropdown -->
@@ -311,17 +336,17 @@
           </div>
 
           <!-- Data table: Account columns -->
-          <div class="bg-white rounded" style="border:1px solid #DEE2E6;">
+          <div class="bg-body rounded border">
             <table class="table table-hover mb-0" style="font-size:13px;">
               <thead>
                 <tr>
-                  <th>Account</th>
-                  <th>Primary Contact</th>
-                  <th>Contacts</th>
-                  <th>Tag Groups</th>
-                  <th>Health</th>
-                  <th>Last Engaged</th>
-                  <th>Owner</th>
+                  <th class="text-body-secondary">Account</th>
+                  <th class="text-body-secondary">Primary Contact</th>
+                  <th class="text-body-secondary">Contacts</th>
+                  <th class="text-body-secondary">Tag Groups</th>
+                  <th class="text-body-secondary">Health</th>
+                  <th class="text-body-secondary">Last Engaged</th>
+                  <th class="text-body-secondary">Owner</th>
                 </tr>
               </thead>
               <tbody>
@@ -329,58 +354,58 @@
                   <td class="align-middle">
                     <div class="d-flex align-items-center gap-2">
                       <div class="avatar" style="background:#2E75B6; width:28px; height:28px; font-size:10px;">MP</div>
-                      <span class="account-name">Magnolia Pictures</span>
+                      <span class="account-name text-body">Magnolia Pictures</span>
                     </div>
                   </td>
-                  <td class="align-middle meta-text">Sarah Chen</td>
-                  <td class="align-middle meta-text" style="text-align:center;">4</td>
+                  <td class="align-middle meta-text text-body-secondary">Sarah Chen</td>
+                  <td class="align-middle meta-text text-body-secondary" style="text-align:center;">4</td>
                   <td class="align-middle">
                     <div class="group-dots">
-                      <span class="group-dot" style="background:#E8733A;" title="Distribution"></span>
-                      <span class="group-dot" style="background:#2E75B6;" title="Press/Festival"></span>
+                      <span class="group-dot bg-danger" title="Distribution"></span>
+                      <span class="group-dot bg-primary" title="Press/Festival"></span>
                     </div>
                   </td>
                   <td class="align-middle"><span class="health-badge health-good">Good</span></td>
-                  <td class="align-middle meta-text">2 days ago</td>
-                  <td class="align-middle meta-text">Badie Ali</td>
+                  <td class="align-middle meta-text text-body-secondary">2 days ago</td>
+                  <td class="align-middle meta-text text-body-secondary">Badie Ali</td>
                 </tr>
                 <tr>
                   <td class="align-middle">
                     <div class="d-flex align-items-center gap-2">
                       <div class="avatar" style="background:#8B5CF6; width:28px; height:28px; font-size:10px;">MU</div>
-                      <span class="account-name">MUBI</span>
+                      <span class="account-name text-body">MUBI</span>
                     </div>
                   </td>
-                  <td class="align-middle meta-text">James Park</td>
-                  <td class="align-middle meta-text" style="text-align:center;">2</td>
+                  <td class="align-middle meta-text text-body-secondary">James Park</td>
+                  <td class="align-middle meta-text text-body-secondary" style="text-align:center;">2</td>
                   <td class="align-middle">
                     <div class="group-dots">
-                      <span class="group-dot" style="background:#E8733A;" title="Distribution"></span>
+                      <span class="group-dot bg-danger" title="Distribution"></span>
                     </div>
                   </td>
                   <td class="align-middle"><span class="health-badge health-fair">Fair</span></td>
-                  <td class="align-middle meta-text">1 week ago</td>
-                  <td class="align-middle meta-text">Randy Burgess</td>
+                  <td class="align-middle meta-text text-body-secondary">1 week ago</td>
+                  <td class="align-middle meta-text text-body-secondary">Randy Burgess</td>
                 </tr>
                 <tr>
                   <td class="align-middle">
                     <div class="d-flex align-items-center gap-2">
                       <div class="avatar" style="background:#22A06B; width:28px; height:28px; font-size:10px;">KL</div>
-                      <span class="account-name">Kino Lorber</span>
+                      <span class="account-name text-body">Kino Lorber</span>
                     </div>
                   </td>
-                  <td class="align-middle meta-text">Maria Lopez</td>
-                  <td class="align-middle meta-text" style="text-align:center;">6</td>
+                  <td class="align-middle meta-text text-body-secondary">Maria Lopez</td>
+                  <td class="align-middle meta-text text-body-secondary" style="text-align:center;">6</td>
                   <td class="align-middle">
                     <div class="group-dots">
-                      <span class="group-dot" style="background:#E8733A;" title="Distribution"></span>
-                      <span class="group-dot" style="background:#2E75B6;" title="Press/Festival"></span>
-                      <span class="group-dot" style="background:#D97706;" title="Institutional"></span>
+                      <span class="group-dot bg-danger" title="Distribution"></span>
+                      <span class="group-dot bg-primary" title="Press/Festival"></span>
+                      <span class="group-dot bg-warning" title="Institutional"></span>
                     </div>
                   </td>
                   <td class="align-middle"><span class="health-badge health-good">Good</span></td>
-                  <td class="align-middle meta-text">3 days ago</td>
-                  <td class="align-middle meta-text">Badie Ali</td>
+                  <td class="align-middle meta-text text-body-secondary">3 days ago</td>
+                  <td class="align-middle meta-text text-body-secondary">Badie Ali</td>
                 </tr>
               </tbody>
             </table>
