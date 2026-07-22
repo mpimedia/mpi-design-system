@@ -195,6 +195,29 @@ lives: a per-selector compile guard (`bin/verify-nav-bar-adaptive`, run from
 modes — each proven by breaking it. Do not add a `render_inline` colour assertion for a partial
 conversion; it cannot see CSS. (#154.)
 
+**Related — a browser contrast spec must pin the painted *foreground*, not only the ratio.** A
+computed-style assertion of the shape `ratio(fg, bg) >= 4.5` — reading `fg` from the element that
+*should* carry the colour class — false-greens if that class stops applying: the element falls back
+to inherited body text, which usually also clears AA against the same surface, so the ratio still
+passes while the intended token has silently stopped driving the colour. Pin the *value* the class
+must paint (`expect(computed(sel, "color")).to eq("#4F5B73")`) beside the ratio. The #149 pilot
+already does this ("asserting the painted value as well as the ratio, because inherited body text
+clears AA in both modes and would make a ratio-only assertion a false green"); it is a named rule
+now because #150 regressed below it — its two new `ActiveFilterBar` browser checks asserted surface
++ ratio only, and external review had to restore the foreground pins (`#4F5B73` light / `#B4B8BD`
+dark, both Chrome-measured). (#150.)
+
+**Related — when a component legitimately keeps one hex (no Bootstrap equivalent), guard it by
+parsing declarations, not by string-deleting the allowed value before a residual sweep.** A sweep of
+the shape "delete the permitted hex from the style, then assert no hex remains" false-greens on the
+*same* hex reused in another property: deleting every `#64748B` also deletes an unwanted
+`outline: 1px solid #64748B`. Parse the style into declarations, assert the exact permitted
+`property: value` pairs are present (`contain_exactly("background-color: #64748B", "color: #fff")`),
+and reject a hex literal in every *other* declaration — then a stray hex in a new property reddens.
+Prove it by adding one and watching red. (Reference: #150 — `AvatarStack` keeps `#64748B` for the
+`+N` overflow chip; the first residual sweep string-deleted it and would have masked the same hex
+reused elsewhere, caught by external review.)
+
 ## A Guard Is Not Real Until You Have Watched It Fail
 
 The two shapes above are assertions that *can* fail but don't discriminate. This is the

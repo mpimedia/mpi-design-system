@@ -1,11 +1,12 @@
 <% if show? %>
-  <%# `data-bs-theme="light"` scopes Bootstrap's colour mode to this bar.
-      `bar_styles` pins a light background ($mpi-background), while
-      `.text-body-secondary` resolves through `--bs-body-color` — which Bootstrap
-      flips to #dee2e6 under `data-bs-theme="dark"`. Pairing a theme-aware
-      foreground with a pinned background rendered light text on a light bar:
-      1.16:1. Pinning the surface means pinning its colour mode too. (#130) %>
-  <div style="<%= bar_styles %>" data-bs-theme="light" role="toolbar" aria-label="Active filters">
+  <%# The bar surface is `.bg-body-secondary` — adaptive — so there is no
+      `data-bs-theme` pin here. #130 pinned `data-bs-theme="light"` because the
+      surface was a frozen light hex ($mpi-background) paired with a theme-aware
+      `.text-body-secondary` label (light-on-light, 1.16:1, in dark mode). With an
+      adaptive surface the label and bar flip together — `.text-body-secondary` on
+      `.bg-body-secondary` stays ~5.76:1 light / 5.77:1 dark — and pinning light would
+      now be the regression, blocking dark mode. (#150) %>
+  <div class="bg-body-secondary rounded" style="<%= bar_styles %>" role="toolbar" aria-label="Active filters">
     <span class="text-body-secondary" style="<%= label_styles %>">Active:</span>
     <% @filters.each do |filter| %>
       <span class="rounded-pill text-bg-primary" style="<%= pill_styles %>">

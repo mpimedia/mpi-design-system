@@ -13,15 +13,17 @@ module MpiDesignSystem
 
         private
 
+        # Geometry only. The surface and radius come from `.bg-body-secondary.rounded`
+        # in the template, so the bar tracks `data-bs-theme` instead of pinning a light
+        # `#F5F7FA`. That adaptive surface is why the template no longer pins
+        # `data-bs-theme="light"` — the pin existed only to freeze the light hex. (#150)
         def bar_styles
           [
             "display: flex",
             "align-items: center",
             "flex-wrap: wrap",
             "gap: 8px",
-            "padding: 10px 16px",
-            "background: #F5F7FA",
-            "border-radius: 6px"
+            "padding: 10px 16px"
           ].join("; ")
         end
 
