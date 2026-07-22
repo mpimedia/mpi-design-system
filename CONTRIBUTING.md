@@ -211,17 +211,22 @@ MERGE_SHA=$(gh pr view "$PR" --json mergeCommit --jq .mergeCommit.oid)
 # skipped job cannot hide behind a workflow-level roll-up. `--paginate` so a non-success beyond the
 # first 30 checks is not missed; `.conclusion // "pending"` maps a still-running check (null
 # conclusion, which gh would otherwise emit as a blank line that command substitution silently
-# trims) to a non-success token. Fails closed on empty, pending, or any non-success job.
+# trims) to a non-success token. The `|| exit` catches a mid-pagination gh failure that would
+# otherwise leave a partial, falsely-green list. Fails closed on empty, pending, or non-success.
 CONCLUSIONS=$(gh api --paginate "repos/mpimedia/mpi-design-system/commits/$MERGE_SHA/check-runs" \
-  --jq '.check_runs[] | .conclusion // "pending"')
+  --jq '.check_runs[] | .conclusion // "pending"') \
+  || { echo "ABORT: could not read CI checks for $MERGE_SHA"; exit 1; }
 [ -n "$CONCLUSIONS" ] || { echo "ABORT: no CI checks for $MERGE_SHA"; exit 1; }
 [ "$(printf '%s\n' "$CONCLUSIONS" | sort -u)" = "success" ] \
   || { echo "ABORT: CI not all green -> $CONCLUSIONS"; exit 1; }
 
-# Assert the version at that commit is the one you're tagging (substitute X.Y.Z). BRACE the
-# variable — a bare "$MERGE_SHA:lib/..." triggers zsh's :l modifier and mangles the path into
-# "<sha>ib/...". Fails closed if git show errors or the version does not match.
-git show "${MERGE_SHA}:lib/mpi_design_system/version.rb" | grep -q 'VERSION = "X.Y.Z"' \
+# Assert the version at that commit is exactly the one you're tagging (substitute X.Y.Z). Capture
+# git show separately so its own failure aborts; BRACE the variable — a bare "$MERGE_SHA:lib/..."
+# triggers zsh's :l modifier and mangles the path. Match the whole line as a fixed string
+# (grep -qxF) so a comment, an `OLD_VERSION =`, or the "." wildcard can't false-match.
+VERSION_RB=$(git show "${MERGE_SHA}:lib/mpi_design_system/version.rb") \
+  || { echo "ABORT: cannot read version.rb at $MERGE_SHA"; exit 1; }
+printf '%s\n' "$VERSION_RB" | grep -qxF '  VERSION = "X.Y.Z"' \
   || { echo "ABORT: version.rb at $MERGE_SHA is not X.Y.Z"; exit 1; }
 
 # Lightweight tag on the merge commit, then push it — chained so a failed tag (e.g. one that
