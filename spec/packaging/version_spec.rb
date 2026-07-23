@@ -14,11 +14,13 @@ require "spec_helper"
 # v0.9.0 releases the NavBar/AppShell theme-adaptive conversion (#154, phase 6) and the
 # StatCard/AvatarStack/ActiveFilterBar small conversions (#150, phase 2); v0.10.0 batches
 # the FilterChipBar/DataTable/TagChip semantic conversion (#151, phase 3) and the FilterPanel
-# theme-adaptive conversion (#152, phase 4 — the AvatarCircle half is split to #169). This spec
+# theme-adaptive conversion (#152, phase 4 — the AvatarCircle half is split to #169); v0.11.0
+# (#153) makes Admin::Dashboard theme-adaptive — the largest inline-hex surface (Track 2 phase 5;
+# the caller-supplied Contacts-by-Group chart palette is split to #172). This spec
 # fails if the constant regresses, keeping lib/mpi_design_system/version.rb in lockstep
 # with CHANGELOG.md and the git tag.
 RSpec.describe "MpiDesignSystem::VERSION" do
-  it "is 0.10.0" do
-    expect(MpiDesignSystem::VERSION).to eq("0.10.0")
+  it "is 0.11.0" do
+    expect(MpiDesignSystem::VERSION).to eq("0.11.0")
   end
 end
