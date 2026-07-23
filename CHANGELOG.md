@@ -7,6 +7,32 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Changed
+- **`Admin::Dashboard` is theme-adaptive** — the CRM dashboard stopped pinning a light
+  palette in inline styles; every colour the component *selects* now resolves from a
+  Bootstrap semantic utility, so it follows `data-bs-theme` and the consuming app's mapped
+  tokens. Widgets are `bg-body border rounded-3` (was `#fff` / `1px solid #DEE2E6`; `rounded-3`
+  = `--bs-border-radius-lg` = 8px, preserving the retired radius — the StatCard #150 precedent);
+  greeting/titles/names/counts are `text-body`; subtitle/timestamps/legend labels are
+  `text-body-secondary`; the activity-type icon chips are `bg-#{sem}-subtle text-#{sem}-emphasis`;
+  follow-up statuses are `text-danger-emphasis` / `text-warning-emphasis` / `text-body-secondary`;
+  quick actions are `border bg-body text-body`. The two activity links and "View all" drop their
+  colour class for Bootstrap's adaptive `--bs-link-color` (`#2E75B6` light / `#82ACD3` dark) with
+  their underline restored (the DataTable #151 treatment). Five activity types map onto four
+  adaptive hues (`meeting → secondary` — purple has no MPI semantic and `info` aliases to
+  `primary`; `call` shares `success` with `new_contact`); the icons are `aria-hidden`, so the
+  collapse conveys nothing on its own. Deliberate visible shifts, **by mode**:
+  `text-danger-emphasis` is darker than `#DC3545` in light and *lighter* in dark (`#EA868F`);
+  `text-body-secondary` (`#545F77`) replaces the fixed `#6C757D`; meeting's purple becomes grey.
+  Proven in a real browser (`spec/features/contrast_spec.rb`) — painted value **and** ratio, both
+  colour modes. The Contacts-by-Group chart's **caller-supplied** `group_data[:color]` is a
+  documented data-viz passthrough, deferred to #172 — so the *rendered* Dashboard is not yet fully
+  theme-adaptive. (#153 — Track 2 phase 5, epic #147.)
+- **Removed (pre-1.0):** the public constants `Dashboard::Component::ACTIVITY_ICONS` and
+  `FOLLOWUP_COLORS` — the two frozen hex maps the conversion replaced with `ACTIVITY_TYPES`
+  (`{ icon:, variant: }`) and `FOLLOWUP_CLASSES`. Both were public Ruby constants; no consumer
+  call sites were found across the MPI apps (`gh search code --owner mpimedia`).
+
 ## [0.10.0] - 2026-07-22
 
 ### Changed
