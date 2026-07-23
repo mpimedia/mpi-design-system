@@ -1,9 +1,9 @@
 <div>
   <%# Greeting %>
   <div class="mb-4">
-    <h5 style="<%= greeting_styles %>"><%= greeting_text %></h5>
+    <h5 class="text-body" style="<%= greeting_styles %>"><%= greeting_text %></h5>
     <% if subtitle_text %>
-      <div style="<%= subtitle_styles %>"><%= subtitle_text %></div>
+      <div class="text-body-secondary" style="<%= subtitle_styles %>"><%= subtitle_text %></div>
     <% end %>
   </div>
 
@@ -26,17 +26,17 @@
       <% if activity_feed? %>
         <%= activity_feed %>
       <% elsif show_activities? %>
-        <div style="<%= widget_styles %>" class="mb-4">
+        <div class="bg-body border rounded-3 mb-4" style="<%= widget_styles %>">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <div style="<%= widget_title_styles %>">Recent Activity</div>
+            <div class="text-body" style="<%= widget_title_styles %>">Recent Activity</div>
           </div>
           <% @activities.each do |activity| %>
             <div class="d-flex align-items-start gap-2 mb-3">
-              <div style="<%= activity_icon_styles(activity[:type]) %>">
+              <div class="<%= activity_icon_classes(activity[:type]) %>" style="<%= activity_icon_styles %>">
                 <i class="bi <%= activity_icon_class(activity[:type]) %>" aria-hidden="true"></i>
               </div>
               <div class="flex-grow-1">
-                <div style="<%= activity_text_styles %>">
+                <div class="text-body" style="<%= activity_text_styles %>">
                   <%= activity[:description] %>
                   <% if activity[:contact_name].present? %>
                     <% if activity[:contact_path].present? %>
@@ -53,7 +53,7 @@
                     <% end %>
                   <% end %>
                 </div>
-                <div style="<%= activity_time_styles %>"><%= activity[:timestamp] %></div>
+                <div class="text-body-secondary" style="<%= activity_time_styles %>"><%= activity[:timestamp] %></div>
               </div>
             </div>
           <% end %>
@@ -64,8 +64,8 @@
       <% if group_chart? %>
         <%= group_chart %>
       <% elsif show_group_chart? %>
-        <div style="<%= widget_styles %>">
-          <div style="<%= widget_title_styles %>" class="mb-3">Contacts by Group</div>
+        <div class="bg-body border rounded-3" style="<%= widget_styles %>">
+          <div class="text-body mb-3" style="<%= widget_title_styles %>">Contacts by Group</div>
           <div style="<%= bar_container_styles %>" class="mb-3" role="img" aria-label="Contacts by group distribution">
             <% @group_data.each do |group| %>
               <div style="<%= bar_segment_styles(group) %>"></div>
@@ -75,8 +75,8 @@
             <% @group_data.each do |group| %>
               <div class="d-flex align-items-center gap-1">
                 <div style="<%= legend_dot_styles(group[:color]) %>"></div>
-                <span style="<%= legend_label_styles %>"><%= group[:label] %></span>
-                <span style="<%= legend_count_styles %>"><%= group[:count] %></span>
+                <span class="text-body-secondary" style="<%= legend_label_styles %>"><%= group[:label] %></span>
+                <span class="text-body" style="<%= legend_count_styles %>"><%= group[:count] %></span>
               </div>
             <% end %>
           </div>
@@ -90,11 +90,11 @@
       <% if quick_actions? %>
         <%= quick_actions %>
       <% elsif show_quick_actions? %>
-        <div style="<%= widget_styles %>" class="mb-4">
-          <div style="<%= widget_title_styles %>" class="mb-3">Quick Actions</div>
+        <div class="bg-body border rounded-3 mb-4" style="<%= widget_styles %>">
+          <div class="text-body mb-3" style="<%= widget_title_styles %>">Quick Actions</div>
           <div class="d-grid gap-2">
             <% @quick_action_buttons.each do |action| %>
-              <a href="<%= action[:path] %>" style="<%= quick_action_styles %>">
+              <a href="<%= action[:path] %>" class="border bg-body text-body" style="<%= quick_action_styles %>">
                 <% if action[:icon] %>
                   <i class="bi <%= action[:icon] %>" aria-hidden="true"></i>
                 <% end %>
@@ -109,9 +109,9 @@
       <% if followup_queue? %>
         <%= followup_queue %>
       <% elsif show_followups? %>
-        <div style="<%= widget_styles %>">
+        <div class="bg-body border rounded-3" style="<%= widget_styles %>">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <div style="<%= widget_title_styles %>">Follow-up Queue</div>
+            <div class="text-body" style="<%= widget_title_styles %>">Follow-up Queue</div>
             <% if @followup_path %>
               <a href="<%= @followup_path %>" style="<%= view_all_styles %>">View all <%= @followup_count %> &rarr;</a>
             <% end %>
@@ -120,10 +120,10 @@
             <div class="d-flex align-items-center gap-2 mb-3">
               <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: followup[:avatar_name] || followup[:name], size: :sm) %>
               <div class="flex-grow-1">
-                <div style="<%= followup_name_styles %>"><%= followup[:name] %></div>
-                <div style="<%= followup_desc_styles %>"><%= followup[:description] %></div>
+                <div class="text-body" style="<%= followup_name_styles %>"><%= followup[:name] %></div>
+                <div class="text-body" style="<%= followup_desc_styles %>"><%= followup[:description] %></div>
               </div>
-              <div style="<%= followup_status_styles(followup[:status]) %>"><%= followup[:status_label] %></div>
+              <div class="<%= followup_status_class(followup[:status]) %>" style="<%= followup_status_styles %>"><%= followup[:status_label] %></div>
             </div>
           <% end %>
         </div>

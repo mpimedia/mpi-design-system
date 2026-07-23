@@ -4,74 +4,151 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Layout — MPI Design System</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
   <style>
-    body { padding: 0; background: #F5F7FA; margin: 0; }
+    /* This file loads STOCK Bootstrap from the CDN, which ships indigo #0D6EFD and its own
+       success/warning/subtle/emphasis. The engine compiles Bootstrap with MPI's tokens
+       instead, so without these overrides the semantic utilities below would paint
+       Bootstrap's palette and this mockup would contradict the component it documents
+       (frontend.md, #149). Mirrors _tokens.scss plus Bootstrap 5.3.8's derived
+       subtle/emphasis/border for every family the Dashboard uses. Each dark value is
+       computed from Bootstrap 5.3.8's own formulas (tint/shade), NOT copied from
+       filter-chip-bar.html (whose --bs-success-text-emphasis: #A7D9C4 is the LIGHT
+       border-subtle, not the tint-40% #7AC6A6 Bootstrap actually emits in dark). The
+       `--bs-link-color`/-hover pair is included because the converted links READ it and
+       overriding --bs-primary does not recompute it (#153, Codex P1). */
+    :root {
+      --bs-primary: #2E75B6;
+      --bs-primary-rgb: 46, 117, 182;
+      --bs-primary-text-emphasis: #122F49;
+      --bs-primary-bg-subtle: #D5E3F0;
+      --bs-primary-border-subtle: #ABC8E2;
+      --bs-secondary: #6C757D;
+      --bs-secondary-rgb: 108, 117, 125;
+      --bs-secondary-text-emphasis: #2B2F32;
+      --bs-secondary-bg-subtle: #E2E3E5;
+      --bs-secondary-border-subtle: #C4C8CB;
+      --bs-success: #22A06B;
+      --bs-success-rgb: 34, 160, 107;
+      --bs-success-text-emphasis: #0E402B;
+      --bs-success-bg-subtle: #D3ECE1;
+      --bs-success-border-subtle: #A7D9C4;
+      --bs-warning: #D4772C;
+      --bs-warning-rgb: 212, 119, 44;
+      --bs-warning-text-emphasis: #553012;
+      --bs-warning-bg-subtle: #F6E4D5;
+      --bs-warning-border-subtle: #EEC9AB;
+      --bs-danger: #DC3545;
+      --bs-danger-rgb: 220, 53, 69;
+      --bs-danger-text-emphasis: #58151C;
+      --bs-danger-bg-subtle: #F8D7DA;
+      --bs-danger-border-subtle: #F1AEB5;
+      --bs-link-color: #2E75B6;
+      --bs-link-color-rgb: 46, 117, 182;
+      --bs-link-hover-color: #255E92;
+      --bs-link-hover-color-rgb: 37, 94, 146;
+      --bs-body-color: #1B2A4A;
+      --bs-body-color-rgb: 27, 42, 74;
+      --bs-body-bg: #FFFFFF;
+      --bs-body-bg-rgb: 255, 255, 255;
+      --bs-secondary-color: rgba(27, 42, 74, 0.75);
+      --bs-border-color: #DEE2E6;
+    }
+    [data-bs-theme="dark"] {
+      --bs-primary-text-emphasis: #82ACD3;
+      --bs-primary-bg-subtle: #091724;
+      --bs-primary-border-subtle: #1C466D;
+      --bs-secondary-text-emphasis: #A7ACB1;
+      --bs-secondary-bg-subtle: #161719;
+      --bs-secondary-border-subtle: #41464B;
+      --bs-success-text-emphasis: #7AC6A6;
+      --bs-success-bg-subtle: #072015;
+      --bs-success-border-subtle: #146040;
+      --bs-warning-text-emphasis: #E5AD80;
+      --bs-warning-bg-subtle: #2A1809;
+      --bs-warning-border-subtle: #7F471A;
+      --bs-danger-text-emphasis: #EA868F;
+      --bs-danger-bg-subtle: #2C0B0E;
+      --bs-danger-border-subtle: #842029;
+      --bs-link-color: #82ACD3;
+      --bs-link-color-rgb: 130, 172, 211;
+      --bs-link-hover-color: #9BBDDC;
+      --bs-link-hover-color-rgb: 155, 189, 220;
+      --bs-body-color: #DEE2E6;
+      --bs-body-color-rgb: 222, 226, 230;
+      --bs-body-bg: #212529;
+      --bs-body-bg-rgb: 33, 37, 41;
+      --bs-secondary-color: rgba(222, 226, 230, 0.75);
+      --bs-border-color: #495057;
+    }
+
+    body { padding: 0; background: var(--bs-tertiary-bg); margin: 0; }
     .preview-wrapper { padding: 32px; }
     .preview-section { margin-bottom: 32px; }
-    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
-    .shell { border: 1px solid #DEE2E6; border-radius: 8px; overflow: hidden; background: #F5F7FA; }
-    .topbar { background: #fff; border-bottom: 1px solid #DEE2E6; padding: 0 24px; display: flex; align-items: center; height: 48px; }
-    .logo { display: flex; align-items: center; gap: 6px; margin-right: 24px; text-decoration: none; }
-    .logo-x { font-size: 18px; font-weight: 800; color: #1B2A4A; }
-    .logo-text { font-size: 12px; font-weight: 700; color: #1B2A4A; letter-spacing: 0.12em; }
-    .nav-item { color: #6C757D; text-decoration: none; padding: 12px 10px; font-size: 13px; font-weight: 500; }
-    .nav-item.active { color: #2E75B6; font-weight: 600; border-bottom: 2px solid #2E75B6; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--bs-secondary-color); margin-bottom: 8px; }
+    .shell { border: 1px solid var(--bs-border-color); border-radius: 8px; overflow: hidden; background: var(--bs-tertiary-bg); }
+    .topbar { background: var(--bs-body-bg); border-bottom: 1px solid var(--bs-border-color); padding: 0 24px; display: flex; align-items: center; height: 48px; }
+    .logo { display: flex; align-items: center; gap: 6px; margin-right: 24px; text-decoration: none; color: var(--bs-body-color); }
+    .logo-text { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; }
+    .nav-item { color: var(--bs-secondary-color); text-decoration: none; padding: 12px 10px; font-size: 13px; font-weight: 500; }
+    .nav-item.active { color: var(--bs-link-color); font-weight: 600; border-bottom: 2px solid var(--bs-link-color); }
     .nav-search { margin-left: auto; position: relative; }
-    .nav-search input { font-size: 12px; border: 1px solid #DEE2E6; border-radius: 5px; padding: 5px 10px 5px 28px; width: 160px; background: #F5F7FA; }
-    .nav-search .icon { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #6C757D; font-size: 12px; }
+    .nav-search input { font-size: 12px; border: 1px solid var(--bs-border-color); border-radius: 5px; padding: 5px 10px 5px 28px; width: 160px; background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+    .nav-search .icon { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--bs-secondary-color); font-size: 12px; }
     .content-area { padding: 20px 24px; }
 
-    /* Stat cards */
-    .stat-card { background: #fff; border: 1px solid #DEE2E6; border-radius: 8px; padding: 16px; }
-    .stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-bottom: 6px; }
-    .stat-value { font-size: 28px; font-weight: 700; color: #1B2A4A; line-height: 1.1; }
-    .stat-trend { font-size: 11px; font-weight: 500; margin-top: 4px; }
-    .trend-up { color: #22A06B; }
-    .trend-down { color: #DC3545; }
-    .trend-neutral { color: #6C757D; }
+    /* Widget cards — geometry only; the surface/border come from `bg-body border rounded-3`. */
+    .widget { padding: 20px; }
+    .widget-title { font-size: 16px; font-weight: 600; }
 
-    /* Activity feed */
-    .activity-item { padding: 10px 0; border-bottom: 1px solid #F0F0F0; font-size: 13px; }
+    /* Stat cards — geometry only; colour comes from utilities in the markup. */
+    .stat-card { padding: 16px; }
+    .stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .stat-value { font-size: 28px; font-weight: 700; line-height: 1.1; }
+    .stat-trend { font-size: 11px; font-weight: 500; margin-top: 4px; }
+
+    /* Activity feed — geometry only. Icon chips are bg-#{sem}-subtle text-#{sem}-emphasis. */
+    .activity-item { padding: 10px 0; border-bottom: 1px solid var(--bs-border-color); font-size: 13px; }
     .activity-item:last-child { border-bottom: none; }
     .activity-icon { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
-    .activity-text a { color: #2E75B6; text-decoration: none; font-weight: 500; }
-    .activity-time { font-size: 11px; color: #6C757D; }
+    .activity-time { font-size: 11px; }
 
-    /* Follow-up queue */
-    .avatar-sm { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; color: #fff; font-weight: 600; font-size: 11px; flex-shrink: 0; }
+    /* Follow-up queue — AvatarCircle (size :sm = 28px) owns the fixed identity hues (#169).
+       Foreground is DERIVED per background (ColorContrast.accessible_foreground), not a blanket
+       white: #fff is the default, and the light-background avatars carry an inline color:#000
+       override so each initials pair clears WCAG AA on its own circle — e.g. white on #4EA8DE is
+       only 2.63:1 (the #130 defect), so that avatar takes #000. */
+    .avatar-sm { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; font-weight: 600; font-size: 11px; flex-shrink: 0; }
     .followup-status { font-size: 11px; font-weight: 500; white-space: nowrap; }
 
-    /* Contacts by group bar */
+    /* Contacts by group bar — caller-supplied colours (passthrough, #153 follow-up). */
     .group-bar { height: 16px; border-radius: 8px; overflow: hidden; display: flex; }
     .group-bar-segment { height: 100%; }
-    .group-legend { font-size: 11px; color: #6C757D; }
-    .group-legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
-    .group-legend strong { color: #1B2A4A; }
+    .group-legend { font-size: 11px; }
+    .group-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
 
-    /* Quick actions */
-    .quick-action { display: block; padding: 10px 14px; border: 1px solid #DEE2E6; border-radius: 6px; font-size: 13px; color: #1B2A4A; text-decoration: none; background: #fff; }
-    .quick-action:hover { border-color: #2E75B6; }
-    .widget-title { font-size: 14px; font-weight: 600; color: #1B2A4A; }
+    /* Quick actions — geometry only; colour comes from `border bg-body text-body`. */
+    .quick-action { display: block; padding: 10px 14px; border-radius: 6px; font-size: 13px; text-decoration: none; }
+    .quick-action:hover { border-color: var(--bs-primary) !important; }
   </style>
 </head>
 <body>
   <div class="preview-wrapper">
-    <h4 class="mb-1" style="color:#1B2A4A;">Dashboard Layout</h4>
-    <p class="text-muted small mb-4">Dashboard layout for CRM. Greeting, stat cards, recent activity feed, follow-up queue, contacts by group chart, and quick actions. From Figma Screen 7.</p>
+    <h4 class="mb-1 text-body">Dashboard Layout</h4>
+    <p class="text-body-secondary small mb-4">Dashboard layout for CRM. Greeting, stat cards, recent activity feed, follow-up queue, contacts by group chart, and quick actions. Theme-adaptive after #153; the Contacts-by-Group palette is caller-supplied (deferred). From Figma Screen 7.</p>
 
     <div class="preview-section">
       <div class="preview-label">CRM Dashboard — From Figma Screen 7</div>
       <div class="shell">
         <div class="topbar">
           <a class="logo" href="#">
-            <svg style="width:24px;height:24px;" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-              <path fill="#1B2A4A" d="M 108,80 L 180,175 L 200,195 L 200,165 L 140,80 Z"/>
-              <path fill="#1B2A4A" d="M 292,80 L 220,175 L 200,195 L 200,165 L 260,80 Z"/>
-              <path fill="#1B2A4A" d="M 108,320 L 180,225 L 200,205 L 200,235 L 140,320 Z"/>
-              <path fill="#1B2A4A" d="M 292,320 L 220,225 L 200,205 L 200,235 L 260,320 Z"/>
-              <polygon fill="#2E75B6" points="200,172 216,200 200,228 184,200"/>
+            <svg style="width:24px;height:24px;color:var(--bs-body-color);" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <path fill="currentColor" d="M 108,80 L 180,175 L 200,195 L 200,165 L 140,80 Z"/>
+              <path fill="currentColor" d="M 292,80 L 220,175 L 200,195 L 200,165 L 260,80 Z"/>
+              <path fill="currentColor" d="M 108,320 L 180,225 L 200,205 L 200,235 L 140,320 Z"/>
+              <path fill="currentColor" d="M 292,320 L 220,225 L 200,205 L 200,235 L 260,320 Z"/>
+              <polygon fill="var(--bs-link-color)" points="200,172 216,200 200,228 184,200"/>
             </svg>
             <span class="logo-text" style="font-weight:300;">MARKAZ</span>
           </a>
@@ -86,37 +163,37 @@
         </div>
         <div class="content-area">
           <!-- Greeting -->
-          <h5 class="mb-0" style="color:#1B2A4A;">Good morning, Badie</h5>
-          <p class="text-muted small mb-3">Here's your CRM snapshot for Tuesday, Feb 25</p>
+          <h5 class="mb-0 text-body">Good morning, Badie</h5>
+          <p class="text-body-secondary small mb-3">Here's your CRM snapshot for Tuesday, Feb 25</p>
 
           <!-- Stat cards -->
           <div class="row g-3 mb-4">
             <div class="col-3">
-              <div class="stat-card">
-                <div class="stat-label">Total Contacts</div>
-                <div class="stat-value">2,307</div>
-                <div class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> 34 this month</div>
+              <div class="stat-card bg-body border rounded-3">
+                <div class="stat-label text-body-secondary">Total Contacts</div>
+                <div class="stat-value text-body">2,307</div>
+                <div class="stat-trend text-success-emphasis"><i class="bi bi-arrow-up"></i> 34 this month</div>
               </div>
             </div>
             <div class="col-3">
-              <div class="stat-card">
-                <div class="stat-label">Engagements This Week</div>
-                <div class="stat-value">47</div>
-                <div class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> 12% vs last week</div>
+              <div class="stat-card bg-body border rounded-3">
+                <div class="stat-label text-body-secondary">Engagements This Week</div>
+                <div class="stat-value text-body">47</div>
+                <div class="stat-trend text-success-emphasis"><i class="bi bi-arrow-up"></i> 12% vs last week</div>
               </div>
             </div>
             <div class="col-3">
-              <div class="stat-card">
-                <div class="stat-label">Accounts</div>
-                <div class="stat-value">418</div>
-                <div class="stat-trend trend-neutral">8 added this month</div>
+              <div class="stat-card bg-body border rounded-3">
+                <div class="stat-label text-body-secondary">Accounts</div>
+                <div class="stat-value text-body">418</div>
+                <div class="stat-trend text-body-secondary">8 added this month</div>
               </div>
             </div>
             <div class="col-3">
-              <div class="stat-card">
-                <div class="stat-label">Overdue Follow-Ups</div>
-                <div class="stat-value" style="color:#DC3545;">12</div>
-                <div class="stat-trend trend-down"><i class="bi bi-arrow-down"></i> 3 since yesterday</div>
+              <div class="stat-card bg-body border rounded-3">
+                <div class="stat-label text-body-secondary">Overdue Follow-Ups</div>
+                <div class="stat-value text-danger">12</div>
+                <div class="stat-trend text-danger-emphasis"><i class="bi bi-arrow-down"></i> 3 since yesterday</div>
               </div>
             </div>
           </div>
@@ -124,73 +201,69 @@
           <div class="row g-4">
             <!-- Left column -->
             <div class="col-8">
-              <!-- Recent Activity -->
-              <div class="card mb-4">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="widget-title">Recent Activity</div>
-                    <a href="#" style="font-size:12px; color:#2E75B6; text-decoration:none;">View all →</a>
+              <!-- Recent Activity — the component emits NO "View all" here (only the
+                   Follow-up Queue has one); callers supply their own activity-log control. -->
+              <div class="widget bg-body border rounded-3 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="widget-title text-body">Recent Activity</div>
+                </div>
+                <div class="activity-item d-flex align-items-start gap-2">
+                  <div class="activity-icon bg-primary-subtle text-primary-emphasis"><i class="bi bi-envelope-fill"></i></div>
+                  <div class="flex-grow-1">
+                    <div class="text-body"><strong>Email logged</strong> with <a href="#">Sarah Chen</a> — Re: Spring Lineup Screening Availability</div>
+                    <div class="activity-time text-body-secondary">35 minutes ago</div>
                   </div>
-                  <div class="activity-item d-flex align-items-start gap-2">
-                    <div class="activity-icon" style="background:#EBF3FB; color:#2E75B6;"><i class="bi bi-envelope-fill"></i></div>
-                    <div class="flex-grow-1">
-                      <div class="activity-text"><strong style="color:#1B2A4A;">Email logged</strong> with <a href="#">Sarah Chen</a> — Re: Spring Lineup Screening Availability</div>
-                      <div class="activity-time">35 minutes ago</div>
-                    </div>
+                </div>
+                <div class="activity-item d-flex align-items-start gap-2">
+                  <div class="activity-icon bg-secondary-subtle text-secondary-emphasis"><i class="bi bi-camera-video-fill"></i></div>
+                  <div class="flex-grow-1">
+                    <div class="text-body"><strong>Meeting recorded</strong> with <a href="#">James Park</a> at <a href="#">MUBI</a> — Q2 Slate Review</div>
+                    <div class="activity-time text-body-secondary">2 hours ago</div>
                   </div>
-                  <div class="activity-item d-flex align-items-start gap-2">
-                    <div class="activity-icon" style="background:#F3EFFE; color:#8B5CF6;"><i class="bi bi-camera-video-fill"></i></div>
-                    <div class="flex-grow-1">
-                      <div class="activity-text"><strong style="color:#1B2A4A;">Meeting recorded</strong> with <a href="#">James Park</a> at <a href="#">MUBI</a> — Q2 Slate Review</div>
-                      <div class="activity-time">2 hours ago</div>
-                    </div>
+                </div>
+                <div class="activity-item d-flex align-items-start gap-2">
+                  <div class="activity-icon bg-success-subtle text-success-emphasis"><i class="bi bi-plus-circle-fill"></i></div>
+                  <div class="flex-grow-1">
+                    <div class="text-body"><strong>New contact added:</strong> <a href="#">Elena Rossi</a> — Head of Acquisitions, RAI Cinema</div>
+                    <div class="activity-time text-body-secondary">4 hours ago</div>
                   </div>
-                  <div class="activity-item d-flex align-items-start gap-2">
-                    <div class="activity-icon" style="background:#ECF8F4; color:#22A06B;"><i class="bi bi-plus-circle-fill"></i></div>
-                    <div class="flex-grow-1">
-                      <div class="activity-text"><strong style="color:#1B2A4A;">New contact added:</strong> <a href="#">Elena Rossi</a> — Head of Acquisitions, RAI Cinema</div>
-                      <div class="activity-time">4 hours ago</div>
-                    </div>
+                </div>
+                <div class="activity-item d-flex align-items-start gap-2">
+                  <div class="activity-icon bg-success-subtle text-success-emphasis"><i class="bi bi-telephone-fill"></i></div>
+                  <div class="flex-grow-1">
+                    <div class="text-body"><strong>Call logged</strong> with <a href="#">Nathan Hayes</a> — Investor deck follow-up</div>
+                    <div class="activity-time text-body-secondary">Yesterday, 4:15 PM</div>
                   </div>
-                  <div class="activity-item d-flex align-items-start gap-2">
-                    <div class="activity-icon" style="background:#ECF8F4; color:#16A34A;"><i class="bi bi-telephone-fill"></i></div>
-                    <div class="flex-grow-1">
-                      <div class="activity-text"><strong style="color:#1B2A4A;">Call logged</strong> with <a href="#">Nathan Hayes</a> — Investor deck follow-up</div>
-                      <div class="activity-time">Yesterday, 4:15 PM</div>
-                    </div>
-                  </div>
-                  <div class="activity-item d-flex align-items-start gap-2">
-                    <div class="activity-icon" style="background:#FEF3EC; color:#E8913A;"><i class="bi bi-journal-text"></i></div>
-                    <div class="flex-grow-1">
-                      <div class="activity-text"><strong style="color:#1B2A4A;">Note added</strong> on <a href="#">Maria Lopez</a> — Pre-market prep for Cannes</div>
-                      <div class="activity-time">Yesterday, 2:30 PM</div>
-                    </div>
+                </div>
+                <div class="activity-item d-flex align-items-start gap-2">
+                  <div class="activity-icon bg-warning-subtle text-warning-emphasis"><i class="bi bi-journal-text"></i></div>
+                  <div class="flex-grow-1">
+                    <div class="text-body"><strong>Note added</strong> on <a href="#">Maria Lopez</a> — Pre-market prep for Cannes</div>
+                    <div class="activity-time text-body-secondary">Yesterday, 2:30 PM</div>
                   </div>
                 </div>
               </div>
 
               <!-- Contacts by Group -->
-              <div class="card">
-                <div class="card-body">
-                  <div class="widget-title mb-3">Contacts by Group</div>
-                  <div class="group-bar mb-2">
-                    <div class="group-bar-segment" style="width:34%; background:#E8733A;"></div>
-                    <div class="group-bar-segment" style="width:29%; background:#2DA67E;"></div>
-                    <div class="group-bar-segment" style="width:16%; background:#2E75B6;"></div>
-                    <div class="group-bar-segment" style="width:10%; background:#8B5CF6;"></div>
-                    <div class="group-bar-segment" style="width:7%; background:#D97706;"></div>
-                    <div class="group-bar-segment" style="width:5%; background:#6366F1;"></div>
-                    <div class="group-bar-segment" style="width:2%; background:#64748B;"></div>
-                  </div>
-                  <div class="d-flex flex-wrap gap-3">
-                    <span class="group-legend"><span class="group-legend-dot" style="background:#E8733A;"></span>Buyers <strong>342</strong></span>
-                    <span class="group-legend"><span class="group-legend-dot" style="background:#2DA67E;"></span>Press <strong>289</strong></span>
-                    <span class="group-legend"><span class="group-legend-dot" style="background:#2E75B6;"></span>Festivals <strong>156</strong></span>
-                    <span class="group-legend"><span class="group-legend-dot" style="background:#8B5CF6;"></span>Sellers <strong>98</strong></span>
-                    <span class="group-legend"><span class="group-legend-dot" style="background:#D97706;"></span>Institutional <strong>67</strong></span>
-                    <span class="group-legend"><span class="group-legend-dot" style="background:#6366F1;"></span>Orgs <strong>45</strong></span>
-                    <span class="group-legend"><span class="group-legend-dot" style="background:#64748B;"></span>Internal <strong>23</strong></span>
-                  </div>
+              <div class="widget bg-body border rounded-3">
+                <div class="widget-title text-body mb-3">Contacts by Group</div>
+                <div class="group-bar mb-2" role="img" aria-label="Contacts by group distribution">
+                  <div class="group-bar-segment" style="width:34%; background:#E8733A;"></div>
+                  <div class="group-bar-segment" style="width:29%; background:#2DA67E;"></div>
+                  <div class="group-bar-segment" style="width:16%; background:#2E75B6;"></div>
+                  <div class="group-bar-segment" style="width:10%; background:#8B5CF6;"></div>
+                  <div class="group-bar-segment" style="width:7%; background:#D97706;"></div>
+                  <div class="group-bar-segment" style="width:5%; background:#6366F1;"></div>
+                  <div class="group-bar-segment" style="width:2%; background:#64748B;"></div>
+                </div>
+                <div class="d-flex flex-wrap gap-3">
+                  <span class="group-legend text-body-secondary"><span class="group-legend-dot" style="background:#E8733A;"></span>Buyers <strong class="text-body">342</strong></span>
+                  <span class="group-legend text-body-secondary"><span class="group-legend-dot" style="background:#2DA67E;"></span>Press <strong class="text-body">289</strong></span>
+                  <span class="group-legend text-body-secondary"><span class="group-legend-dot" style="background:#2E75B6;"></span>Festivals <strong class="text-body">156</strong></span>
+                  <span class="group-legend text-body-secondary"><span class="group-legend-dot" style="background:#8B5CF6;"></span>Sellers <strong class="text-body">98</strong></span>
+                  <span class="group-legend text-body-secondary"><span class="group-legend-dot" style="background:#D97706;"></span>Institutional <strong class="text-body">67</strong></span>
+                  <span class="group-legend text-body-secondary"><span class="group-legend-dot" style="background:#6366F1;"></span>Orgs <strong class="text-body">45</strong></span>
+                  <span class="group-legend text-body-secondary"><span class="group-legend-dot" style="background:#64748B;"></span>Internal <strong class="text-body">23</strong></span>
                 </div>
               </div>
             </div>
@@ -198,64 +271,60 @@
             <!-- Right column -->
             <div class="col-4">
               <!-- Quick Actions (above Follow-up Queue per Badie's feedback) -->
-              <div class="card mb-4">
-                <div class="card-body">
-                  <div class="widget-title mb-2">Quick Actions</div>
-                  <div class="d-grid gap-2">
-                    <a class="quick-action" href="#">+ Add new Contact</a>
-                    <a class="quick-action" href="#">+ Add new Account</a>
-                    <a class="quick-action" href="#">+ Add new Engagement</a>
-                  </div>
+              <div class="widget bg-body border rounded-3 mb-4">
+                <div class="widget-title text-body mb-2">Quick Actions</div>
+                <div class="d-grid gap-2">
+                  <a class="quick-action border bg-body text-body" href="#">+ Add new Contact</a>
+                  <a class="quick-action border bg-body text-body" href="#">+ Add new Account</a>
+                  <a class="quick-action border bg-body text-body" href="#">+ Add new Engagement</a>
                 </div>
               </div>
 
               <!-- Follow-up Queue -->
-              <div class="card">
-                <div class="card-body">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="widget-title">Follow-up Queue</div>
-                    <a href="#" style="font-size:12px; color:#2E75B6; text-decoration:none;">View all 12 →</a>
+              <div class="widget bg-body border rounded-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="widget-title text-body">Follow-up Queue</div>
+                  <a href="#" style="font-size:12px;">View all 12 →</a>
+                </div>
+                <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
+                  <div class="avatar-sm" style="background:#4EA8DE; color:#000;">AW</div>
+                  <div class="flex-grow-1">
+                    <div class="text-body" style="font-weight:500;">Alex Wright</div>
+                    <div class="text-body" style="font-size:10px;">Promised screener links after EFM</div>
                   </div>
-                  <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
-                    <div class="avatar-sm" style="background:#4EA8DE;">AW</div>
-                    <div class="flex-grow-1">
-                      <div style="color:#1B2A4A; font-weight:500;">Alex Wright</div>
-                      <div class="text-muted" style="font-size:10px;">Promised screener links after EFM</div>
-                    </div>
-                    <div class="followup-status" style="color:#DC3545;">7d overdue</div>
+                  <div class="followup-status text-danger-emphasis">7d overdue</div>
+                </div>
+                <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
+                  <div class="avatar-sm" style="background:#D97706; color:#000;">TM</div>
+                  <div class="flex-grow-1">
+                    <div class="text-body" style="font-weight:500;">Tom Martinez</div>
+                    <div class="text-body" style="font-size:10px;">Awaiting signed LOI for "The Orchard"</div>
                   </div>
-                  <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
-                    <div class="avatar-sm" style="background:#D97706;">TM</div>
-                    <div class="flex-grow-1">
-                      <div style="color:#1B2A4A; font-weight:500;">Tom Martinez</div>
-                      <div class="text-muted" style="font-size:10px;">Awaiting signed LOI for "The Orchard"</div>
-                    </div>
-                    <div class="followup-status" style="color:#DC3545;">5d overdue</div>
+                  <div class="followup-status text-danger-emphasis">5d overdue</div>
+                </div>
+                <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
+                  <div class="avatar-sm" style="background:#DC3545;">RN</div>
+                  <div class="flex-grow-1">
+                    <div class="text-body" style="font-weight:500;">Rachel Nakamura</div>
+                    <div class="text-body" style="font-size:10px;">Review screener feedback — IndieWire</div>
                   </div>
-                  <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
-                    <div class="avatar-sm" style="background:#DC3545;">RN</div>
-                    <div class="flex-grow-1">
-                      <div style="color:#1B2A4A; font-weight:500;">Rachel Nakamura</div>
-                      <div class="text-muted" style="font-size:10px;">Review screener feedback — IndieWire</div>
-                    </div>
-                    <div class="followup-status" style="color:#DC3545;">Due today</div>
+                  <div class="followup-status text-danger-emphasis">Due today</div>
+                </div>
+                <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
+                  <div class="avatar-sm" style="background:#1B2A4A;">SC</div>
+                  <div class="flex-grow-1">
+                    <div class="text-body" style="font-weight:500;">Sarah Chen</div>
+                    <div class="text-body" style="font-size:10px;">Send screener links — Magnolia</div>
                   </div>
-                  <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
-                    <div class="avatar-sm" style="background:#1B2A4A;">SC</div>
-                    <div class="flex-grow-1">
-                      <div style="color:#1B2A4A; font-weight:500;">Sarah Chen</div>
-                      <div class="text-muted" style="font-size:10px;">Send screener links — Magnolia</div>
-                    </div>
-                    <div class="followup-status" style="color:#D4772C;">Due tomorrow</div>
+                  <div class="followup-status text-warning-emphasis">Due tomorrow</div>
+                </div>
+                <div class="d-flex align-items-center gap-2 py-2" style="font-size:12px;">
+                  <div class="avatar-sm" style="background:#22A06B; color:#000;">LW</div>
+                  <div class="flex-grow-1">
+                    <div class="text-body" style="font-weight:500;">Lisa Wang</div>
+                    <div class="text-body" style="font-size:10px;">Investor deck — Archstone Capital</div>
                   </div>
-                  <div class="d-flex align-items-center gap-2 py-2" style="font-size:12px;">
-                    <div class="avatar-sm" style="background:#22A06B;">LW</div>
-                    <div class="flex-grow-1">
-                      <div style="color:#1B2A4A; font-weight:500;">Lisa Wang</div>
-                      <div class="text-muted" style="font-size:10px;">Investor deck — Archstone Capital</div>
-                    </div>
-                    <div class="followup-status" style="color:#6C757D;">In 3 days</div>
-                  </div>
+                  <div class="followup-status text-body-secondary">In 3 days</div>
                 </div>
               </div>
             </div>

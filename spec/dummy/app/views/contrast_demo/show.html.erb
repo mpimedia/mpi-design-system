@@ -46,6 +46,38 @@
      { name: "Alan Turing", status: "Inactive", status_key: :inactive }
    ] %>
 
+<%# Dashboard fixture (#153) shared by the light (#dashboard) and dark (#dark-dashboard)
+    renders so both exercise identical data. One activity of every type covers the four
+    icon -subtle/-emphasis hue families (email->primary, meeting->secondary,
+    new_contact & call->success, note->warning); one follow-up of every status covers
+    danger/warning emphasis + text-body-secondary on the widget surface; the contact and
+    "View all" links exercise the adaptive --bs-link-color; the quick action exercises
+    text-body on bg-body plus the adaptive .border. group_data is the caller-supplied
+    passthrough (deferred to the #153 follow-up). %>
+<% dashboard_args = {
+     user_name: "Badie", greeting_time: :morning, current_date: "Tuesday, Feb 25",
+     activities: [
+       { type: :email, description: "Email logged with", contact_name: "Sarah Chen", contact_path: "/contacts/1", timestamp: "2 hours ago" },
+       { type: :meeting, description: "Meeting recorded", timestamp: "4 hours ago" },
+       { type: :new_contact, description: "New contact added", timestamp: "6 hours ago" },
+       { type: :call, description: "Call logged", timestamp: "1 day ago" },
+       { type: :note, description: "Note added", timestamp: "2 days ago" }
+     ],
+     followups: [
+       { name: "Sarah Chen", description: "Re: distribution rights", status: :overdue, status_label: "7d overdue", avatar_name: "Sarah Chen" },
+       { name: "Marcus Johnson", description: "Follow up on MIPCOM", status: :due_today, status_label: "Due today", avatar_name: "Marcus Johnson" },
+       { name: "Emily Fox", description: "Send acquisition proposal", status: :due_tomorrow, status_label: "Due tomorrow", avatar_name: "Emily Fox" },
+       { name: "Robert Kim", description: "Check screening schedule", status: :future, status_label: "In 3 days", avatar_name: "Robert Kim" }
+     ],
+     followup_count: 12, followup_path: "/followups",
+     quick_action_buttons: [ { label: "Add new Contact", path: "/contacts/new", icon: "bi-plus-lg" } ],
+     group_data: [
+       { label: "Distribution", count: 120, color: "#E8733A", percentage: 40.0 },
+       { label: "Outreach", count: 85, color: "#2DA67E", percentage: 35.0 },
+       { label: "Press", count: 60, color: "#2E75B6", percentage: 25.0 }
+     ]
+   } %>
+
 <main class="container py-4">
   <h1 class="h4 mb-3">Contrast Demo</h1>
 
@@ -137,6 +169,14 @@
     <%= render MpiDesignSystem::Admin::NavBar::Component.new(current_section: :dashboard) %>
   </section>
 
+  <%# Dashboard (#153) — theme-adaptive. Rendered again inside #dark-mode below so the spec
+      measures both colour modes. The four icon -emphasis-on-subtle pairs, the danger/warning
+      follow-up emphasis + muted text on the widget surface, the adaptive links and quick
+      action, and the painted (low-contrast, documented) .border are all pinned in the spec. %>
+  <section id="dashboard" class="mb-4">
+    <%= render MpiDesignSystem::Admin::Dashboard::Component.new(**dashboard_args) %>
+  </section>
+
   <%# Same components under Bootstrap's dark colour mode. After #150 ActiveFilterBar's
       surface is `.bg-body-secondary` (adaptive), so the bar and its label flip to dark
       together — the spec measures that the dark bar computes --bs-secondary-bg (#343A40)
@@ -197,6 +237,13 @@
             trend_direction: :up,
             trend_sentiment: :positive
           ) %>
+    </div>
+    <%# #153: Dashboard under dark mode. Every converted colour (widget bg-body, the four
+        icon -subtle/-emphasis pairs, the follow-up danger/warning emphasis + muted text,
+        the adaptive links, the quick action text-body + .border) must resolve to its dark
+        value against the dark widget surface (--bs-body-bg = #212529). %>
+    <div id="dark-dashboard" class="mb-3">
+      <%= render MpiDesignSystem::Admin::Dashboard::Component.new(**dashboard_args) %>
     </div>
   </section>
 </main>

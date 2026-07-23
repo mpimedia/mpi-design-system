@@ -457,6 +457,125 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
     end
   end
 
+  # Dashboard (#153). Every colour the component SELECTS moved onto Bootstrap semantic
+  # utilities so the layout tracks `data-bs-theme`. render_inline proves the classes are
+  # emitted; only a browser proves the runtime `--bs-*` chains resolve AA-clean against the
+  # compiled bundle. Each assertion pins the PAINTED value AND the ratio: inherited body
+  # text clears AA in both modes, so a ratio-only check would be a false green (the #149
+  # rule). The chart's caller-supplied colours are the documented passthrough and are not
+  # asserted here. Painted values corroborated by the Pagination/StatCard/FilterChipBar
+  # blocks above (same tokens, same formulas).
+  describe "Dashboard (#153)" do
+    {
+      "light" => {
+        root: "#dashboard", surface: "#FFFFFF",
+        icons: {
+          primary: %w[#122F49 #D5E3F0], secondary: %w[#2B2F32 #E2E3E5],
+          success: %w[#0E402B #D3ECE1], warning: %w[#553012 #F6E4D5]
+        },
+        danger_emphasis: "#58151C", warning_emphasis: "#553012", muted: "#545F77",
+        link: "#2E75B6", body: "#1B2A4A", border: "rgb(222, 226, 230)"
+      },
+      "dark" => {
+        root: "#dark-dashboard", surface: "#212529",
+        icons: {
+          primary: %w[#82ACD3 #091724], secondary: %w[#A7ACB1 #161719],
+          success: %w[#7AC6A6 #072015], warning: %w[#E5AD80 #2A1809]
+        },
+        danger_emphasis: "#EA868F", warning_emphasis: "#E5AD80", muted: "#AFB3B7",
+        link: "#82ACD3", body: "#DEE2E6", border: "rgb(73, 80, 87)"
+      }
+    }.each do |mode, expected|
+      context "in #{mode} mode" do
+        let(:root) { expected[:root] }
+
+        it "paints the widget surface from the adaptive bg-body" do
+          expect(computed("#{root} .bg-body.border.rounded-3", "backgroundColor")).to eq(expected[:surface])
+        end
+
+        %i[primary secondary success warning].each do |variant|
+          it "paints the #{variant} activity icon -emphasis on its -subtle chip above the AA floor" do
+            fg_expected, bg_expected = expected[:icons][variant]
+            measured, foreground, background = ratio_for("#{expected[:root]} .bg-#{variant}-subtle.text-#{variant}-emphasis")
+
+            expect(foreground).to eq(fg_expected)
+            expect(background).to eq(bg_expected)
+            expect(measured).to be >= 4.5,
+              "#{mode} #{variant} icon #{foreground} on #{background} = #{measured.round(2)}:1"
+          end
+        end
+
+        it "paints the danger follow-up status emphasis AA-clean on the widget surface (12px small text)" do
+          measured, foreground, background = ratio_for("#{root} .text-danger-emphasis[style*='font-weight: 600']")
+
+          expect(foreground).to eq(expected[:danger_emphasis])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} danger status #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        it "paints the warning follow-up status emphasis AA-clean on the widget surface" do
+          measured, foreground, background = ratio_for("#{root} .text-warning-emphasis[style*='font-weight: 600']")
+
+          expect(foreground).to eq(expected[:warning_emphasis])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} warning status #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        it "paints the muted (text-body-secondary) status AA-clean on the widget surface" do
+          measured, foreground, background = ratio_for("#{root} .text-body-secondary[style*='font-weight: 600']")
+
+          expect(foreground).to eq(expected[:muted])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} muted status #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        it "paints the activity contact link in the adaptive --bs-link-color above the AA floor" do
+          measured, foreground, background = ratio_for("#{root} a[href='/contacts/1']")
+
+          # The value a `text-primary` regression could not produce (it would paint the
+          # solid primary, identical in both modes; the link colour flips per mode).
+          expect(foreground).to eq(expected[:link])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} activity link #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        it "paints the 'View all' link in the adaptive --bs-link-color above the AA floor" do
+          measured, foreground, background = ratio_for("#{root} a[href='/followups']")
+
+          expect(foreground).to eq(expected[:link])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} view-all link #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        it "paints the quick action in adaptive body text on the adaptive bg-body surface" do
+          measured, foreground, background = ratio_for("#{root} a.border.bg-body.text-body")
+
+          expect(foreground).to eq(expected[:body])
+          expect(background).to eq(expected[:surface])
+          expect(measured).to be >= 4.5,
+            "#{mode} quick action #{foreground} on #{background} = #{measured.round(2)}:1"
+        end
+
+        # The quick action `.border` is theme-adaptive but low-contrast — ~1.30:1 in light,
+        # ~1.89:1 in dark — below SC 1.4.11's 3:1 for a control boundary. The conversion does
+        # NOT introduce it: the control was navy-on-white inside that same `#DEE2E6` border
+        # before #153. Pin the PAINTED border value so the limitation is MEASURED, not the 3:1
+        # asserted. This is a known, currently untracked affordance limitation (the anchor drops
+        # its link colour + underline, so the border is the only remaining boundary cue) — a
+        # pre-existing design question deliberately not folded into this colour conversion, and
+        # flagged to the HC/designer in the PR rather than silently redesigned here.
+        it "tracks the colour mode with the quick action border (documented low-contrast limit)" do
+          expect(border_color_of("#{root} a.border.bg-body.text-body")).to eq(expected[:border])
+        end
+      end
+    end
+  end
+
   describe "muted text" do
     it "paints the ActiveFilterBar label above the AA floor against the adaptive bar" do
       foreground = computed("#active-filter-bar .text-body-secondary", "color")

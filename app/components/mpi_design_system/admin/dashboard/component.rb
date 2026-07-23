@@ -12,19 +12,33 @@ module MpiDesignSystem
 
         GREETING_TIMES = %i[morning afternoon evening].freeze
 
-        ACTIVITY_ICONS = {
-          email: { icon: "bi-envelope-fill", bg: "#EBF3FB", color: "#2E75B6" },
-          meeting: { icon: "bi-camera-video-fill", bg: "#F3EFFE", color: "#8B5CF6" },
-          new_contact: { icon: "bi-plus-circle-fill", bg: "#ECF8F4", color: "#22A06B" },
-          call: { icon: "bi-telephone-fill", bg: "#ECF8F4", color: "#16A34A" },
-          note: { icon: "bi-journal-text", bg: "#FEF3EC", color: "#E8913A" }
+        # Engagement type -> icon glyph + Bootstrap semantic. Replaces the retired
+        # ACTIVITY_ICONS hex map (pastel `bg:` / hex `color:`). The icon chip renders
+        # `bg-#{variant}-subtle text-#{variant}-emphasis` (see `activity_icon_classes`),
+        # a theme-adaptive pairing that is AA in both colour modes. Five types map onto
+        # four hues: `meeting -> secondary` because purple has no MPI semantic and `info`
+        # aliases to `primary` (= email's blue); `call` and `new_contact` both map to
+        # `success` — they already shared a pastel and the glyphs differ. The icon is
+        # `aria-hidden` decoration beside the activity text, so the collapse costs no
+        # information. Unknown type falls back to `:email`.
+        ACTIVITY_TYPES = {
+          email:       { icon: "bi-envelope-fill",     variant: :primary },
+          meeting:     { icon: "bi-camera-video-fill", variant: :secondary },
+          new_contact: { icon: "bi-plus-circle-fill",  variant: :success },
+          call:        { icon: "bi-telephone-fill",    variant: :success },
+          note:        { icon: "bi-journal-text",      variant: :warning }
         }.freeze
 
-        FOLLOWUP_COLORS = {
-          overdue: "#DC3545",
-          due_today: "#DC3545",
-          due_tomorrow: "#D4772C",
-          future: "#6C757D"
+        # Follow-up status -> Bootstrap semantic text utility. Replaces the retired
+        # FOLLOWUP_COLORS hex map. `-emphasis` (not base `text-danger`/`text-warning`)
+        # because the status label is 12px small text (AA 4.5:1), which base danger/warning
+        # fail; the emphasis tokens clear it and follow `data-bs-theme`. Unknown status
+        # falls back to `:future`.
+        FOLLOWUP_CLASSES = {
+          overdue:      "text-danger-emphasis",
+          due_today:    "text-danger-emphasis",
+          due_tomorrow: "text-warning-emphasis",
+          future:       "text-body-secondary"
         }.freeze
 
         # @param user_name [String] Current user's first name
@@ -69,35 +83,40 @@ module MpiDesignSystem
           "Here's your CRM snapshot for #{@current_date}"
         end
 
+        # Geometry/typography only; the navy foreground now comes from `text-body` in the
+        # template (adaptive via `--bs-body-color`).
         def greeting_styles
-          "font-size: 20px; font-weight: 600; color: #1B2A4A;"
+          "font-size: 20px; font-weight: 600;"
         end
 
+        # Geometry/typography only; the muted foreground now comes from `text-body-secondary`.
         def subtitle_styles
-          "font-size: 14px; color: #6C757D; margin-top: 4px;"
+          "font-size: 14px; margin-top: 4px;"
         end
 
+        # Geometry only. The surface, border, and radius now come from Bootstrap
+        # utilities in the template (`bg-body border rounded-3`) so each widget tracks
+        # `data-bs-theme` instead of pinning a light `#fff` / `#DEE2E6`. `rounded-3`
+        # resolves to `--bs-border-radius-lg` = 8px under this engine's configuration,
+        # preserving the retired literal (the StatCard precedent, #150). 20px has no
+        # Bootstrap equivalent, stays inline.
         def widget_styles
-          [
-            "background: #fff",
-            "border: 1px solid #DEE2E6",
-            "border-radius: 8px",
-            "padding: 20px"
-          ].join("; ")
+          "padding: 20px"
         end
 
+        # Geometry/typography only; the navy foreground now comes from `text-body`.
         def widget_title_styles
-          "font-weight: 600; color: #1B2A4A; font-size: 16px;"
+          "font-weight: 600; font-size: 16px;"
         end
 
-        def activity_icon_styles(type)
-          config = ACTIVITY_ICONS[type] || ACTIVITY_ICONS[:email]
+        # Geometry only. The pastel background + hex glyph now come from
+        # `activity_icon_classes` (`bg-#{variant}-subtle text-#{variant}-emphasis`),
+        # both theme-adaptive.
+        def activity_icon_styles
           [
             "width: 28px",
             "height: 28px",
             "border-radius: 50%",
-            "background: #{config[:bg]}",
-            "color: #{config[:color]}",
             "display: inline-flex",
             "align-items: center",
             "justify-content: center",
@@ -106,43 +125,66 @@ module MpiDesignSystem
           ].join("; ")
         end
 
+        # Theme-adaptive icon chip colours: `-subtle` background + `-emphasis` glyph,
+        # AA in both colour modes. Unknown type falls back to the `:email` (primary) pair.
+        def activity_icon_classes(type)
+          variant = (ACTIVITY_TYPES[type] || ACTIVITY_TYPES[:email])[:variant]
+          "bg-#{variant}-subtle text-#{variant}-emphasis"
+        end
+
+        # The Bootstrap Icons glyph for the type. Unknown type falls back to `:email`.
         def activity_icon_class(type)
-          config = ACTIVITY_ICONS[type] || ACTIVITY_ICONS[:email]
-          config[:icon]
+          (ACTIVITY_TYPES[type] || ACTIVITY_TYPES[:email])[:icon]
         end
 
+        # Geometry only; the navy foreground now comes from `text-body`.
         def activity_text_styles
-          "font-size: 13px; color: #1B2A4A;"
+          "font-size: 13px;"
         end
 
+        # Geometry only. The link now uses Bootstrap's DEFAULT adaptive link colour
+        # (`--bs-link-color` — #2E75B6 light, #82ACD3 dark) and keeps its natural
+        # underline as the navigation affordance, so no colour class and no
+        # `text-decoration: none` are declared here (the DataTable precedent, #151).
         def activity_link_styles
-          "color: #2E75B6; text-decoration: none; font-weight: 500;"
+          "font-weight: 500;"
         end
 
+        # Geometry only; the muted foreground now comes from `text-body-secondary`.
         def activity_time_styles
-          "font-size: 12px; color: #6C757D;"
+          "font-size: 12px;"
         end
 
-        def followup_status_styles(status)
-          color = FOLLOWUP_COLORS[status] || FOLLOWUP_COLORS[:future]
-          "font-size: 12px; font-weight: 600; color: #{color};"
+        # Geometry/typography only; the status colour now comes from
+        # `followup_status_class` (a `-emphasis` / `text-body-secondary` utility).
+        def followup_status_styles
+          "font-size: 12px; font-weight: 600;"
         end
 
+        # Theme-adaptive status colour. Unknown status falls back to the `:future`
+        # (`text-body-secondary`) class.
+        def followup_status_class(status)
+          FOLLOWUP_CLASSES[status] || FOLLOWUP_CLASSES[:future]
+        end
+
+        # Geometry only; the navy foreground now comes from `text-body`.
         def followup_name_styles
-          "font-size: 13px; font-weight: 600; color: #1B2A4A;"
+          "font-size: 13px; font-weight: 600;"
         end
 
+        # Geometry only; the navy foreground now comes from `text-body`.
         def followup_desc_styles
-          "font-size: 13px; color: #1B2A4A;"
+          "font-size: 13px;"
         end
 
+        # Geometry/layout only. The surface, border, and navy foreground now come from
+        # `border bg-body text-body` in the template. `text-decoration: none` stays
+        # inline: the quick action is a button-like control, not body-text navigation,
+        # so it keeps no underline (unlike the activity/"View all" links).
         def quick_action_styles
           [
             "padding: 10px 14px",
-            "border: 1px solid #DEE2E6",
             "border-radius: 6px",
-            "background: #fff",
-            "color: #1B2A4A",
             "text-decoration: none",
             "display: block",
             "font-size: 14px",
@@ -151,28 +193,39 @@ module MpiDesignSystem
           ].join("; ")
         end
 
+        # Geometry only. Like the activity links, "View all" now uses Bootstrap's default
+        # adaptive `--bs-link-color` with its natural underline — no colour class, no
+        # `text-decoration: none`. (#151 precedent.)
         def view_all_styles
-          "font-size: 13px; color: #2E75B6; text-decoration: none; font-weight: 500;"
+          "font-size: 13px; font-weight: 500;"
         end
 
         def bar_container_styles
           "height: 16px; border-radius: 8px; overflow: hidden; display: flex; width: 100%;"
         end
 
+        # Caller-owned data-viz palette. `group_data[:color]` is supplied by the consuming
+        # app, not selected by the component, so it is deliberately out of scope for the
+        # #153 theme-adaptive conversion and stays a fixed hex passthrough — tracked by the
+        # follow-up issue (split from #153, mirroring #152 -> #169). Geometry survives here.
         def bar_segment_styles(group)
           "background: #{group[:color]}; width: #{group[:percentage]}%; height: 100%;"
         end
 
+        # Caller-owned data-viz palette — see `bar_segment_styles`. The dot mirrors its
+        # segment's fixed hex fill; geometry survives here.
         def legend_dot_styles(color)
           "width: 10px; height: 10px; border-radius: 50%; background: #{color}; flex-shrink: 0;"
         end
 
+        # Geometry only; the muted foreground now comes from `text-body-secondary`.
         def legend_label_styles
-          "font-size: 12px; color: #6C757D;"
+          "font-size: 12px;"
         end
 
+        # Geometry only; the navy foreground now comes from `text-body`.
         def legend_count_styles
-          "font-size: 12px; font-weight: 600; color: #1B2A4A;"
+          "font-size: 12px; font-weight: 600;"
         end
 
         def show_activities?
