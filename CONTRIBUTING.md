@@ -174,6 +174,22 @@ since the previous tag, and eyeball the URLs and date yourself. For the date, us
 author the release commit (the merge day in a normal same-day flow); if the PR lingers past
 midnight, amend the date before tagging.
 
+### Rebasing a feature PR's CHANGELOG edit across a release
+
+If your open PR edits an entry under `## [Unreleased]` and a per-phase release merges to `main`
+while the PR is in review, that release **moves your entry into the new `## [X.Y.Z]` section**.
+When you then rebase onto `main`, git can **silently auto-merge your edit into the now-released
+version entry — with no conflict**, because the surrounding context lines are identical. That
+rewrites shipped history to attribute your later change to a release it was never part of, and a
+clean rebase is *not* proof the edit landed where you meant it.
+
+So after rebasing any CHANGELOG change: `git diff origin/main -- CHANGELOG.md` and confirm your
+edit sits under `## [Unreleased]`, **not** under the released version. Leave shipped `## [X.Y.Z]`
+entries exactly as released (a "deferred to #NNN" there is accurate history, a legitimate exception
+to any "resolve the stale reference" sweep — like a pinned version or date); record the new change
+as a fresh `[Unreleased]` entry instead. (Hit on PR#176 / #172: v0.11.0 shipped the #153 Dashboard
+entry mid-review, and the rebase relocated the Option-C edit into `[0.11.0]` with no conflict.)
+
 ### Cutting the release
 
 1. **Branch from fresh `main`** so the shipped unit's `[Unreleased]` notes are present:

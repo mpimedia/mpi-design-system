@@ -51,7 +51,9 @@ module MpiDesignSystem
         # @param followup_count [Integer] Total follow-ups for "View all" link
         # @param followup_path [String] URL for "View all" link
         # @param quick_action_buttons [Array<Hash>] Each: { label: String, path: String, icon: String }
-        # @param group_data [Array<Hash>] Each: { label: String, count: Integer, color: String, percentage: Float }
+        # @param group_data [Array<Hash>] Each: { label: String, count: Integer, color: String, percentage: Float }.
+        #   `color` is a deliberate consumer-owned data-viz passthrough (decided #172); the component does
+        #   not own it. The caller supplies a trusted, consumer-validated CSS colour — see `bar_segment_styles`.
         def initialize(user_name:, greeting_time: :morning, current_date: nil,
                        activities: [], followups: [], followup_count: 0, followup_path: nil,
                        quick_action_buttons: [], group_data: [])
@@ -204,16 +206,17 @@ module MpiDesignSystem
           "height: 16px; border-radius: 8px; overflow: hidden; display: flex; width: 100%;"
         end
 
-        # Caller-owned data-viz palette. `group_data[:color]` is supplied by the consuming
-        # app, not selected by the component, so it is deliberately out of scope for the
-        # #153 theme-adaptive conversion and stays a fixed hex passthrough — tracked by the
-        # follow-up issue (split from #153, mirroring #152 -> #169). Geometry survives here.
+        # Deliberate consumer-owned data-viz passthrough (decided #172); the component does not
+        # own `group_data[:color]`. The consuming app supplies a trusted, consumer-validated CSS
+        # colour (preferably a hex value), so it is deliberately outside the #153 theme-adaptive
+        # mandate — that mandate governs the component's OWN chrome, not app-supplied chart data.
+        # Geometry survives here.
         def bar_segment_styles(group)
           "background: #{group[:color]}; width: #{group[:percentage]}%; height: 100%;"
         end
 
-        # Caller-owned data-viz palette — see `bar_segment_styles`. The dot mirrors its
-        # segment's fixed hex fill; geometry survives here.
+        # Deliberate consumer-owned data-viz passthrough (decided #172) — see `bar_segment_styles`.
+        # The dot mirrors its segment's caller-supplied fill; geometry survives here.
         def legend_dot_styles(color)
           "width: 10px; height: 10px; border-radius: 50%; background: #{color}; flex-shrink: 0;"
         end
