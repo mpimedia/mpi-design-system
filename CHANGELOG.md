@@ -7,6 +7,18 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Changed
+- **`Admin::Dashboard` Contacts-by-Group chart palette — decided caller-owned (#172, Option C).**
+  Records the decision the #153 conversion deferred: the chart's `group_data[:color]` is a
+  **deliberate, permanent consumer-owned data-viz passthrough**, not a pending conversion. The
+  design system does not own app-supplied chart *data*, so the theme-adaptive mandate governs the
+  component's own chrome, not the caller's values (which stay fixed-hue by design). Docs /
+  decision-recording only — no component behaviour, API, token, or SCSS change; every
+  component-owned Dashboard colour already adapts (shipped v0.11.0). Rejected: **(a)** mapping
+  groups onto Bootstrap semantics (collapses categories — `press_festival`/`vendors` land on the
+  same blue — and a solid `bg-#{semantic}` fill is fixed-hue anyway) and **(b)** real adaptive
+  `--mds-chart-*` tokens (kept as a future opt-in, shared with #169). (#172, epic #147.)
+
 ## [0.11.0] - 2026-07-23
 
 ### Changed

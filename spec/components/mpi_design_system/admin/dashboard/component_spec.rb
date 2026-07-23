@@ -371,10 +371,12 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
   #
   # #153 moved every colour Dashboard SELECTS onto Bootstrap semantic utilities so the
   # layout tracks `data-bs-theme`. The one exception is the Contacts-by-Group chart's
-  # CALLER-supplied `group_data[:color]`, a documented data-viz passthrough deferred to a
-  # follow-up issue. Each guard pins its subject positively before asserting an absence and
-  # was proven by watching it fail (testing.md, "A Guard Is Not Real Until You Have Watched
-  # It Fail"). Guard shapes are copied from `data_table/component_spec.rb`.
+  # CALLER-supplied `group_data[:color]` — a deliberate, permanent consumer-owned data-viz
+  # passthrough (decided #172): the component does not own app-supplied chart data, so it
+  # stays outside the theme-adaptive mandate by design, not by deferral. These guards are its
+  # standing proof. Each pins its subject positively before asserting an absence and was
+  # proven by watching it fail (testing.md, "A Guard Is Not Real Until You Have Watched It
+  # Fail"). Guard shapes are copied from `data_table/component_spec.rb`.
   describe "theme-adaptivity guards" do
     AVATAR_ROOT = ".rounded-circle.justify-content-center"
 
@@ -528,10 +530,11 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
       expect(offending_style_declarations(fragment).sort).to eq(expected.sort)
     end
 
-    # GUARD 3 — caller-passthrough confinement. Every hex literal remaining in Dashboard's
-    # OWN markup (avatars stripped) is exactly the caller's `group_data[:color]` set, each
-    # appearing twice; and the segment/dot inline styles equal their expected strings. A new
-    # hex anywhere else — or an ALLOWED chart hex reused in another declaration (the ISS#150
+    # GUARD 3 — caller-passthrough confinement. This is the standing proof of the deliberate,
+    # permanent caller-owned passthrough (decided #172): every hex literal remaining in
+    # Dashboard's OWN markup (avatars stripped) is exactly the caller's `group_data[:color]`
+    # set, each appearing twice; and the segment/dot inline styles equal their expected strings.
+    # A new hex anywhere else — or an ALLOWED chart hex reused in another declaration (the ISS#150
     # same-hex-elsewhere mode) — pushes the multiset off and reddens this.
     it "confines every hex literal to the caller group colours, each appearing twice" do
       fragment = dashboard_fragment

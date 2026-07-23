@@ -462,8 +462,8 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
   # emitted; only a browser proves the runtime `--bs-*` chains resolve AA-clean against the
   # compiled bundle. Each assertion pins the PAINTED value AND the ratio: inherited body
   # text clears AA in both modes, so a ratio-only check would be a false green (the #149
-  # rule). The chart's caller-supplied colours are the documented passthrough and are not
-  # asserted here. Painted values corroborated by the Pagination/StatCard/FilterChipBar
+  # rule). The chart's caller-supplied colours are the deliberate consumer-owned passthrough
+  # (decided #172) and are not asserted here. Painted values corroborated by the Pagination/StatCard/FilterChipBar
   # blocks above (same tokens, same formulas).
   describe "Dashboard (#153)" do
     {

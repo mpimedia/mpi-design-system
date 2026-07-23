@@ -8,7 +8,7 @@
 
 CRM dashboard layout showing a personalized greeting, stat cards row, recent activity feed, quick actions, follow-up queue, and contacts by group chart. Renders inside the App Shell with CRM sub-nav active.
 
-Since #153 the layout is **theme-adaptive**: every colour the component selects resolves from a Bootstrap semantic utility (`bg-body`, `text-body`, `text-body-secondary`, the `-subtle`/`-emphasis` families) rather than a pinned hex, so it follows `data-bs-theme` and the consuming app's mapped tokens. The one exception is the Contacts-by-Group chart, whose colours are **caller-supplied** (`group_data[:color]`) and deliberately out of scope for #153 — tracked by #172.
+Since #153 the layout is **theme-adaptive**: every colour the component selects resolves from a Bootstrap semantic utility (`bg-body`, `text-body`, `text-body-secondary`, the `-subtle`/`-emphasis` families) rather than a pinned hex, so it follows `data-bs-theme` and the consuming app's mapped tokens. The one exception is the Contacts-by-Group chart, whose colours are **caller-supplied** (`group_data[:color]`). Per #172 this is **decided as a deliberate consumer-owned data-viz passthrough** — the design system does not own app-supplied chart data, so the theme-adaptive mandate governs the component's own chrome, not the values a consuming app feeds in (see the Chart Palette design decision below).
 
 ## Design Decisions
 
@@ -19,7 +19,7 @@ Since #153 the layout is **theme-adaptive**: every colour the component selects 
 - **Two-column body:** Left column (`col-lg-8`) has Recent Activity + Contacts by Group. Right column (`col-lg-4`) has Quick Actions + Follow-up Queue
 - **Recent Activity:** activity entries with type icons (28px circles). The icon chip is a theme-adaptive `bg-#{semantic}-subtle text-#{semantic}-emphasis` pair. Contact and account names are links with **no** colour class — Bootstrap's adaptive `--bs-link-color` with its natural underline as the affordance. Relative timestamps in `text-body-secondary`
 - **Follow-up Queue:** Priority list with avatars, description, and status. Status colours: overdue = `text-danger-emphasis`, due today = `text-danger-emphasis`, due tomorrow = `text-warning-emphasis`, future = `text-body-secondary`. "View all N &rarr;" link in header (same adaptive-link treatment as the activity links)
-- **Contacts by Group:** Horizontal stacked bar chart using **caller-supplied** group colours + legend with counts. Full-width within the left column. The bar carries `role="img"` and an `aria-label`; the legend labels/counts are `text-body-secondary` / `text-body`
+- **Contacts by Group:** Horizontal stacked bar chart using **caller-supplied** group colours (a deliberate consumer-owned data-viz passthrough, decided #172 — see the Chart Palette decision below) + legend with counts. Full-width within the left column. The bar carries `role="img"` and an `aria-label`; the legend labels/counts are `text-body-secondary` / `text-body`
 
 ### Activity Icon Types
 
@@ -45,6 +45,16 @@ Unknown type falls back to the Email (primary) pair.
 | Future | `text-body-secondary` | muted body | "In 3 days" |
 
 `-emphasis` (not base `text-danger` / `text-warning`) because the 12px status label is small text (AA 4.5:1), which base danger/warning fail; the emphasis tokens clear it and follow the colour mode. Unknown status falls back to the Future (`text-body-secondary`) class.
+
+### Chart Palette — Consumer-Owned Data-Viz Passthrough (decided #172)
+
+The Contacts-by-Group bar and legend draw their colours from `group_data[:color]`, supplied by the consuming app. After #153 made the rest of the Dashboard theme-adaptive, this was the only inline hex left in the component's own markup. #172 weighed three options and **chose (c)**:
+
+- **(a) Map each group onto a Bootstrap semantic** (`bg-#{semantic}`) — rejected. MPI's semantic palette yields only **five** distinct *adaptive* hues (`info` aliases to `primary`), so a multi-category group palette collapses — e.g. `press_festival`/`vendors` land on the same blue — and a solid `bg-#{semantic}` fill is a **fixed** hue anyway (it reads `--bs-#{semantic}-rgb`, which Bootstrap does not shift under `data-bs-theme`). So (a) would neither preserve per-category identity nor make the chart theme-adaptive.
+- **(b) Introduce real adaptive `--mds-chart-*` tokens** — deferred, not rejected. This remains available as a future opt-in (shared with #169) if per-category chart fidelity is later wanted. It is the real-token path — a designer decision — and out of scope here.
+- **(c) Keep it a caller-owned passthrough** — **chosen.** The colour here is app-supplied *data*, not system chrome. The design system does not own the values a consuming app charts, so the theme-adaptive mandate (component-owned colour resolves from Bootstrap semantics) deliberately does not extend to them. This passthrough is now a **permanent, documented** boundary, not a deferral.
+
+`group_data[:color]` is a **trusted, consumer-validated CSS colour** (preferably a hex value), supplied by the app — not arbitrary end-user input. The component interpolates it directly into an inline `style`, so the caller owns validating it; the design system adds no sanitisation (that would change behaviour and is out of scope for Option C).
 
 ## Layout Structure
 
@@ -101,7 +111,7 @@ class MpiDesignSystem::Admin::Dashboard::Component < ViewComponent::Base
   # @param followup_count [Integer]  # for the "View all" link
   # @param followup_path [String]    # for the "View all" link
   # @param quick_action_buttons [Array<Hash>] { label:, path:, icon: }
-  # @param group_data [Array<Hash>] { label:, count:, color:, percentage: }  # color is caller-supplied
+  # @param group_data [Array<Hash>] { label:, count:, color:, percentage: }  # color is a caller-owned data-viz passthrough (decided #172): a trusted, consumer-validated CSS colour the component does not own
   #
   # Composes these sub-components via slots (a slot bypasses the built-in markup entirely):
   # renders_many :stat_cards    # StatCard components
@@ -136,8 +146,8 @@ activity-icon: width: 28px; height: 28px; border-radius: 50%   (class: bg-#{sem}
 quick-action:  padding: 10px 14px; border-radius: 6px; text-decoration: none; display: block; text-align: left
                                                                (class: border bg-body text-body)
 group-bar:     height: 16px; border-radius: 8px; overflow: hidden; display: flex; width: 100%
-bar-segment:   background: #{caller hex}; width: #{pct}%; height: 100%   (caller-supplied colour — passthrough)
-legend-dot:    width: 10px; height: 10px; border-radius: 50%; background: #{caller hex}
+bar-segment:   background: #{caller hex}; width: #{pct}%; height: 100%   (caller-owned data-viz passthrough — decided #172)
+legend-dot:    width: 10px; height: 10px; border-radius: 50%; background: #{caller hex}   (caller-owned — mirrors its segment)
 ```
 
 ## Accessibility
@@ -151,7 +161,7 @@ Re-derived for the #153 conversion (a catalog entry's contrast claims are assert
 - Follow-up status text uses `-emphasis` tokens, AA-clean (≥4.5:1) on the widget surface in both colour modes at 12px; the status **label text** carries the meaning, not the colour
 - Quick action controls are keyboard-accessible links. Their `.border` is theme-adaptive but low-contrast against the card (≈1.3:1 light / 1.9:1 dark, below SC 1.4.11's 3:1 for a control boundary). Because the anchor drops its link colour and underline, the border is the only remaining boundary cue — a known, currently untracked affordance limitation, flagged for a design decision. It predates the conversion and is not a #153 regression (the control was navy-on-white in the same `#DEE2E6` border before), so it was surfaced rather than silently redesigned here
 - Follow-up queue items have clear status text alongside colour coding
-- Contacts by Group chart bar carries `role="img"` + `aria-label`, and a text legend below (label + count) — the bar alone is not the only representation. Bar/dot colours are caller-supplied and not guaranteed AA against each other; the text legend carries the data
+- Contacts by Group chart: the bar is programmatically named with `role="img"` and `aria-label="Contacts by group distribution"` — which *names* the image but carries none of the category values. The adjacent **text legend** independently exposes every category label and count, so the underlying data does not depend on distinguishing the segment colours (WCAG 2.1 SC 1.4.1). The bar/dot colours are the caller-owned data-viz passthrough (decided #172) and are not guaranteed AA against each other; that is acceptable precisely because the legend, not the colour, is what carries the data
 
 ## Usage Guidelines
 
