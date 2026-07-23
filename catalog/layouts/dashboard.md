@@ -147,9 +147,9 @@ Re-derived for the #153 conversion (a catalog entry's contrast claims are assert
 - Greeting uses an appropriate heading level (`<h5>`)
 - Stat cards are the caller's StatCard components, which carry their own AA-derived colours
 - Activity icons are `aria-hidden` decoration; the activity text carries the meaning, so the five-into-four hue collapse (meeting → grey, call sharing New Contact's green) conveys nothing on its own
-- Activity/"View all" links use Bootstrap's adaptive `--bs-link-color` (`#2E75B6` ~4.6:1 on white light, `#82ACD3` on dark) and keep their underline — a non-colour affordance
+- Activity/"View all" links use Bootstrap's adaptive `--bs-link-color` (`#2E75B6` ~4.84:1 on white light, `#82ACD3` ~6.46:1 on dark) and keep their underline — a non-colour affordance
 - Follow-up status text uses `-emphasis` tokens, AA-clean (≥4.5:1) on the widget surface in both colour modes at 12px; the status **label text** carries the meaning, not the colour
-- Quick action controls are keyboard-accessible links. Their `.border` is theme-adaptive but low-contrast against the card (≈1.3:1 light / 1.9:1 dark, below SC 1.4.11's 3:1 for a control boundary); this predates the conversion and is a tracked design question, not a #153 regression (the control was navy-on-white in the same `#DEE2E6` border before)
+- Quick action controls are keyboard-accessible links. Their `.border` is theme-adaptive but low-contrast against the card (≈1.3:1 light / 1.9:1 dark, below SC 1.4.11's 3:1 for a control boundary). Because the anchor drops its link colour and underline, the border is the only remaining boundary cue — a known, currently untracked affordance limitation, flagged for a design decision. It predates the conversion and is not a #153 regression (the control was navy-on-white in the same `#DEE2E6` border before), so it was surfaced rather than silently redesigned here
 - Follow-up queue items have clear status text alongside colour coding
 - Contacts by Group chart bar carries `role="img"` + `aria-label`, and a text legend below (label + count) — the bar alone is not the only representation. Bar/dot colours are caller-supplied and not guaranteed AA against each other; the text legend carries the data
 

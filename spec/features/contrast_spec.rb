@@ -564,9 +564,11 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
         # The quick action `.border` is theme-adaptive but low-contrast — ~1.30:1 in light,
         # ~1.89:1 in dark — below SC 1.4.11's 3:1 for a control boundary. The conversion does
         # NOT introduce it: the control was navy-on-white inside that same `#DEE2E6` border
-        # before #153. Pin the PAINTED border value so the limitation is measured, not the 3:1
-        # asserted (a pre-existing design question, deliberately not folded into this colour
-        # conversion — see the CHANGELOG dot/border note).
+        # before #153. Pin the PAINTED border value so the limitation is MEASURED, not the 3:1
+        # asserted. This is a known, currently untracked affordance limitation (the anchor drops
+        # its link colour + underline, so the border is the only remaining boundary cue) — a
+        # pre-existing design question deliberately not folded into this colour conversion, and
+        # flagged to the HC/designer in the PR rather than silently redesigned here.
         it "tracks the colour mode with the quick action border (documented low-contrast limit)" do
           expect(border_color_of("#{root} a.border.bg-body.text-body")).to eq(expected[:border])
         end

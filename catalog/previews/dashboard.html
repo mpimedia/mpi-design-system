@@ -46,11 +46,12 @@
       --bs-danger-border-subtle: #F1AEB5;
       --bs-link-color: #2E75B6;
       --bs-link-color-rgb: 46, 117, 182;
-      --bs-link-hover-color: #255C92;
+      --bs-link-hover-color: #255E92;
       --bs-link-hover-color-rgb: 37, 94, 146;
       --bs-body-color: #1B2A4A;
       --bs-body-color-rgb: 27, 42, 74;
       --bs-body-bg: #FFFFFF;
+      --bs-body-bg-rgb: 255, 255, 255;
       --bs-secondary-color: rgba(27, 42, 74, 0.75);
       --bs-border-color: #DEE2E6;
     }
@@ -72,11 +73,12 @@
       --bs-danger-border-subtle: #842029;
       --bs-link-color: #82ACD3;
       --bs-link-color-rgb: 130, 172, 211;
-      --bs-link-hover-color: #ABC8E2;
-      --bs-link-hover-color-rgb: 171, 200, 226;
+      --bs-link-hover-color: #9BBDDC;
+      --bs-link-hover-color-rgb: 155, 189, 220;
       --bs-body-color: #DEE2E6;
       --bs-body-color-rgb: 222, 226, 230;
       --bs-body-bg: #212529;
+      --bs-body-bg-rgb: 33, 37, 41;
       --bs-secondary-color: rgba(222, 226, 230, 0.75);
       --bs-border-color: #495057;
     }
@@ -98,7 +100,7 @@
 
     /* Widget cards — geometry only; the surface/border come from `bg-body border rounded-3`. */
     .widget { padding: 20px; }
-    .widget-title { font-size: 14px; font-weight: 600; }
+    .widget-title { font-size: 16px; font-weight: 600; }
 
     /* Stat cards — geometry only; colour comes from utilities in the markup. */
     .stat-card { padding: 16px; }
@@ -112,15 +114,19 @@
     .activity-icon { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
     .activity-time { font-size: 11px; }
 
-    /* Follow-up queue — AvatarCircle still owns the fixed identity hues (#169). */
-    .avatar-sm { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; color: #fff; font-weight: 600; font-size: 11px; flex-shrink: 0; }
+    /* Follow-up queue — AvatarCircle (size :sm = 28px) owns the fixed identity hues (#169).
+       Foreground is DERIVED per background (ColorContrast.accessible_foreground), not a blanket
+       white: #fff is the default, and the light-background avatars carry an inline color:#000
+       override so each initials pair clears WCAG AA on its own circle — e.g. white on #4EA8DE is
+       only 2.63:1 (the #130 defect), so that avatar takes #000. */
+    .avatar-sm { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; font-weight: 600; font-size: 11px; flex-shrink: 0; }
     .followup-status { font-size: 11px; font-weight: 500; white-space: nowrap; }
 
     /* Contacts by group bar — caller-supplied colours (passthrough, #153 follow-up). */
     .group-bar { height: 16px; border-radius: 8px; overflow: hidden; display: flex; }
     .group-bar-segment { height: 100%; }
     .group-legend { font-size: 11px; }
-    .group-legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    .group-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
 
     /* Quick actions — geometry only; colour comes from `border bg-body text-body`. */
     .quick-action { display: block; padding: 10px 14px; border-radius: 6px; font-size: 13px; text-decoration: none; }
@@ -195,11 +201,11 @@
           <div class="row g-4">
             <!-- Left column -->
             <div class="col-8">
-              <!-- Recent Activity -->
+              <!-- Recent Activity — the component emits NO "View all" here (only the
+                   Follow-up Queue has one); callers supply their own activity-log control. -->
               <div class="widget bg-body border rounded-3 mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <div class="widget-title text-body">Recent Activity</div>
-                  <a href="#" style="font-size:12px;">View all →</a>
                 </div>
                 <div class="activity-item d-flex align-items-start gap-2">
                   <div class="activity-icon bg-primary-subtle text-primary-emphasis"><i class="bi bi-envelope-fill"></i></div>
@@ -281,18 +287,18 @@
                   <a href="#" style="font-size:12px;">View all 12 →</a>
                 </div>
                 <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
-                  <div class="avatar-sm" style="background:#4EA8DE;">AW</div>
+                  <div class="avatar-sm" style="background:#4EA8DE; color:#000;">AW</div>
                   <div class="flex-grow-1">
                     <div class="text-body" style="font-weight:500;">Alex Wright</div>
-                    <div class="text-body-secondary" style="font-size:10px;">Promised screener links after EFM</div>
+                    <div class="text-body" style="font-size:10px;">Promised screener links after EFM</div>
                   </div>
                   <div class="followup-status text-danger-emphasis">7d overdue</div>
                 </div>
                 <div class="d-flex align-items-center gap-2 py-2 border-bottom" style="font-size:12px;">
-                  <div class="avatar-sm" style="background:#D97706;">TM</div>
+                  <div class="avatar-sm" style="background:#D97706; color:#000;">TM</div>
                   <div class="flex-grow-1">
                     <div class="text-body" style="font-weight:500;">Tom Martinez</div>
-                    <div class="text-body-secondary" style="font-size:10px;">Awaiting signed LOI for "The Orchard"</div>
+                    <div class="text-body" style="font-size:10px;">Awaiting signed LOI for "The Orchard"</div>
                   </div>
                   <div class="followup-status text-danger-emphasis">5d overdue</div>
                 </div>
@@ -300,7 +306,7 @@
                   <div class="avatar-sm" style="background:#DC3545;">RN</div>
                   <div class="flex-grow-1">
                     <div class="text-body" style="font-weight:500;">Rachel Nakamura</div>
-                    <div class="text-body-secondary" style="font-size:10px;">Review screener feedback — IndieWire</div>
+                    <div class="text-body" style="font-size:10px;">Review screener feedback — IndieWire</div>
                   </div>
                   <div class="followup-status text-danger-emphasis">Due today</div>
                 </div>
@@ -308,15 +314,15 @@
                   <div class="avatar-sm" style="background:#1B2A4A;">SC</div>
                   <div class="flex-grow-1">
                     <div class="text-body" style="font-weight:500;">Sarah Chen</div>
-                    <div class="text-body-secondary" style="font-size:10px;">Send screener links — Magnolia</div>
+                    <div class="text-body" style="font-size:10px;">Send screener links — Magnolia</div>
                   </div>
                   <div class="followup-status text-warning-emphasis">Due tomorrow</div>
                 </div>
                 <div class="d-flex align-items-center gap-2 py-2" style="font-size:12px;">
-                  <div class="avatar-sm" style="background:#22A06B;">LW</div>
+                  <div class="avatar-sm" style="background:#22A06B; color:#000;">LW</div>
                   <div class="flex-grow-1">
                     <div class="text-body" style="font-weight:500;">Lisa Wang</div>
-                    <div class="text-body-secondary" style="font-size:10px;">Investor deck — Archstone Capital</div>
+                    <div class="text-body" style="font-size:10px;">Investor deck — Archstone Capital</div>
                   </div>
                   <div class="followup-status text-body-secondary">In 3 days</div>
                 </div>

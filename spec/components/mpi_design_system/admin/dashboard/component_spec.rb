@@ -319,10 +319,14 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
       quick_action_buttons: [ { label: "Add", path: "#" } ]
     )))
 
-    # Widget title lives directly inside the adaptive card — child combinator so the
-    # class cannot drift onto a wrapper and still pass (ISS#152).
     expect(page).to have_css("div.bg-body.border.rounded-3", count: 2)
+    # Title placement differs by widget: Recent Activity's title sits inside a d-flex
+    # header (a grandchild), so this is a descendant match; Quick Actions' title is a
+    # DIRECT child of the card, so it gets a `>` child-combinator pin — the class cannot
+    # drift onto a wrapper and still pass (ISS#152). Guard 1's exact-style `count: 4` pin
+    # independently anchors the class to the styled element for every widget.
     expect(page).to have_css("div.bg-body.border.rounded-3 div.text-body", text: "Recent Activity")
+    expect(page).to have_css("div.bg-body.border.rounded-3 > div.text-body", text: "Quick Actions")
   end
 
   it "renders two-column body layout" do
@@ -412,14 +416,26 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
 
     let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
 
-    # Copied verbatim from data_table/component_spec.rb: a colour/border/opacity property
-    # matched on the name left of the colon (`border-radius` and the `--bs-*` custom-prop
-    # prefix fall outside, staying allowed geometry).
+    # A paint-affecting property matched on the name left of the colon (`border-radius`, the
+    # `--bs-*` custom-prop prefix, and `text-decoration` [shorthand, `none` here] fall outside,
+    # staying allowed geometry). Broadened past the data_table original beyond
+    # colour/background(-color)/border/outline/box-shadow/opacity to every paint property a
+    # regression could smuggle a hue through — `background-image` (gradient), `text-shadow`,
+    # `filter`/`backdrop-filter`, `fill`/`stroke`, `caret-color`, `accent-color`,
+    # `text-decoration-color`, `text-emphasis-color`, `-webkit-text-fill-color` — because a
+    # narrow list false-greens on `background-image: linear-gradient(rebeccapurple, …)` and the
+    # like (Codex PR review, #173). Proven by mutation: a `background-image` gradient reddens
+    # guard 2.
     let(:colour_or_border_prop) do
-      /\A(color|background(-color)?|border(-(top|right|bottom|left|color|style|width))?|outline|box-shadow|opacity)\z/
+      /\A(color|background(-(color|image|blend-mode))?|border(-(top|right|bottom|left|color|style|width))?|
+         outline|box-shadow|text-shadow|filter|backdrop-filter|fill|stroke|caret-color|accent-color|
+         text-decoration-color|text-emphasis-color|-webkit-text-fill-color)\z/x
     end
+    # Named colours are matched as whole words so a hue in an allowed property's VALUE is caught
+    # even if its property name somehow is not; `rebeccapurple` is included alongside the CSS
+    # basics (the property scan above already catches the paint properties, this is the net).
     let(:colour_value_literal) do
-      /#(?:\h{3,8})|\brgb|\bhsl|\b(?:red|green|blue|white|black|orange|yellow|purple|gr[ae]y)\b/i
+      /#(?:\h{3,8})|\brgb|\bhsl|\b(?:red|green|blue|white|black|orange|yellow|purple|rebeccapurple|gr[ae]y)\b/i
     end
 
     def offending_style_declarations(fragment)
@@ -537,8 +553,13 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
     # of the six adaptive utilities (bg-body, text-body, text-body-secondary, bare border,
     # bg-#{sem}-subtle, text-#{sem}-emphasis). An allowlist, not a denylist: bare
     # `text-primary` / `bg-success` / `text-bg-*` / `bg-white` are all fixed-hue or
-    # fixed-scheme and must reject (Codex P1 — a denylist misses the base utilities).
-    let(:colour_utility) { /\A(?:bg|text|border)(?:-|\z)/ }
+    # fixed-scheme and must reject (a denylist misses the base utilities).
+    # The CLASSIFIER also spans Bootstrap's other colour-bearing families — `btn-*`, `link-*`,
+    # `alert-*`, `badge-*`, `list-group-item-*` — so a fixed-hue `btn-primary` / `link-danger` /
+    # `alert-danger` regression is CLASSIFIED (and therefore rejected), not silently ignored by a
+    # classifier that only saw `bg`/`text`/`border` (Codex PR review, #173). Proven by mutation:
+    # a `btn-primary` on any Dashboard element reddens this.
+    let(:colour_utility) { /\A(?:bg|text|border)(?:-|\z)|\A(?:btn|link|alert|badge|list-group-item)-/ }
     let(:colour_utility_allowlist) do
       %w[bg-body text-body text-body-secondary border] +
         %i[primary secondary success warning danger].flat_map { |s| [ "bg-#{s}-subtle", "text-#{s}-emphasis" ] }
