@@ -11,7 +11,7 @@ include breaking changes).
 - **Theme-adaptive, re-brandable avatar colours** — `AvatarCircle`'s name-hash identity palette
   (and `AvatarStack`'s "+N" chip) now paint runtime custom properties
   `var(--mds-avatar-<index>, <hex>)` / `var(--mds-avatar-<index>-fg, <hex>)`. A new **optional**
-  `_avatar.scss` partial defines them in a light `:root` block and a `[data-bs-theme="dark"]`
+  `_avatar.scss` partial defines them in a light `:root, [data-bs-theme="light"]` block and a `[data-bs-theme="dark"]`
   override — the design system's first hand-authored dark palette (12 roles: `0`–`9`,
   `placeholder`, `overflow`). Import `mpi_design_system/avatar` (documented in the README for both
   SCSS pipelines) for theme-adaptive avatars; re-brand by overriding a `--mds-avatar-N` /

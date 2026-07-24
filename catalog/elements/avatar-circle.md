@@ -16,9 +16,9 @@ Circular avatar displaying a contact's initials on a deterministic background co
 - **Placeholder:** When no name is available, show `bi-person-fill` icon on gray (`#6C757D`) background
 - **Color is a runtime token with a fallback (#169):** the component emits
   `background-color: var(--mds-avatar-<index>, <hex>); color: var(--mds-avatar-<index>-fg, <hex>)`.
-  The optional `_avatar.scss` partial defines those custom properties in a light `:root`
-  block and a `[data-bs-theme="dark"]` override, so avatars are **theme-adaptive** and
-  **re-brandable**. Without the partial, the inline hex fallback paints today's palette —
+  The optional `_avatar.scss` partial defines those custom properties in a light
+  `:root, [data-bs-theme="light"]` block and a `[data-bs-theme="dark"]` override, so avatars
+  are **theme-adaptive** and **re-brandable**. Without the partial, the inline hex fallback paints today's palette —
   so upgrading is non-breaking. Re-brand by overriding the `--mds-avatar-N` /
   `--mds-avatar-N-fg` **pair** in your own CSS (they must be changed together; the engine
   cannot re-derive a foreground for a value you override at runtime)

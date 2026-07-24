@@ -36,6 +36,9 @@
 # and all were confirmed by execution:
 #   * add `.mds-avatar--nav { color: red }` to _avatar.scss -> STRONG NEGATIVE (UNEXPECTED RULE)
 #   * add a non-token declaration to a mode block -> STRONG NEGATIVE (STRAY DECL)
+#   * prepend a SECOND `:root, [data-bs-theme="light"] { color: red }` block -> STRONG NEGATIVE
+#     (DUPLICATE BLOCK + STRAY DECL). Declarations are scanned across EVERY block, not a
+#     selector-deduped hash, so a duplicate approved selector cannot smuggle a stray declaration.
 #   * drop the `[data-bs-theme="dark"]` block from _avatar.scss -> COVERAGE (MISSING BLOCK)
 #   * change the dark `@each` to read `bg`/`fg` instead of `bg-dark`/`fg-dark` -> BINDING
 #     (WRONG (dark)) on every role. NOT ADAPTIVITY — that check compares the palette's own
@@ -88,20 +91,39 @@ rule_blocks = css.scan(/([^{}]+)\{([^}]*)\}/m).map do |selector, body|
 end
 
 failures = []
-
-# 0. STRONG NEGATIVE (selectors) — the compiled partial must contain ONLY the two approved
-#    mode blocks. A stray rule (e.g. `.mds-avatar--nav { color: red !important }`) that could
-#    override the component's accessible inline foreground reds here rather than shipping green.
 allowed = [ LIGHT_SELECTOR, DARK_SELECTOR ]
-rule_blocks.each do |selector, _declarations|
+
+# 0a. STRONG NEGATIVE (selectors) — the compiled partial must contain ONLY the two approved
+#     mode blocks, each EXACTLY ONCE. A stray rule (`.mds-avatar--nav { color: red !important }`)
+#     reds; so does a DUPLICATE approved selector, which would otherwise smuggle extra
+#     declarations past the per-block scan below — a second `:root, [data-bs-theme=light]`
+#     block carrying `color: red` must not hide behind the legitimate one.
+selector_counts = Hash.new(0)
+rule_blocks.each { |selector, _declarations| selector_counts[selector] += 1 }
+
+rule_blocks.map(&:first).uniq.each do |selector|
   next if allowed.include?(selector)
 
   failures << "UNEXPECTED RULE   `#{selector}` — the partial may emit only `#{LIGHT_SELECTOR}` and `#{DARK_SELECTOR}`"
 end
-
-blocks = rule_blocks.to_h
 allowed.each do |selector|
-  failures << "MISSING BLOCK     #{selector} — the partial did not emit this mode" unless blocks.key?(selector)
+  count = selector_counts[selector]
+  failures << "MISSING BLOCK     #{selector} — the partial did not emit this mode" if count.zero?
+  failures << "DUPLICATE BLOCK   #{selector} — emitted #{count} times; each approved selector must appear exactly once" if count > 1
+end
+
+# 0b. STRONG NEGATIVE (declarations) — scan EVERY block in the compiled output (not a
+#     selector-deduped hash), so a duplicate block's stray declarations cannot be discarded
+#     before this check. Every declaration in an approved block must be a `--mds-avatar-*`
+#     custom property; matches bin/verify-nav-bar-adaptive's per-property strong negative.
+rule_blocks.each do |selector, declarations|
+  next unless allowed.include?(selector)
+
+  declarations.each_key do |property|
+    next if property.start_with?("--mds-avatar-")
+
+    failures << "STRAY DECL        `#{selector} { #{property} }` — only --mds-avatar-* custom properties are allowed"
+  end
 end
 
 unless failures.empty?
@@ -110,19 +132,10 @@ unless failures.empty?
   exit 1
 end
 
+# Value checks below read the approved blocks, now proven unique and token-only above.
+blocks = rule_blocks.to_h
 light = blocks.fetch(LIGHT_SELECTOR)
 dark = blocks.fetch(DARK_SELECTOR)
-
-# STRONG NEGATIVE (declarations) — every declaration in both blocks must be a
-# `--mds-avatar-*` custom property. Anything else (a stray `color:`, a raw hex on some other
-# property) is rejected, matching bin/verify-nav-bar-adaptive's per-property strong negative.
-{ LIGHT_SELECTOR => light, DARK_SELECTOR => dark }.each do |selector, declarations|
-  declarations.each_key do |property|
-    next if property.start_with?("--mds-avatar-")
-
-    failures << "STRAY DECL        `#{selector} { #{property} }` — only --mds-avatar-* custom properties are allowed"
-  end
-end
 
 def eq_hex?(one, other)
   one.to_s.downcase == other.to_s.downcase

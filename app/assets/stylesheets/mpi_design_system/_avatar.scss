@@ -2,7 +2,7 @@
 //
 // Emits the `--mds-avatar-*` runtime custom properties that AvatarCircle and the
 // AvatarStack "+N" chip paint via `var(--mds-avatar-N, <fallback>)`. Two blocks —
-// a light `:root` and a `[data-bs-theme="dark"]` override — so avatars follow
+// a light `:root, [data-bs-theme="light"]` and a `[data-bs-theme="dark"]` override — so avatars follow
 // Bootstrap's colour mode. Values come from `$mpi-avatar-palette` (tokens_values);
 // there is NO Bootstrap dependency (the foregrounds are the palette's own
 // `color-contrast()`-derived tokens, not computed here), so this partial compiles

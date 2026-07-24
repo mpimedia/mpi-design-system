@@ -23,7 +23,8 @@
       the foreground is DERIVED per background (issue #130 — 7 of the 10 light palette
       colours fail WCAG AA with white text), carried by the `-fg` token / fallback.
     */
-    :root {
+    :root,
+    [data-bs-theme="light"] {
       --mds-avatar-0: #2E75B6; --mds-avatar-0-fg: #fff;
       --mds-avatar-1: #8B5CF6; --mds-avatar-1-fg: #000;
       --mds-avatar-2: #E8733A; --mds-avatar-2-fg: #000;
