@@ -26,11 +26,17 @@
 #
 # The expected values are parsed from `_tokens_values.scss`, not frozen here, so the
 # guard cannot drift from the palette source. Run via `yarn build:css:compat`. Prove it
-# by breaking it (per .claude/rules/frontend.md): drop the `[data-bs-theme="dark"]`
-# block from _avatar.scss -> COVERAGE reds; change the dark `@each` to read `bg` instead
-# of `bg-dark` -> BINDING + ADAPTIVITY red; delete a role from the palette map -> the
-# compiled output and the parsed expectation move together (no false green), and a role
-# emitted for only one mode reds COVERAGE.
+# by breaking it (per .claude/rules/frontend.md) — each mutation reds a DIFFERENT check,
+# and the three below were confirmed by execution:
+#   * drop the `[data-bs-theme="dark"]` block from _avatar.scss -> COVERAGE (MISSING BLOCK)
+#   * change the dark `@each` to read `bg`/`fg` instead of `bg-dark`/`fg-dark` -> BINDING
+#     (WRONG (dark)) on every role. NOT ADAPTIVITY — that check compares the palette's own
+#     bg vs bg-dark parsed from the source map, so it is independent of what the partial
+#     compiled and stays green under this mutation.
+#   * set a role's `bg-dark` equal to its `bg` in the $mpi-avatar-palette source map ->
+#     ADAPTIVITY (NOT ADAPTIVE) for that role — this is the mutation that check exists for.
+#   * delete a role from the palette map -> the compiled output and the parsed expectation
+#     move together (no false green); a role emitted for only one mode reds COVERAGE.
 
 CSS = ARGV[0] || "tmp/compat/avatar_adaptive.css"
 ROOT = File.expand_path("..", __dir__)
