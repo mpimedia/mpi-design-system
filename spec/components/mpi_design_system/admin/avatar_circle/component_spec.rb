@@ -69,7 +69,7 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
 
   # The colour is emitted as a runtime custom property with the palette hex as the
   # CSS fallback: `var(--mds-avatar-<key>, <hex>)`. `_avatar.scss` defines the property
-  # (light `:root` + `[data-bs-theme="dark"]`), so importers get theme-adaptive,
+  # (light `:root, [data-bs-theme="light"]` + `[data-bs-theme="dark"]`), so importers get theme-adaptive,
   # re-brandable avatars; installs without that partial fall back to the inline hex,
   # unchanged — the upgrade is non-breaking. render_inline sees the whole token string,
   # so these assertions pin BOTH halves: the property reference (proves adaptivity /

@@ -3,7 +3,7 @@
 
 # Verifies the theme-adaptive avatar partial (#169). `_avatar.scss` emits the
 # `--mds-avatar-*` runtime custom properties AvatarCircle / AvatarStack paint via
-# `var(--mds-avatar-N, <fallback>)`, in two blocks: a light `:root` and a
+# `var(--mds-avatar-N, <fallback>)`, in two blocks: a light `:root, [data-bs-theme="light"]` and a
 # `[data-bs-theme="dark"]` override. This is the compile-level guard that the partial
 # actually materialises EVERY role, in BOTH modes, with the right values; the browser
 # paint proof lives in spec/features/contrast_spec.rb, and the contrast correctness of
