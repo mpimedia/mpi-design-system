@@ -38,6 +38,22 @@ class MpiDesignSystem::Admin::AvatarCircle::ComponentPreview < ApplicationCompon
     )
   end
 
+  # The same palette inside a `data-bs-theme="dark"` wrapper, so the adaptive
+  # `--mds-avatar-*` tokens from `_avatar.scss` are visible in Lookbook — each name
+  # takes its softened dark tone with a foreground re-derived for it. (#169)
+  #
+  # @label Dark mode
+  def dark
+    render_with_template(
+      locals: {
+        names: [
+          "Jane Cooper", "Sarah Williams", "Tom Wilson", "Lisa Park", "Dana Reyes",
+          "Robert Fox", "Emily Chen", "Mona Habib", "Hana Ito", "David Kim"
+        ]
+      }
+    )
+  end
+
   # @label Placeholder
   def placeholder
     render MpiDesignSystem::Admin::AvatarCircle::Component.new(size: :lg)

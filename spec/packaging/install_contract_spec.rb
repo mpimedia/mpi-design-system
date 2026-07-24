@@ -30,6 +30,15 @@ RSpec.describe "install contract docs" do
       expect(readme).to include('@use "mpi_design_system/tokens_values"')
     end
 
+    # The avatar partial is OPTIONAL (avatars fall back to the inline hex without it —
+    # the #169 non-breaking contract), but the README must document it or a consumer has
+    # no way to discover the theme-adaptive/re-brandable path. Pinned so it can't silently
+    # drop; deliberately NOT asserted as mandatory wiring, which would misstate the contract.
+    it "documents the optional avatar partial for theme-adaptive avatars" do
+      expect(readme).to include('@import "mpi_design_system/avatar"')
+      expect(readme).to match(/avatar.*optional|optional.*avatar/im)
+    end
+
     it "resolves gem asset paths through Bundler" do
       expect(readme).to include("bundle show mpi_design_system")
     end

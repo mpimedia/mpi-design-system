@@ -1,0 +1,153 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Verifies the theme-adaptive avatar partial (#169). `_avatar.scss` emits the
+# `--mds-avatar-*` runtime custom properties AvatarCircle / AvatarStack paint via
+# `var(--mds-avatar-N, <fallback>)`, in two blocks: a light `:root` and a
+# `[data-bs-theme="dark"]` override. This is the compile-level guard that the partial
+# actually materialises EVERY role, in BOTH modes, with the right values; the browser
+# paint proof lives in spec/features/contrast_spec.rb, and the contrast correctness of
+# the foregrounds in bin/verify-contrast-oracle.
+#
+# It runs against the STANDALONE-compiled fixture (spec/fixtures/scss/
+# avatar_adaptive.scss -> tmp/compat/avatar_adaptive.css). That the fixture compiles
+# at all — with neither Bootstrap nor app config in scope — proves the partial is
+# Bootstrap-free. This script then proves, at per-declaration resolution:
+#
+#   1. COVERAGE — the light `:root` and the dark block EACH declare
+#      `--mds-avatar-<role>` and `--mds-avatar-<role>-fg` for every role in
+#      `$mpi-avatar-palette` (the source of truth), and nothing extra.
+#   2. BINDING — each declared value equals the palette's value for that role AND mode
+#      (`bg`/`fg` in `:root`, `bg-dark`/`fg-dark` in the dark block). A partial loop bug
+#      that emitted the light value in the dark block — the exact "dark is a copy of
+#      light" regression — reds here.
+#   3. ADAPTIVITY — every role's background actually CHANGES between the two modes, so
+#      a dark block that merely re-emitted the light palette cannot pass.
+#
+# The expected values are parsed from `_tokens_values.scss`, not frozen here, so the
+# guard cannot drift from the palette source. Run via `yarn build:css:compat`. Prove it
+# by breaking it (per .claude/rules/frontend.md): drop the `[data-bs-theme="dark"]`
+# block from _avatar.scss -> COVERAGE reds; change the dark `@each` to read `bg` instead
+# of `bg-dark` -> BINDING + ADAPTIVITY red; delete a role from the palette map -> the
+# compiled output and the parsed expectation move together (no false green), and a role
+# emitted for only one mode reds COVERAGE.
+
+CSS = ARGV[0] || "tmp/compat/avatar_adaptive.css"
+ROOT = File.expand_path("..", __dir__)
+TOKENS = File.join(ROOT, "app/assets/stylesheets/mpi_design_system/_tokens_values.scss")
+
+unless File.file?(CSS)
+  warn "verify-avatar-adaptive: #{CSS} not found — compile the fixture first"
+  exit 1
+end
+
+# --- Parse the palette source of truth from _tokens_values.scss. Each role line is
+#     `<role>: (bg: #hex, fg: #hex, bg-dark: #hex, fg-dark: #hex),` inside the
+#     `$mpi-avatar-palette:` map.
+source = File.read(TOKENS)
+map_body = source[/\$mpi-avatar-palette:\s*\((.*?)\)\s*!default;/m, 1]
+abort "verify-avatar-adaptive: could not find $mpi-avatar-palette in _tokens_values.scss" if map_body.nil?
+
+palette = {}
+map_body.scan(/(\w+):\s*\(\s*bg:\s*(#\h+),\s*fg:\s*(#\h+),\s*bg-dark:\s*(#\h+),\s*fg-dark:\s*(#\h+)\s*\)/) do
+  role, bg, fg, bg_dark, fg_dark = Regexp.last_match.captures
+  palette[role] = { bg: bg, fg: fg, bg_dark: bg_dark, fg_dark: fg_dark }
+end
+abort "verify-avatar-adaptive: parsed 0 roles from the palette — the map format changed" if palette.empty?
+
+# --- Parse the compiled CSS into block => { custom-property => value }. Only the
+#     `:root` and `[data-bs-theme=dark]` blocks are of interest (sass drops the quotes
+#     around the attribute value).
+css = File.read(CSS)
+blocks = {}
+css.scan(/([^{}]+)\{([^}]*)\}/m).each do |selector, body|
+  key = selector.strip
+  next unless [ ":root", "[data-bs-theme=dark]" ].include?(key)
+
+  declarations = body.split(";").map(&:strip).reject(&:empty?).each_with_object({}) do |decl, acc|
+    property, value = decl.split(":", 2)
+    acc[property.to_s.strip] = value.to_s.strip
+  end
+  (blocks[key] ||= {}).merge!(declarations)
+end
+
+failures = []
+
+%w[:root [data-bs-theme=dark]].each do |block|
+  failures << "MISSING BLOCK     #{block} — the partial did not emit this mode" unless blocks.key?(block)
+end
+
+unless failures.empty?
+  warn "Avatar adaptive check FAILED:"
+  failures.each { |f| warn "  #{f}" }
+  exit 1
+end
+
+light = blocks.fetch(":root")
+dark = blocks.fetch("[data-bs-theme=dark]")
+
+def eq_hex?(one, other)
+  one.to_s.downcase == other.to_s.downcase
+end
+
+expected_props = []
+
+palette.each do |role, colours|
+  bg_prop = "--mds-avatar-#{role}"
+  fg_prop = "--mds-avatar-#{role}-fg"
+  expected_props << bg_prop << fg_prop
+
+  # 1/2. COVERAGE + BINDING, light
+  if !light.key?(bg_prop)
+    failures << "MISSING (light)   #{bg_prop} — role absent from :root"
+  elsif !eq_hex?(light[bg_prop], colours[:bg])
+    failures << "WRONG (light)     #{bg_prop}: #{light[bg_prop]} — expected #{colours[:bg]}"
+  end
+  if !light.key?(fg_prop)
+    failures << "MISSING (light)   #{fg_prop} — role absent from :root"
+  elsif !eq_hex?(light[fg_prop], colours[:fg])
+    failures << "WRONG (light)     #{fg_prop}: #{light[fg_prop]} — expected #{colours[:fg]}"
+  end
+
+  # 1/2. COVERAGE + BINDING, dark
+  if !dark.key?(bg_prop)
+    failures << "MISSING (dark)    #{bg_prop} — role absent from [data-bs-theme=dark]"
+  elsif !eq_hex?(dark[bg_prop], colours[:bg_dark])
+    failures << "WRONG (dark)      #{bg_prop}: #{dark[bg_prop]} — expected #{colours[:bg_dark]}"
+  end
+  if !dark.key?(fg_prop)
+    failures << "MISSING (dark)    #{fg_prop} — role absent from [data-bs-theme=dark]"
+  elsif !eq_hex?(dark[fg_prop], colours[:fg_dark])
+    failures << "WRONG (dark)      #{fg_prop}: #{dark[fg_prop]} — expected #{colours[:fg_dark]}"
+  end
+
+  # 3. ADAPTIVITY — the background must actually change between modes, or the dark
+  #    block is a copy of light and nothing adapts.
+  if eq_hex?(colours[:bg], colours[:bg_dark])
+    failures << "NOT ADAPTIVE      #{bg_prop} — light and dark backgrounds are identical (#{colours[:bg]})"
+  end
+end
+
+# 1. COVERAGE — no stray --mds-avatar-* beyond the palette roles.
+[ [ ":root", light ], [ "[data-bs-theme=dark]", dark ] ].each do |name, block|
+  block.each_key do |property|
+    next unless property.start_with?("--mds-avatar-")
+    next if expected_props.include?(property)
+
+    failures << "UNEXPECTED        #{name} { #{property} } — not a palette role/foreground"
+  end
+end
+
+if failures.any?
+  warn ""
+  warn "Avatar adaptive check FAILED with #{failures.length} problem(s):"
+  failures.each { |failure| warn "  #{failure}" }
+  warn ""
+  warn "_avatar.scss must emit --mds-avatar-<role>(+ -fg) for every $mpi-avatar-palette role"
+  warn "in BOTH :root (bg/fg) and [data-bs-theme=dark] (bg-dark/fg-dark), and each role's"
+  warn "background must differ between the two modes."
+  exit 1
+end
+
+puts "Avatar adaptive OK: _avatar.scss compiles standalone and materialises all #{palette.size} roles " \
+     "in both :root and [data-bs-theme=dark] with their exact palette values; every background adapts between modes"

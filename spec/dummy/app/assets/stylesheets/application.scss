@@ -7,3 +7,7 @@
 // (_nav_bar.scss maps .mds-navbar__brand-arm/-center onto $mpi-brand-navy / $mpi-primary).
 // Loaded last so both $danger (Bootstrap) and the $mpi-* tokens are already in scope. (#155)
 @import "mpi_design_system/nav_bar";
+// Avatar identity custom properties (#169). Without it, AvatarCircle falls back to the
+// inline light-palette literal in `var(--mds-avatar-N, #hex)`; with it, avatars pick up
+// the `:root` + `[data-bs-theme="dark"]` tokens so dark mode adapts (proven by contrast_spec).
+@import "mpi_design_system/avatar";

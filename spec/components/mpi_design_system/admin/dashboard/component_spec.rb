@@ -514,7 +514,8 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
     end
 
     # GUARD 2 — declaration scan. Renders EVERY built-in branch, strips the embedded
-    # AvatarCircles (which legitimately still emit inline hex — ISS#169's territory), then
+    # AvatarCircles (which still emit inline colour — since #169 a token reference with a
+    # hex fallback, `var(--mds-avatar-N, #hex)`, so the strip stays required), then
     # asserts the ONLY colour/border/opacity declarations left are the chart's caller
     # backgrounds: `2 * group_data.length` (each caller colour appears twice — bar segment
     # + legend dot). A re-introduced `border: 1px solid red` / `border: none` reddens this.

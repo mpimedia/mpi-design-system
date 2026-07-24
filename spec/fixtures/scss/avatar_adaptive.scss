@@ -1,0 +1,6 @@
+// Compat fixture — compiles the shipped `_avatar.scss` standalone (no Bootstrap,
+// no app config) so `bin/verify-avatar-adaptive` can assert the partial materialises
+// EVERY role of `$mpi-avatar-palette` into both the light `:root` and the
+// `[data-bs-theme="dark"]` override. That it compiles at all proves the partial has
+// no Bootstrap dependency. (#169)
+@use "mpi_design_system/avatar";

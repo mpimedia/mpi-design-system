@@ -212,22 +212,34 @@ RSpec.describe MpiDesignSystem::ColorContrast do
   # table against a fresh Bootstrap compile in CI, so if Bootstrap and this module
   # ever diverge, the build fails instead of quietly shipping.
   describe "frozen expectations for the AvatarCircle palette" do
-    it "covers exactly the shipped palette plus the placeholder, so a new color cannot land unreviewed" do
+    it "covers exactly the shipped light palette plus the placeholder, so a new color cannot land unreviewed" do
       shipped = MpiDesignSystem::Admin::AvatarCircle::Component::COLORS +
                 [ MpiDesignSystem::Admin::AvatarCircle::Component::PLACEHOLDER_COLOR ]
 
       expect(shipped).to match_array(expected_foregrounds.keys)
     end
 
-    # Closes the one gap the shell oracle cannot see. The palette is written out
-    # in three places — the Ruby constant, this map, and the SCSS fixture — and
-    # `bin/verify-contrast-oracle` only compares the last two. Without this, the
-    # fixture could faithfully verify a palette the component no longer ships.
-    it "matches the palette the SCSS oracle fixture actually compiles" do
-      fixture = File.read(File.expand_path("../../fixtures/scss/avatar_contrast_oracle.scss", __dir__))
-      declared = fixture[/\$mds-avatar-palette:\s*\((.*?)\);/m, 1].to_s.scan(/#\h{6}/)
+    it "keeps AvatarStack's overflow background within the shared palette" do
+      expect(expected_foregrounds).to have_key(MpiDesignSystem::Admin::AvatarStack::Component::OVERFLOW_COLOR)
+    end
 
-      expect(declared).to match_array(expected_foregrounds.keys)
+    # Closes the one gap the shell oracle cannot see. Since #169 the palette's source
+    # of truth is the `$mpi-avatar-palette` map in `_tokens_values.scss` — the same map
+    # `_avatar.scss` materialises into the `--mds-avatar-*` custom properties and the
+    # oracle fixture runs `color-contrast()` over. The Ruby `COLORS` constant is the
+    # light-mode FALLBACK the component still paints when the partial is absent. This
+    # asserts the two agree in light mode — background AND the derived foreground — so
+    # neither the fixture nor the fallback can drift onto a palette the other dropped.
+    it "matches the light palette declared in the $mpi-avatar-palette source map" do
+      tokens = File.read(File.expand_path("../../../app/assets/stylesheets/mpi_design_system/_tokens_values.scss", __dir__))
+      map_body = tokens[/\$mpi-avatar-palette:\s*\((.*?)\)\s*!default;/m, 1].to_s
+      declared_light = map_body.scan(/\w+:\s*\(\s*bg:\s*(#\h+),\s*fg:\s*(#\h+),/).to_h
+
+      expect(declared_light.keys).to match_array(expected_foregrounds.keys)
+      declared_light.each do |background, foreground|
+        expect(foreground.downcase).to eq(expected_foregrounds.fetch(background).downcase)
+        expect(described_class.accessible_foreground(background)).to eq(foreground)
+      end
     end
 
     expected_foregrounds.each do |background, foreground|

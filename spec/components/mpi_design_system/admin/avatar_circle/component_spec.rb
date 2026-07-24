@@ -64,20 +64,23 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
     render_inline(described_class.new)
 
     expect(page).to have_css("i.bi.bi-person-fill")
-    expect(page).to have_css("span[style*='background-color: #6C757D']")
+    expect(page).to have_css("span[style*='background-color: var(--mds-avatar-placeholder, #6C757D)']")
   end
 
-  # The contrast gate for issue #130. Before it, 7 of the 10 palette colors
-  # rendered white initials below the 4.5:1 AA floor — #4EA8DE was 2.63:1, and
-  # #22A06B was the very 3.33:1 pair issue #128 had just fixed in Badge.
+  # The colour is emitted as a runtime custom property with the palette hex as the
+  # CSS fallback: `var(--mds-avatar-<key>, <hex>)`. `_avatar.scss` defines the property
+  # (light `:root` + `[data-bs-theme="dark"]`), so importers get theme-adaptive,
+  # re-brandable avatars; installs without that partial fall back to the inline hex,
+  # unchanged — the upgrade is non-breaking. render_inline sees the whole token string,
+  # so these assertions pin BOTH halves: the property reference (proves adaptivity /
+  # re-brand is wired) and the fallback hex (proves the non-breaking default). (#169)
   #
-  # These assertions read the ACTUAL RENDERED inline style, so they prove
-  # `inline_styles` emits the derived value — not merely that the helper would
-  # have returned it. The expected foregrounds are the frozen map in
-  # `spec/lib/mpi_design_system/color_contrast_spec.rb`, taken from Bootstrap's
-  # compiled `color-contrast()` output and re-verified against a fresh Bootstrap
-  # compile in CI by `bin/verify-contrast-oracle`.
-  describe "foreground contrast (#130)" do
+  # The fallback foreground is still DERIVED per background by ColorContrast, exactly as
+  # #130 established, so an install without the partial stays at AA. The expected
+  # foregrounds are the frozen map above, taken from Bootstrap's compiled
+  # `color-contrast()` and re-verified in CI by `bin/verify-contrast-oracle` (now over
+  # both colour modes).
+  describe "runtime colour token with a derived fallback (#169 + #130)" do
     it "exercises every palette color, so no entry escapes the gate" do
       hashed = names_by_palette_index.values.map { |name| name.bytes.sum % described_class::COLORS.length }
 
@@ -90,60 +93,73 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
         let(:background) { described_class::COLORS[index] }
         let(:foreground) { expected_foreground_by_color.fetch(background) }
 
-        it "renders #{name.inspect} with an accessible foreground on its background" do
+        it "paints #{name.inspect} from the --mds-avatar-#{index} token with the palette hex as fallback" do
           render_inline(described_class.new(name: name))
 
-          expect(page).to have_css("span[style*='background-color: #{background}']")
-          expect(page).to have_css("span[style*='color: #{foreground}']")
+          expect(page).to have_css("span[style*='background-color: var(--mds-avatar-#{index}, #{background})']")
+          expect(page).to have_css("span[style*='color: var(--mds-avatar-#{index}-fg, #{foreground})']")
         end
 
-        it "renders a pairing that clears the 4.5:1 AA floor" do
+        # The conversion's point: the colour is no longer a frozen hex *declaration*.
+        # The hex still appears INSIDE the var() fallback, so this pins the absence of
+        # the bare pre-#169 declaration (`background-color: #hex`), not the absence of
+        # the hex character — paired with the positive token assertion above so the
+        # element is proven to render (False Green #2).
+        it "no longer emits a frozen-hex background or foreground declaration for index #{index}" do
+          render_inline(described_class.new(name: name))
+
+          expect(page).to have_css("span[style*='background-color: var(--mds-avatar-#{index},']")
+          expect(page).not_to have_css("span[style*='background-color: #{background}']")
+          expect(page).not_to have_css("span[style*='color: #{foreground};']")
+        end
+
+        it "renders a fallback pairing that clears the 4.5:1 AA floor" do
           expect(MpiDesignSystem::ColorContrast.ratio(background, foreground)).to be >= 4.5
         end
       end
     end
 
-    it "no longer pins white on the seven backgrounds where it failed AA" do
+    it "derives a black fallback foreground on the seven backgrounds where white failed AA (#130)" do
       previously_failing = %w[#8B5CF6 #E8733A #2DA67E #D97706 #6366F1 #4EA8DE #22A06B]
 
       previously_failing.each do |background|
         index = described_class::COLORS.index(background)
         render_inline(described_class.new(name: names_by_palette_index.fetch(index)))
 
-        expect(page).to have_css("span[style*='background-color: #{background}']")
-        expect(page).to have_no_css("span[style*='color: #fff']")
+        expect(page).to have_css("span[style*='color: var(--mds-avatar-#{index}-fg, #000)']")
+        expect(page).to have_no_css("span[style*='-fg, #fff)']")
       end
     end
 
-    it "keeps white where it was already accessible, changing no more than it must" do
+    it "keeps a white fallback where white was already accessible, changing no more than it must" do
       %w[#2E75B6 #DC3545 #64748B].each do |background|
         index = described_class::COLORS.index(background)
         render_inline(described_class.new(name: names_by_palette_index.fetch(index)))
 
-        expect(page).to have_css("span[style*='color: #fff']")
+        expect(page).to have_css("span[style*='color: var(--mds-avatar-#{index}-fg, #fff)']")
       end
     end
 
-    it "derives an accessible foreground for the placeholder background too" do
+    it "derives an accessible fallback foreground for the placeholder background too" do
       render_inline(described_class.new)
 
-      expect(page).to have_css("span[style*='background-color: #6C757D']")
-      expect(page).to have_css("span[style*='color: #fff']")
+      expect(page).to have_css("span[style*='background-color: var(--mds-avatar-placeholder, #6C757D)']")
+      expect(page).to have_css("span[style*='color: var(--mds-avatar-placeholder-fg, #fff)']")
       expect(MpiDesignSystem::ColorContrast.ratio(described_class::PLACEHOLDER_COLOR, "#fff")).to be >= 4.5
     end
 
-    it "keeps the foreground accessible at every size" do
+    it "keeps the fallback foreground accessible at every size" do
       described_class::SIZES.each_key do |size|
         render_inline(described_class.new(name: "Mona Habib", size: size))
 
-        expect(page).to have_css("span[style*='color: #000']")
+        expect(page).to have_css("span[style*='color: var(--mds-avatar-7-fg, #000)']")
       end
     end
 
-    it "derives the foreground for links as well as spans" do
+    it "emits the token and fallback for links as well as spans" do
       render_inline(described_class.new(name: "Mona Habib", href: "/contacts/1"))
 
-      expect(page).to have_css("a[style*='background-color: #4EA8DE'][style*='color: #000']")
+      expect(page).to have_css("a[style*='background-color: var(--mds-avatar-7, #4EA8DE)'][style*='color: var(--mds-avatar-7-fg, #000)']")
     end
   end
 

@@ -85,8 +85,8 @@
     /* Table — geometry only after #151; the DataTable text colour comes from Bootstrap
        semantic utilities in the markup (text-body-secondary on th/title/meta, text-body
        on contact/account names), which paint the MPI palette via the :root overrides
-       above. Matches the standalone data-table.html. The avatar keeps its own hex
-       palette (AvatarCircle, out of scope). */
+       above. Matches the standalone data-table.html. Since #169 AvatarCircle paints runtime
+       tokens (var(--mds-avatar-N, <hex>)); this static mockup shows the light fallback. */
     th { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
     .avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; font-weight: 600; flex-shrink: 0; width: 32px; height: 32px; font-size: 11px; }
     .contact-name { font-weight: 600; font-size: 13px; }

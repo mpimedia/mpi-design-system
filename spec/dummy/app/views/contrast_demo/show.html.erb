@@ -214,8 +214,19 @@
             max_links: 7
           ) %>
     </div>
+    <%# Full indexed avatar set inside the dark wrapper (#169). Each avatar paints
+        var(--mds-avatar-<index>[-fg]); inside data-bs-theme="dark" the partial's dark
+        block wins, so contrast_spec can measure the dark tone and its foreground for
+        every index — not just one — plus the placeholder. %>
     <div id="dark-avatars">
-      <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: "Mona Habib") %>
+      <% avatar_names.each do |index, name| %>
+        <span data-dark-avatar-index="<%= index %>">
+          <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: name) %>
+        </span>
+      <% end %>
+      <span data-dark-avatar-placeholder>
+        <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new %>
+      </span>
     </div>
     <%# #150: the AvatarStack `+N` chip's separator ring is `var(--bs-body-bg)`. Inside
         this dark section `--bs-body-bg` resolves to Bootstrap's dark default (#212529),

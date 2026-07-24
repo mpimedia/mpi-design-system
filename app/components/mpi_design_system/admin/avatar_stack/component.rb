@@ -35,12 +35,18 @@ module MpiDesignSystem
           @size == :sm ? 28 : 40
         end
 
+        # The "+N" chip paints the shared avatar overflow custom property so it
+        # re-brands and adapts to dark mode with the rest of the palette once
+        # `_avatar.scss` is imported; the inline literal is the non-breaking fallback
+        # (today's neutral) for installs without the partial. (#169)
         def overflow_background_color
-          OVERFLOW_COLOR
+          "var(--mds-avatar-overflow, #{OVERFLOW_COLOR})"
         end
 
+        # Fallback is the #130-derived foreground for OVERFLOW_COLOR, kept AA-accessible
+        # with the partial absent. (#169)
         def overflow_foreground_color
-          MpiDesignSystem::ColorContrast.accessible_foreground(OVERFLOW_COLOR)
+          "var(--mds-avatar-overflow-fg, #{MpiDesignSystem::ColorContrast.accessible_foreground(OVERFLOW_COLOR)})"
         end
 
         def stack_label

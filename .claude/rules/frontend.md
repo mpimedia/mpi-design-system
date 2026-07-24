@@ -249,6 +249,22 @@ Rules:
   `background-color` is the exact defect #130 fixed in `AvatarCircle`, where 7 of 10 palette
   colours shipped below the AA floor (`#4EA8DE` at 2.63:1). Where the background *is* a theme
   colour, use `text-bg-*` and let Bootstrap derive it — do not reach for the Ruby helper
+- **To make an inline-hex palette re-brandable *and* theme-adaptive without breaking existing
+  installs, emit a runtime custom property with the hex as the CSS fallback:
+  `var(--mds-avatar-N, #hex)`.** Ruby cannot read a `_tokens.scss` value, so a frozen inline hex
+  cannot be restyled by a consumer; a bare `--mds-*` custom property would regress to nothing
+  anywhere the defining partial is not imported (the #155 trap). The `var(token, fallback)` form
+  solves both: importers of the (optional) partial get the adaptive `:root` /
+  `[data-bs-theme="dark"]` token, and installs without it keep painting the fallback — a
+  non-breaking upgrade. Because the token defeats Ruby's render-time derivation, pair each
+  background with a **declared** foreground token (`fg`/`fg-dark` in the source map) and verify it
+  against Bootstrap's live `color-contrast()` in *both* modes with `bin/verify-contrast-oracle`;
+  the fallback foreground stays the render-time `ColorContrast` derivation (still #130). Prove the
+  partial emits every role in both mode-blocks with `bin/verify-avatar-adaptive`, and the painted
+  value per mode in a browser (`contrast_spec`). Re-brand is by overriding the `--mds-*` /
+  `--mds-*-fg` **pair** at runtime (a background-only override desyncs the foreground). (Reference:
+  #169 `_avatar.scss` / `AvatarCircle` — the name-hash identity palette that has no Bootstrap
+  semantic equivalent.)
 - **Audit `opacity`, not just `color:`.** A declared pair can be AA-clean and still fail once
   faded: `ActiveFilterBar`'s remove button paired white with `opacity: 0.8`, compositing to an
   effective `#D5E3F0` at 3.71:1. A sweep that reads only `color:` declarations will not see it
