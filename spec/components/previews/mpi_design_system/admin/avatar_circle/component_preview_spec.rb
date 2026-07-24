@@ -16,12 +16,12 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::ComponentPreview, type: :co
       render_preview(:color_variety, from: described_class)
       html = page.native.to_html
 
-      # Counted, not merely detected. A `select` over "does this colour appear"
-      # would pass on a preview that rendered one colour ten times and called it
-      # variety — which is close to the bug this preview had before #130, where
-      # eight names covered only seven distinct colours.
-      occurrences = component::COLORS.to_h do |color|
-        [ color, html.scan("background-color: #{color}").length ]
+      # Counted, not merely detected. Each name hashes to its palette index, so the
+      # swatch paints `var(--mds-avatar-<index>, <hex>)`; a preview that rendered one
+      # colour ten times (close to the pre-#130 bug, where eight names covered only
+      # seven distinct colours) would not show all ten distinct tokens.
+      occurrences = component::COLORS.each_with_index.to_h do |color, index|
+        [ color, html.scan("var(--mds-avatar-#{index}, #{color})").length ]
       end
 
       expect(occurrences.values).to all(eq(1)),
@@ -31,20 +31,21 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::ComponentPreview, type: :co
     it "shows the accessible foreground derived for each background" do
       render_preview(:color_variety, from: described_class)
 
-      component::COLORS.each do |background|
+      component::COLORS.each_with_index do |background, index|
         foreground = MpiDesignSystem::ColorContrast.accessible_foreground(background)
 
         expect(page).to have_css(
-          "span[style*='background-color: #{background}'][style*='color: #{foreground}']"
+          "span[style*='background-color: var(--mds-avatar-#{index}, #{background})']" \
+          "[style*='color: var(--mds-avatar-#{index}-fg, #{foreground})']"
         )
       end
     end
 
-    it "demonstrates both derived foregrounds, not just one" do
+    it "demonstrates both derived fallback foregrounds, not just one" do
       render_preview(:color_variety, from: described_class)
 
-      expect(page).to have_css("span[style*='color: #000']")
-      expect(page).to have_css("span[style*='color: #fff']")
+      expect(page).to have_css("span[style*='-fg, #000)']")
+      expect(page).to have_css("span[style*='-fg, #fff)']")
     end
   end
 end

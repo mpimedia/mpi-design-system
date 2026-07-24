@@ -1,0 +1,7 @@
+<div data-bs-theme="dark" class="bg-body border rounded p-3">
+  <div class="d-flex gap-2 flex-wrap">
+    <% names.each do |name| %>
+      <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: name, size: :lg) %>
+    <% end %>
+  </div>
+</div>

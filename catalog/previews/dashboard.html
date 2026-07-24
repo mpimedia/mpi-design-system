@@ -114,11 +114,13 @@
     .activity-icon { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
     .activity-time { font-size: 11px; }
 
-    /* Follow-up queue — AvatarCircle (size :sm = 28px) owns the fixed identity hues (#169).
-       Foreground is DERIVED per background (ColorContrast.accessible_foreground), not a blanket
-       white: #fff is the default, and the light-background avatars carry an inline color:#000
-       override so each initials pair clears WCAG AA on its own circle — e.g. white on #4EA8DE is
-       only 2.63:1 (the #130 defect), so that avatar takes #000. */
+    /* Follow-up queue — AvatarCircle (size :sm = 28px). Since #169 the component paints
+       runtime tokens (var(--mds-avatar-N, <hex>)) so avatars re-brand and adapt to dark mode;
+       this static CDN mockup shows the light-mode fallback hex. Foreground is DERIVED per
+       background (ColorContrast for the fallback; oracle-verified tokens otherwise), not a
+       blanket white: light-background avatars take #000 so each initials pair clears WCAG AA on
+       its own circle — e.g. white on #4EA8DE is only 2.63:1 (the #130 defect), so that avatar
+       takes #000. */
     .avatar-sm { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; font-weight: 600; font-size: 11px; flex-shrink: 0; }
     .followup-status { font-size: 11px; font-weight: 500; white-space: nowrap; }
 

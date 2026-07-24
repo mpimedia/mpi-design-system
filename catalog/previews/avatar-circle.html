@@ -6,83 +6,115 @@
   <title>AvatarCircle — MPI Design System</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { padding: 32px; background: #fff; }
+    body { padding: 32px; }
     .preview-section { margin-bottom: 32px; }
-    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
+    .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--bs-secondary-color); margin-bottom: 8px; }
     .preview-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
     /*
       Static hand-authored snapshot — the live ViewComponent is canonical, and
       catalog/previews/screenshots/avatar-circle.png is stale pending regeneration.
 
-      There is deliberately NO `color` on `.avatar`. The foreground is derived
-      per background (issue #130): 7 of the 10 palette colors fail WCAG AA with
-      white text, so a blanket `color: #fff` here would render — and document —
-      the exact defect that was fixed. Each swatch carries `.fg-light` or
-      `.fg-dark` to match what the component derives.
+      Since #169 the avatar colour is a runtime custom property with the palette hex as a
+      CSS fallback: `var(--mds-avatar-<index>, <hex>)` and `-fg`. This mockup mirrors the
+      component's markup and defines those custom properties itself (the `:root` block below,
+      plus a `[data-bs-theme="dark"]` override) — this is also the "add a :root token block"
+      fix the frontend rules require for CDN mockups, extended to the avatar tokens so the
+      dark section actually adapts. There is deliberately NO blanket `color` on `.avatar`:
+      the foreground is DERIVED per background (issue #130 — 7 of the 10 light palette
+      colours fail WCAG AA with white text), carried by the `-fg` token / fallback.
     */
+    :root,
+    [data-bs-theme="light"] {
+      --mds-avatar-0: #2E75B6; --mds-avatar-0-fg: #fff;
+      --mds-avatar-1: #8B5CF6; --mds-avatar-1-fg: #000;
+      --mds-avatar-2: #E8733A; --mds-avatar-2-fg: #000;
+      --mds-avatar-3: #2DA67E; --mds-avatar-3-fg: #000;
+      --mds-avatar-4: #D97706; --mds-avatar-4-fg: #000;
+      --mds-avatar-5: #6366F1; --mds-avatar-5-fg: #000;
+      --mds-avatar-6: #DC3545; --mds-avatar-6-fg: #fff;
+      --mds-avatar-7: #4EA8DE; --mds-avatar-7-fg: #000;
+      --mds-avatar-8: #22A06B; --mds-avatar-8-fg: #000;
+      --mds-avatar-9: #64748B; --mds-avatar-9-fg: #fff;
+      --mds-avatar-placeholder: #6C757D; --mds-avatar-placeholder-fg: #fff;
+      --mds-avatar-overflow: #64748B; --mds-avatar-overflow-fg: #fff;
+    }
+    [data-bs-theme="dark"] {
+      --mds-avatar-0: #4280B9; --mds-avatar-0-fg: #000;
+      --mds-avatar-1: #8459E4; --mds-avatar-1-fg: #fff;
+      --mds-avatar-2: #D6784A; --mds-avatar-2-fg: #000;
+      --mds-avatar-3: #41B08B; --mds-avatar-3-fg: #000;
+      --mds-avatar-4: #DA831E; --mds-avatar-4-fg: #000;
+      --mds-avatar-5: #5F62DF; --mds-avatar-5-fg: #fff;
+      --mds-avatar-6: #CC4A56; --mds-avatar-6-fg: #000;
+      --mds-avatar-7: #58A2CE; --mds-avatar-7-fg: #000;
+      --mds-avatar-8: #37AF7D; --mds-avatar-8-fg: #000;
+      --mds-avatar-9: #707E91; --mds-avatar-9-fg: #000;
+      --mds-avatar-placeholder: #787F86; --mds-avatar-placeholder-fg: #000;
+      --mds-avatar-overflow: #707E91; --mds-avatar-overflow-fg: #000;
+    }
     .avatar {
       display: inline-flex; align-items: center; justify-content: center;
       border-radius: 50%; font-weight: 600;
     }
-    .fg-light { color: #fff; }
-    .fg-dark  { color: #000; }
+    /* One class per hash bucket, painting the token with the palette hex as fallback —
+       exactly what the live component emits inline. */
+    .avatar-c0 { background-color: var(--mds-avatar-0, #2E75B6); color: var(--mds-avatar-0-fg, #fff); }
+    .avatar-c1 { background-color: var(--mds-avatar-1, #8B5CF6); color: var(--mds-avatar-1-fg, #000); }
+    .avatar-c2 { background-color: var(--mds-avatar-2, #E8733A); color: var(--mds-avatar-2-fg, #000); }
+    .avatar-c3 { background-color: var(--mds-avatar-3, #2DA67E); color: var(--mds-avatar-3-fg, #000); }
+    .avatar-c4 { background-color: var(--mds-avatar-4, #D97706); color: var(--mds-avatar-4-fg, #000); }
+    .avatar-c5 { background-color: var(--mds-avatar-5, #6366F1); color: var(--mds-avatar-5-fg, #000); }
+    .avatar-c6 { background-color: var(--mds-avatar-6, #DC3545); color: var(--mds-avatar-6-fg, #fff); }
+    .avatar-c7 { background-color: var(--mds-avatar-7, #4EA8DE); color: var(--mds-avatar-7-fg, #000); }
+    .avatar-c8 { background-color: var(--mds-avatar-8, #22A06B); color: var(--mds-avatar-8-fg, #000); }
+    .avatar-c9 { background-color: var(--mds-avatar-9, #64748B); color: var(--mds-avatar-9-fg, #fff); }
     .avatar-sm { width: 28px; height: 28px; font-size: 11px; }
     .avatar-md { width: 40px; height: 40px; font-size: 14px; }
     .avatar-lg { width: 56px; height: 56px; font-size: 20px; }
     .avatar-xl { width: 80px; height: 80px; font-size: 28px; }
     .avatar-stack { display: flex; }
     .avatar-stack .avatar { margin-left: -8px; }
-    /* Only the overflow chip carries a separator border, matching the live component. */
-    .avatar-stack .avatar-overflow { border: 2px solid #fff; }
+    /* Only the overflow chip carries a separator border, matching the live component; it
+       tracks the surface via var(--bs-body-bg). */
+    .avatar-stack .avatar-overflow { background-color: var(--mds-avatar-overflow, #64748B); color: var(--mds-avatar-overflow-fg, #fff); border: 2px solid var(--bs-body-bg); }
     .avatar-stack .avatar:first-child { margin-left: 0; }
+    .palette-row .avatar { width: 40px; height: 40px; font-size: 14px; }
   </style>
 </head>
 <body>
   <h4 class="mb-1">AvatarCircle</h4>
-  <p class="text-muted small mb-4">Circular avatar with initials. Color is deterministic — derived from the contact's name.</p>
+  <p class="text-body-secondary small mb-4">Circular avatar with initials. Color is deterministic — derived from the contact's name — and, since #169, a runtime <code>--mds-avatar-*</code> token that adapts to <code>data-bs-theme</code>.</p>
 
   <div class="preview-section">
     <div class="preview-label">Deterministic Colors (name-based)</div>
     <div class="preview-row">
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-light" style="background-color: #2E75B6;">JS</div>
-        <span class="small">John Smith</span>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-dark" style="background-color: #8B5CF6;">AD</div>
-        <span class="small">Alice Dupont</span>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-dark" style="background-color: #E8733A;">MK</div>
-        <span class="small">Mika Koskinen</span>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-dark" style="background-color: #2DA67E;">RL</div>
-        <span class="small">Rachel Lee</span>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-dark" style="background-color: #D97706;">BW</div>
-        <span class="small">Brian Wang</span>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-dark" style="background-color: #6366F1;">SC</div>
-        <span class="small">Sara Cho</span>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-light" style="background-color: #DC3545;">EC</div>
-        <span class="small">Emily Chen</span>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-dark" style="background-color: #4EA8DE;">MH</div>
-        <span class="small">Mona Habib</span>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-dark" style="background-color: #22A06B;">HI</div>
-        <span class="small">Hana Ito</span>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <div class="avatar avatar-md fg-light" style="background-color: #64748B;">DK</div>
-        <span class="small">David Kim</span>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c0">JS</div><span class="small">John Smith</span></div>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c1">AD</div><span class="small">Alice Dupont</span></div>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c2">MK</div><span class="small">Mika Koskinen</span></div>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c3">RL</div><span class="small">Rachel Lee</span></div>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c4">BW</div><span class="small">Brian Wang</span></div>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c5">SC</div><span class="small">Sara Cho</span></div>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c6">EC</div><span class="small">Emily Chen</span></div>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c7">MH</div><span class="small">Mona Habib</span></div>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c8">HI</div><span class="small">Hana Ito</span></div>
+      <div class="d-flex align-items-center gap-2"><div class="avatar avatar-md avatar-c9">DK</div><span class="small">David Kim</span></div>
+    </div>
+  </div>
+
+  <div class="preview-section" data-bs-theme="dark">
+    <div class="bg-body border rounded p-3">
+      <div class="preview-label">Dark mode (#169) — each name takes its softened dark tone</div>
+      <div class="preview-row palette-row mb-0">
+        <div class="avatar avatar-c0">JS</div>
+        <div class="avatar avatar-c1">AD</div>
+        <div class="avatar avatar-c2">MK</div>
+        <div class="avatar avatar-c3">RL</div>
+        <div class="avatar avatar-c4">BW</div>
+        <div class="avatar avatar-c5">SC</div>
+        <div class="avatar avatar-c6">EC</div>
+        <div class="avatar avatar-c7">MH</div>
+        <div class="avatar avatar-c8">HI</div>
+        <div class="avatar avatar-c9">DK</div>
       </div>
     </div>
   </div>
@@ -90,33 +122,21 @@
   <div class="preview-section">
     <div class="preview-label">Sizes</div>
     <div class="preview-row">
-      <div class="text-center">
-        <div class="avatar avatar-sm fg-light" style="background-color: #2E75B6;">JS</div>
-        <div class="small text-muted mt-1">Small</div>
-      </div>
-      <div class="text-center">
-        <div class="avatar avatar-md fg-light" style="background-color: #2E75B6;">JS</div>
-        <div class="small text-muted mt-1">Default</div>
-      </div>
-      <div class="text-center">
-        <div class="avatar avatar-lg fg-light" style="background-color: #2E75B6;">JS</div>
-        <div class="small text-muted mt-1">Large</div>
-      </div>
-      <div class="text-center">
-        <div class="avatar avatar-xl fg-light" style="background-color: #2E75B6;">JS</div>
-        <div class="small text-muted mt-1">XL</div>
-      </div>
+      <div class="text-center"><div class="avatar avatar-sm avatar-c0">JS</div><div class="small text-body-secondary mt-1">Small</div></div>
+      <div class="text-center"><div class="avatar avatar-md avatar-c0">JS</div><div class="small text-body-secondary mt-1">Default</div></div>
+      <div class="text-center"><div class="avatar avatar-lg avatar-c0">JS</div><div class="small text-body-secondary mt-1">Large</div></div>
+      <div class="text-center"><div class="avatar avatar-xl avatar-c0">JS</div><div class="small text-body-secondary mt-1">XL</div></div>
     </div>
   </div>
 
   <div class="preview-section">
     <div class="preview-label">Avatar Stack</div>
     <div class="avatar-stack">
-      <div class="avatar avatar-md fg-light" style="background-color: #2E75B6;">JS</div>
-      <div class="avatar avatar-md fg-dark" style="background-color: #8B5CF6;">AD</div>
-      <div class="avatar avatar-md fg-dark" style="background-color: #E8733A;">MK</div>
-      <div class="avatar avatar-md fg-dark" style="background-color: #2DA67E;">RL</div>
-      <div class="avatar avatar-md avatar-overflow fg-light" style="background-color: #64748B; font-size: 11px;">+3</div>
+      <div class="avatar avatar-md avatar-c0">JS</div>
+      <div class="avatar avatar-md avatar-c1">AD</div>
+      <div class="avatar avatar-md avatar-c2">MK</div>
+      <div class="avatar avatar-md avatar-c3">RL</div>
+      <div class="avatar avatar-md avatar-overflow" style="font-size: 11px;">+3</div>
     </div>
   </div>
 
@@ -125,13 +145,13 @@
     <table class="table table-sm" style="max-width: 500px;">
       <tbody>
         <tr>
-          <td style="width: 48px;"><div class="avatar avatar-md fg-light" style="background-color: #2E75B6;">JS</div></td>
-          <td><strong>John Smith</strong><br><span class="text-muted small">Acme Studios</span></td>
+          <td style="width: 48px;"><div class="avatar avatar-md avatar-c0">JS</div></td>
+          <td><strong>John Smith</strong><br><span class="text-body-secondary small">Acme Studios</span></td>
           <td class="text-end"><span class="badge" style="color: #E8733A; background: #FEF3EC; border-radius: 999px;">Buyer</span></td>
         </tr>
         <tr>
-          <td style="width: 48px;"><div class="avatar avatar-md fg-dark" style="background-color: #8B5CF6;">AD</div></td>
-          <td><strong>Alice Dupont</strong><br><span class="text-muted small">Canal+ Distribution</span></td>
+          <td style="width: 48px;"><div class="avatar avatar-md avatar-c1">AD</div></td>
+          <td><strong>Alice Dupont</strong><br><span class="text-body-secondary small">Canal+ Distribution</span></td>
           <td class="text-end"><span class="badge" style="color: #2DA67E; background: #ECF8F4; border-radius: 999px;">Press</span></td>
         </tr>
       </tbody>

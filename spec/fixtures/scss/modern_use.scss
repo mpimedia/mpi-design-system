@@ -17,3 +17,8 @@ $info: $mpi-info;
 $body-color: $mpi-text;
 
 @import "bootstrap/scss/bootstrap";
+
+// Import the optional `avatar` partial so compat proves the `--mds-avatar-*` custom
+// properties emit on the MODERN `@use` pipeline too (compat greps for one). This fixture
+// does not configure the palette; it only proves emission on this pipeline. (#169)
+@import "mpi_design_system/avatar";

@@ -104,47 +104,112 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
 
   before { visit "/contrast_demo" }
 
-  describe "AvatarCircle" do
-    MpiDesignSystem::Admin::AvatarCircle::Component::COLORS.each_with_index do |palette_color, index|
-      it "paints palette index #{index} (#{palette_color}) at or above the 4.5:1 AA floor" do
-        selector = "[data-avatar-index='#{index}'] .rounded-circle"
+  # The avatar palette parsed from its source map (_tokens_values.scss), so this browser
+  # proof cannot drift from what `_avatar.scss` actually emits. getComputedStyle paints
+  # 6-digit upper hex, so foregrounds (#fff/#000) are normalised to that form. (#169)
+  avatar_palette = begin
+    tokens = File.read(File.expand_path("../../app/assets/stylesheets/mpi_design_system/_tokens_values.scss", __dir__))
+    body = tokens[/\$mpi-avatar-palette:\s*\((.*?)\)\s*!default;/m, 1]
+    full = lambda do |hex|
+      digits = hex.delete_prefix("#")
+      digits = digits.chars.map { |char| char * 2 }.join if digits.length == 3
+      "##{digits.upcase}"
+    end
+    body.scan(/(\w+):\s*\(\s*bg:\s*(#\h+),\s*fg:\s*(#\h+),\s*bg-dark:\s*(#\h+),\s*fg-dark:\s*(#\h+)\s*\)/)
+        .to_h do |role, bg, fg, bg_dark, fg_dark|
+          [ role, { bg: full.call(bg), fg: full.call(fg), bg_dark: full.call(bg_dark), fg_dark: full.call(fg_dark) } ]
+        end
+  end
 
+  # #169 moved the palette to `var(--mds-avatar-<index>[-fg], <fallback>)`. With the
+  # partial imported (dummy application.scss), the token wins over the fallback, so the
+  # browser paints the `:root` value in light mode and the `[data-bs-theme="dark"]` value
+  # in dark mode. This proves BOTH — pinning the painted foreground per mode, not merely
+  # the ratio (the #149/#150 lesson: a ratio-only check false-greens if the fg class stops
+  # applying and inherited body text happens to still clear AA).
+  describe "AvatarCircle" do
+    (0..9).each do |index|
+      role = avatar_palette.fetch(index.to_s)
+
+      it "paints index #{index} in light mode from the :root token — palette bg + derived fg, AA-clear" do
+        selector = "[data-avatar-index='#{index}'] .rounded-circle"
         expect(page).to have_css(selector)
         measured, foreground, background = ratio_for(selector)
 
-        # The browser must have painted the palette background we expect — otherwise
-        # a passing ratio could just mean the element rendered transparent.
-        expect(background).to eq(palette_color.upcase)
-        expect(measured).to be >= 4.5,
-          "expected AA contrast for #{foreground} on #{background}, got #{measured.round(2)}:1"
+        expect(background).to eq(role[:bg])
+        expect(foreground).to eq(role[:fg])
+        expect(measured).to be >= 4.5, "index #{index} light: #{foreground} on #{background} = #{measured.round(2)}:1"
+      end
+
+      it "paints index #{index} in dark mode from the dark override — adapted bg + derived fg, AA-clear" do
+        selector = "[data-dark-avatar-index='#{index}'] .rounded-circle"
+        expect(page).to have_css(selector)
+        measured, foreground, background = ratio_for(selector)
+
+        expect(background).to eq(role[:bg_dark])
+        expect(foreground).to eq(role[:fg_dark])
+        expect(measured).to be >= 4.5, "index #{index} dark: #{foreground} on #{background} = #{measured.round(2)}:1"
+        # The token adapted: the dark surface is not merely the light fallback repainted.
+        expect(role[:bg_dark]).not_to eq(role[:bg])
       end
     end
 
-    it "paints the placeholder above the AA floor" do
-      measured, _foreground, background = ratio_for("[data-avatar-placeholder] .rounded-circle")
+    it "paints the placeholder above the AA floor in both colour modes" do
+      role = avatar_palette.fetch("placeholder")
 
-      expect(background).to eq("#6C757D")
-      expect(measured).to be >= 4.5
+      _light_ratio, light_fg, light_bg = ratio_for("[data-avatar-placeholder] .rounded-circle")
+      expect(light_bg).to eq(role[:bg])
+      expect(light_fg).to eq(role[:fg])
+
+      dark_ratio, dark_fg, dark_bg = ratio_for("[data-dark-avatar-placeholder] .rounded-circle")
+      expect(dark_bg).to eq(role[:bg_dark])
+      expect(dark_fg).to eq(role[:fg_dark])
+      expect(dark_ratio).to be >= 4.5
     end
 
-    it "paints dark initials on the accent color that was the worst failure at 2.63:1" do
+    it "keeps dark initials on the accent that was #130's worst failure (2.63:1), and adapts its surface in dark" do
       index = MpiDesignSystem::Admin::AvatarCircle::Component::COLORS.index("#4EA8DE")
 
       expect(computed("[data-avatar-index='#{index}'] .rounded-circle", "color")).to eq("#000000")
+      expect(computed("[data-dark-avatar-index='#{index}'] .rounded-circle", "background"))
+        .to eq(avatar_palette.fetch(index.to_s)[:bg_dark])
     end
 
-    it "keeps white where white already passed, so nothing changed unnecessarily" do
+    it "keeps white where white already passed in light mode, so nothing changed unnecessarily" do
       index = MpiDesignSystem::Admin::AvatarCircle::Component::COLORS.index("#2E75B6")
 
       expect(computed("[data-avatar-index='#{index}'] .rounded-circle", "color")).to eq("#FFFFFF")
     end
+
+    # F1 (#169): custom properties inherit, so a `[data-bs-theme="light"]` section nested
+    # inside a dark app would inherit the ancestor's DARK avatar tokens unless the partial
+    # emits the light palette on `[data-bs-theme="light"]` too (Bootstrap's `:root,
+    # [data-bs-theme="light"]` pattern). This nested-light avatar (index 7) must paint the
+    # LIGHT tone #4EA8DE, not the dark #58A2CE — the whole point of the grouped selector.
+    it "resets to the light palette in a light section nested inside the dark app" do
+      role = avatar_palette.fetch("7")
+
+      expect(computed("#nested-light-avatar .rounded-circle", "background")).to eq(role[:bg])
+      expect(role[:bg]).not_to eq(role[:bg_dark])
+    end
   end
 
   describe "AvatarStack overflow chip" do
-    it "paints the +N chip above the AA floor" do
-      measured, _foreground, background = ratio_for("#stack span[aria-hidden='true']")
+    it "paints the +N chip above the AA floor in light mode (palette bg + derived fg)" do
+      role = avatar_palette.fetch("overflow")
+      measured, foreground, background = ratio_for("#stack span[aria-hidden='true']")
 
-      expect(background).to eq(MpiDesignSystem::Admin::AvatarStack::Component::OVERFLOW_COLOR)
+      expect(background).to eq(role[:bg])
+      expect(foreground).to eq(role[:fg])
+      expect(measured).to be >= 4.5
+    end
+
+    it "paints the +N chip's adapted dark tone above the AA floor under data-bs-theme='dark'" do
+      role = avatar_palette.fetch("overflow")
+      measured, foreground, background = ratio_for("#dark-stack span[aria-hidden='true']")
+
+      expect(background).to eq(role[:bg_dark])
+      expect(foreground).to eq(role[:fg_dark])
       expect(measured).to be >= 4.5
     end
 

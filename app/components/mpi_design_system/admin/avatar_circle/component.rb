@@ -69,24 +69,46 @@ module MpiDesignSystem
             "width: #{size[:dimension]}px",
             "height: #{size[:dimension]}px",
             "font-size: #{size[:font_size]}px",
-            "background-color: #{background_color}",
-            "color: #{foreground_color}",
+            "background-color: #{background_value}",
+            "color: #{foreground_value}",
             "text-decoration: none",
             "line-height: 1"
           ].join("; ")
         end
 
-        def background_color
+        # The colour is a runtime custom property so a consuming app can re-brand it
+        # (and dark mode can adapt) once `_avatar.scss` is imported — the token wins
+        # over the fallback. The inline literal is the fallback that keeps existing
+        # installs, which do not import that partial, painting today's palette: the
+        # change is non-breaking. (#169)
+        def background_value
+          "var(--mds-avatar-#{color_key}, #{fallback_background})"
+        end
+
+        # Paired with the background as a runtime custom property; the fallback is the
+        # derived foreground (below), so it stays AA-accessible against the fallback
+        # background even with the partial absent. (#169)
+        def foreground_value
+          "var(--mds-avatar-#{color_key}-fg, #{fallback_foreground})"
+        end
+
+        # `placeholder` for the missing-name case, otherwise the 0-based hash bucket —
+        # the suffix of the `--mds-avatar-*` custom property this avatar paints.
+        def color_key
+          placeholder? ? "placeholder" : (@name.to_s.bytes.sum % COLORS.length)
+        end
+
+        def fallback_background
           placeholder? ? PLACEHOLDER_COLOR : COLORS[@name.to_s.bytes.sum % COLORS.length]
         end
 
         # Derived rather than pinned. `COLORS` mixes brand, semantic and tag-group
         # tokens with a wide luminance spread, so no single foreground is accessible
         # against all of them: white fails 7 of the 10, black fails the other 3.
-        # Deriving per background is what keeps every avatar at AA, and keeps it
-        # there if the palette ever changes. (#130)
-        def foreground_color
-          MpiDesignSystem::ColorContrast.accessible_foreground(background_color)
+        # Deriving per background keeps the fallback at AA, and keeps it there if the
+        # palette ever changes. (#130, still the render-time source for the #169 fallback)
+        def fallback_foreground
+          MpiDesignSystem::ColorContrast.accessible_foreground(fallback_background)
         end
 
         def initials

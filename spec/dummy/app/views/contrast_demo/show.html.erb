@@ -214,7 +214,25 @@
             max_links: 7
           ) %>
     </div>
+    <%# Full indexed avatar set inside the dark wrapper (#169). Each avatar paints
+        var(--mds-avatar-<index>[-fg]); inside data-bs-theme="dark" the partial's dark
+        block wins, so contrast_spec can measure the dark tone and its foreground for
+        every index — not just one — plus the placeholder. %>
     <div id="dark-avatars">
+      <% avatar_names.each do |index, name| %>
+        <span data-dark-avatar-index="<%= index %>">
+          <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: name) %>
+        </span>
+      <% end %>
+      <span data-dark-avatar-placeholder>
+        <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new %>
+      </span>
+    </div>
+    <%# F1 (#169): a light section NESTED inside this dark wrapper must RESET to the light
+        avatar palette, not inherit the dark ancestor's --mds-avatar-* tokens. Because
+        `_avatar.scss` emits the light values on `:root, [data-bs-theme="light"]` (Bootstrap's
+        own pattern), index 7 here must paint its LIGHT tone (#4EA8DE), not the dark #58A2CE. %>
+    <div data-bs-theme="light" id="nested-light-avatar">
       <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: "Mona Habib") %>
     </div>
     <%# #150: the AvatarStack `+N` chip's separator ring is `var(--bs-body-bg)`. Inside

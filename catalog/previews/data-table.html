@@ -10,8 +10,9 @@
     /* Stock CDN Bootstrap ships indigo #0D6EFD and its own success/warning; the engine
        compiles Bootstrap with MPI's tokens. After #151 the dots use `bg-#{sem}` and the
        account link uses `--bs-link-color`, so without these overrides they would paint
-       Bootstrap's palette and contradict the component. Mirrors _tokens.scss. Avatars keep
-       hardcoded hex — AvatarCircle is a separate component and out of scope here. */
+       Bootstrap's palette and contradict the component. Mirrors _tokens.scss. Since #169
+       AvatarCircle paints runtime tokens (var(--mds-avatar-N, <hex>)); this static mockup
+       shows the light fallback hex. */
     :root {
       --bs-primary: #2E75B6;
       --bs-primary-rgb: 46, 117, 182;
@@ -31,7 +32,7 @@
     body { padding: 32px; }
     .preview-section { margin-bottom: 40px; }
     .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    /* Avatar keeps its own hex palette (AvatarCircle, out of scope). */
+    /* AvatarCircle paints runtime --mds-avatar-* tokens since #169; this mockup shows the light fallback. */
     .avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; font-weight: 600; flex-shrink: 0; }
     .avatar-md { width: 36px; height: 36px; font-size: 13px; }
     /* th: classes `text-body-secondary border-bottom`; inline --bs-border-width: 2px

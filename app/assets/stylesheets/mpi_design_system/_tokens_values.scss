@@ -60,3 +60,31 @@ $mpi-engagement-email: #2E75B6 !default;
 $mpi-engagement-meeting: #8B5CF6 !default;
 $mpi-engagement-call: #16A34A !default;
 $mpi-engagement-note: #E8913A !default;
+
+// Avatar identity palette (#169) — the deterministic name-hash palette
+// AvatarCircle paints, plus the placeholder and the AvatarStack "+N" overflow chip.
+// This map is the INTERNAL source for the `--mds-avatar-*` runtime custom properties
+// emitted by `_avatar.scss` — NOT a consumer API; its shape may change. Each role pairs
+// a background with the foreground Bootstrap's `color-contrast()` derives for it
+// (AA-verified by `bin/verify-contrast-oracle`), plus a `-dark` counterpart for
+// `data-bs-theme="dark"`.
+//
+// Re-brand by overriding the runtime custom properties in the consuming app's OWN CSS
+// (`:root { --mds-avatar-3: #…; --mds-avatar-3-fg: #… }`) — the one supported path, working
+// on both SCSS pipelines with no recompile. Override a background and its foreground
+// together (an atomic pair): the engine cannot re-derive a foreground for a value you
+// change. Do not reconfigure this map to re-brand — treat it as internal.
+$mpi-avatar-palette: (
+  0:           (bg: #2E75B6, fg: #fff, bg-dark: #4280B9, fg-dark: #000),
+  1:           (bg: #8B5CF6, fg: #000, bg-dark: #8459E4, fg-dark: #fff),
+  2:           (bg: #E8733A, fg: #000, bg-dark: #D6784A, fg-dark: #000),
+  3:           (bg: #2DA67E, fg: #000, bg-dark: #41B08B, fg-dark: #000),
+  4:           (bg: #D97706, fg: #000, bg-dark: #DA831E, fg-dark: #000),
+  5:           (bg: #6366F1, fg: #000, bg-dark: #5F62DF, fg-dark: #fff),
+  6:           (bg: #DC3545, fg: #fff, bg-dark: #CC4A56, fg-dark: #000),
+  7:           (bg: #4EA8DE, fg: #000, bg-dark: #58A2CE, fg-dark: #000),
+  8:           (bg: #22A06B, fg: #000, bg-dark: #37AF7D, fg-dark: #000),
+  9:           (bg: #64748B, fg: #fff, bg-dark: #707E91, fg-dark: #000),
+  placeholder: (bg: #6C757D, fg: #fff, bg-dark: #787F86, fg-dark: #000),
+  overflow:    (bg: #64748B, fg: #fff, bg-dark: #707E91, fg-dark: #000)
+) !default;

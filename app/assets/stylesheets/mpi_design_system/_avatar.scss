@@ -1,0 +1,45 @@
+// MPI Design System — Avatar identity custom properties (#169)
+//
+// Emits the `--mds-avatar-*` runtime custom properties that AvatarCircle and the
+// AvatarStack "+N" chip paint via `var(--mds-avatar-N, <fallback>)`. Two blocks —
+// a light `:root, [data-bs-theme="light"]` and a `[data-bs-theme="dark"]` override — so avatars follow
+// Bootstrap's colour mode. Values come from `$mpi-avatar-palette` (tokens_values);
+// there is NO Bootstrap dependency (the foregrounds are the palette's own
+// `color-contrast()`-derived tokens, not computed here), so this partial compiles
+// standalone and may be imported before or after Bootstrap.
+//
+// This import is OPTIONAL. Without it, AvatarCircle still renders: the component
+// emits `var(--mds-avatar-N, <light-hex>)`, so the inline fallback paints today's
+// light palette and existing installs are unaffected. Import it to get
+// theme-adaptive (and re-brandable) avatars.
+//
+// Re-brand by overriding the custom properties in your OWN CSS — the one supported path,
+// working on BOTH SCSS pipelines with no recompile. Override a background and its
+// foreground together (an atomic pair the engine cannot re-derive at runtime):
+//
+//   :root { --mds-avatar-3: #6D28D9; --mds-avatar-3-fg: #fff; }
+//
+// `$mpi-avatar-palette` (tokens_values) is an INTERNAL source map, not a consumer API —
+// its shape may change — so re-brand via the runtime custom properties above, never by
+// reconfiguring the map.
+@use "sass:map";
+@use "tokens_values" as tokens;
+
+// Light values on BOTH `:root` and `[data-bs-theme="light"]`, mirroring Bootstrap's own
+// `:root, [data-bs-theme="light"]` pattern. Custom properties inherit, so without the
+// explicit `light` selector a `<section data-bs-theme="light">` nested inside a dark app
+// would inherit the ancestor's DARK avatar tokens instead of resetting to light.
+:root,
+[data-bs-theme="light"] {
+  @each $role, $colors in tokens.$mpi-avatar-palette {
+    --mds-avatar-#{$role}: #{map.get($colors, bg)};
+    --mds-avatar-#{$role}-fg: #{map.get($colors, fg)};
+  }
+}
+
+[data-bs-theme="dark"] {
+  @each $role, $colors in tokens.$mpi-avatar-palette {
+    --mds-avatar-#{$role}: #{map.get($colors, bg-dark)};
+    --mds-avatar-#{$role}-fg: #{map.get($colors, fg-dark)};
+  }
+}

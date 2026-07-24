@@ -102,6 +102,7 @@ Then import the MPI tokens in `application.scss` using **one** of the two entry 
   @import "mpi_design_system/tokens";
   @import "bootstrap/scss/bootstrap";
   @import "mpi_design_system/nav_bar";
+  @import "mpi_design_system/avatar";
   ```
 
 - **Modern Sass-module pipeline** — `@use` the dependency-free values module and feed the
@@ -117,6 +118,7 @@ Then import the MPI tokens in `application.scss` using **one** of the two entry 
   $body-color: mpi.$mpi-text;
   @import "bootstrap/scss/bootstrap";
   @import "mpi_design_system/nav_bar";
+  @import "mpi_design_system/avatar";
   ```
 
   Map every token you rely on — Bootstrap keeps its own default for any you skip. In
@@ -127,6 +129,15 @@ Then import the MPI tokens in `application.scss` using **one** of the two entry 
   Bootstrap: it resolves entirely from Bootstrap's runtime CSS custom properties
   (`var(--bs-*)`) — it has no compile-time Sass-variable dependency of its own — so it is
   theme-adaptive and follows `data-bs-theme` automatically.
+
+  The `avatar` partial (`AvatarCircle` / `AvatarStack`) is **optional**: it emits the
+  `--mds-avatar-*` custom properties that make avatar colours theme-adaptive and
+  re-brandable. Without it, avatars fall back to the inline light palette and still render
+  correctly — so upgrading is non-breaking — they simply do not adapt to `data-bs-theme`.
+  It has no Bootstrap dependency, so import order is not load-bearing. Re-brand an avatar by
+  overriding its custom-property pair in your own CSS
+  (`:root { --mds-avatar-3: #6D28D9; --mds-avatar-3-fg: #fff; }` — background and foreground
+  together).
 
 ### 4. Use a component
 

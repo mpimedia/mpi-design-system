@@ -72,21 +72,23 @@ RSpec.describe MpiDesignSystem::Admin::AvatarStack::Component, type: :component 
     end
   end
 
-  # The "+N" chip hand-copied AvatarCircle's markup, including a pinned
-  # `color: #fff`, so it would not have inherited #130's fix. Its foreground is now
-  # derived from the same helper (resolves to white, 4.76:1 — visually unchanged).
-  # #150 additionally converts the separator ring from a pinned `#fff` to
+  # The "+N" chip hand-copied AvatarCircle's markup, including a pinned `color: #fff`,
+  # so it would not have inherited #130's fix. Since #169 its background and foreground
+  # are the shared avatar overflow custom properties, var(--mds-avatar-overflow[-fg], …),
+  # so they re-brand and adapt to dark mode with the palette; the inline fallback is the
+  # #130-derived AA pair (white on #64748B, 4.76:1 — visually unchanged without the
+  # partial). #150 additionally converts the separator ring from a pinned `#fff` to
   # `var(--bs-body-bg)` so it tracks the surface in either colour mode.
-  describe "overflow chip (#130 contrast + #150 adaptive ring)" do
+  describe "overflow chip (#169 token + #130 contrast + #150 adaptive ring)" do
     let(:names) { [ "Alice", "Bob", "Carol", "Dave", "Eve", "Frank" ] }
 
     # Matches 3-, 4-, 6- and 8-digit CSS hex; trailing (?!\h) stops over-matching.
     let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
 
-    it "renders the overflow chip with the neutral background and derived foreground" do
+    it "paints the overflow chip from the shared overflow token with the neutral fallback" do
       render_inline(described_class.new(names: names, max: 4))
 
-      expect(page).to have_css("span[style*='background-color: #64748B'][style*='color: #fff']", text: "+2")
+      expect(page).to have_css("span[style*='background-color: var(--mds-avatar-overflow, #64748B)'][style*='color: var(--mds-avatar-overflow-fg, #fff)']", text: "+2")
     end
 
     it "renders a pairing that clears the 4.5:1 AA floor" do
@@ -111,7 +113,28 @@ RSpec.describe MpiDesignSystem::Admin::AvatarStack::Component, type: :component 
     it "renders the chip at the small size too" do
       render_inline(described_class.new(names: names, max: 4, size: :sm))
 
-      expect(page).to have_css("span[style*='width: 28px'][style*='color: #fff']", text: "+2")
+      expect(page).to have_css("span[style*='width: 28px'][style*='color: var(--mds-avatar-overflow-fg, #fff)']", text: "+2")
+    end
+
+    # Exact-match the whole chip style at both sizes, so a load-bearing non-colour
+    # declaration with no Bootstrap equivalent (geometry, the `2px solid var(--bs-body-bg)`
+    # separator ring, `line-height: 1`) cannot be silently dropped under the substring pins
+    # above (the "pin the complete surviving inline style" lesson). render_inline emits the
+    # style verbatim; any dropped/added/reordered declaration reddens on purpose.
+    {
+      md: "40px",
+      sm: "28px"
+    }.each do |size, dimension|
+      it "pins the full chip style at #{size} size" do
+        render_inline(described_class.new(names: names, max: 4, size: size))
+
+        expect(page).to have_css(
+          "span[style='width: #{dimension}; height: #{dimension}; font-size: 11px; " \
+          "background-color: var(--mds-avatar-overflow, #64748B); color: var(--mds-avatar-overflow-fg, #fff); " \
+          "border: 2px solid var(--bs-body-bg); line-height: 1;']",
+          text: "+2"
+        )
+      end
     end
 
     # AvatarStack's own only hex is the chip's background/foreground pair — its visible
@@ -138,8 +161,8 @@ RSpec.describe MpiDesignSystem::Admin::AvatarStack::Component, type: :component 
       hex_bearing = declarations.select { |declaration| declaration.match?(hex_literal) }
 
       expect(hex_bearing).to contain_exactly(
-        "background-color: #{background}",
-        "color: #{foreground}"
+        "background-color: var(--mds-avatar-overflow, #{background})",
+        "color: var(--mds-avatar-overflow-fg, #{foreground})"
       )
     end
   end

@@ -8,10 +8,20 @@ Design decisions for shared component behavior across MPI applications.
 
 - **Color assignment:** Deterministic — derived from the contact's name using a hash function
 - No manual color assignment; colors are consistent for the same name across views
+- **Runtime tokens (#169):** the colour is emitted as `var(--mds-avatar-<index>, <hex>)` /
+  `var(--mds-avatar-<index>-fg, <hex>)`. The optional `_avatar.scss` partial defines these custom
+  properties in a light `:root, [data-bs-theme="light"]` block and a `[data-bs-theme="dark"]` override (12 roles:
+  `0`–`9`, `placeholder`, `overflow`), so avatars are **theme-adaptive** and **re-brandable**.
+  Without the partial the inline hex fallback paints today's palette (non-breaking). The palette
+  source of truth is `$mpi-avatar-palette` in `_tokens_values.scss`
 
 ### Implementation Note
 
-Use a deterministic hash of the contact's full name to select from a fixed palette. This ensures the same contact always gets the same avatar color without storing color assignments.
+Use a deterministic hash of the contact's full name to select from a fixed palette (the hash
+picks an *index*; the colour itself is the `--mds-avatar-<index>` token). This ensures the same
+contact always gets the same avatar color without storing color assignments. Re-brand by
+overriding a `--mds-avatar-N` / `--mds-avatar-N-fg` pair together in your own CSS — never the
+background alone, since the engine cannot re-derive a foreground you change at runtime.
 
 ## Badge
 

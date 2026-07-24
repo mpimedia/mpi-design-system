@@ -3,5 +3,9 @@
 // Proves `_tokens.scss` still overrides Bootstrap after the `tokens_values`
 // split: the MPI palette must reach Bootstrap and emit `#2e75b6` for the
 // primary color. Compiled by the `build:css:compat` yarn script. (Issue #103.)
+//
+// Also imports the optional `avatar` partial so compat proves the `--mds-avatar-*`
+// custom properties emit on the LEGACY pipeline (compat greps for one). (#169)
 @import "mpi_design_system/tokens";
 @import "bootstrap/scss/bootstrap";
+@import "mpi_design_system/avatar";

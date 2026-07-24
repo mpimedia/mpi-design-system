@@ -310,10 +310,10 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
       )
     end
 
-    # DataTable embeds AvatarCircle, which legitimately still emits inline hex
-    # (`background-color: #22A06B; color: #000` from #130 — out of scope for #151).
-    # Strip ONLY that subtree so the scan proves DataTable's OWN markup carries no frozen
-    # colour, not the avatar's. AvatarCircle's default variant renders no dedicated class
+    # DataTable embeds AvatarCircle, which still emits inline colour — since #169 as a
+    # token reference with a hex fallback (`background-color: var(--mds-avatar-N, #22A06B)`),
+    # so the strip is still required. Strip ONLY that subtree so the scan proves DataTable's
+    # OWN markup carries no frozen colour, not the avatar's. AvatarCircle's default variant renders no dedicated class
     # (its root is `d-inline-flex align-items-center justify-content-center rounded-circle
     # fw-semibold`), so we pin its root by the `rounded-circle` + `justify-content-center`
     # pair — narrower than bare `.rounded-circle`, a generic Bootstrap utility a future
