@@ -14,12 +14,18 @@
 # at all — with neither Bootstrap nor app config in scope — proves the partial is
 # Bootstrap-free. This script then proves, at per-declaration resolution:
 #
-#   1. COVERAGE — the light `:root` and the dark block EACH declare
-#      `--mds-avatar-<role>` and `--mds-avatar-<role>-fg` for every role in
-#      `$mpi-avatar-palette` (the source of truth), and nothing extra.
+#   0. STRONG NEGATIVE — the compiled partial contains ONLY the light group selector
+#      (`:root, [data-bs-theme="light"]`, mirroring Bootstrap so a nested light section does
+#      not inherit the dark ancestor's tokens) and the `[data-bs-theme="dark"]` override, and
+#      every declaration in them is a `--mds-avatar-*` custom property. A stray rule
+#      (`.mds-avatar--nav { color: red }`) or a non-token declaration — which could override
+#      the component's accessible inline foreground — reds here rather than shipping green.
+#   1. COVERAGE — the light group and the dark block EACH declare `--mds-avatar-<role>` and
+#      `--mds-avatar-<role>-fg` for every role in `$mpi-avatar-palette` (the source of
+#      truth), and nothing extra.
 #   2. BINDING — each declared value equals the palette's value for that role AND mode
-#      (`bg`/`fg` in `:root`, `bg-dark`/`fg-dark` in the dark block). A partial loop bug
-#      that emitted the light value in the dark block — the exact "dark is a copy of
+#      (`bg`/`fg` in the light group, `bg-dark`/`fg-dark` in the dark block). A partial loop
+#      bug that emitted the light value in the dark block — the exact "dark is a copy of
 #      light" regression — reds here.
 #   3. ADAPTIVITY — every role's background actually CHANGES between the two modes, so
 #      a dark block that merely re-emitted the light palette cannot pass.
@@ -27,7 +33,9 @@
 # The expected values are parsed from `_tokens_values.scss`, not frozen here, so the
 # guard cannot drift from the palette source. Run via `yarn build:css:compat`. Prove it
 # by breaking it (per .claude/rules/frontend.md) — each mutation reds a DIFFERENT check,
-# and the three below were confirmed by execution:
+# and all were confirmed by execution:
+#   * add `.mds-avatar--nav { color: red }` to _avatar.scss -> STRONG NEGATIVE (UNEXPECTED RULE)
+#   * add a non-token declaration to a mode block -> STRONG NEGATIVE (STRAY DECL)
 #   * drop the `[data-bs-theme="dark"]` block from _avatar.scss -> COVERAGE (MISSING BLOCK)
 #   * change the dark `@each` to read `bg`/`fg` instead of `bg-dark`/`fg-dark` -> BINDING
 #     (WRONG (dark)) on every role. NOT ADAPTIVITY — that check compares the palette's own
@@ -61,26 +69,39 @@ map_body.scan(/(\w+):\s*\(\s*bg:\s*(#\h+),\s*fg:\s*(#\h+),\s*bg-dark:\s*(#\h+),\
 end
 abort "verify-avatar-adaptive: parsed 0 roles from the palette — the map format changed" if palette.empty?
 
-# --- Parse the compiled CSS into block => { custom-property => value }. Only the
-#     `:root` and `[data-bs-theme=dark]` blocks are of interest (sass drops the quotes
-#     around the attribute value).
+# --- Parse the compiled CSS into every rule block: normalised-selector => {prop => value}.
+#     Sass drops the quotes around the attribute value and may or may not space the group
+#     comma, so normalise whitespace for matching. The partial emits the light palette on a
+#     GROUPED selector (`:root, [data-bs-theme="light"]`) mirroring Bootstrap, and the dark
+#     override on `[data-bs-theme="dark"]`.
 css = File.read(CSS)
-blocks = {}
-css.scan(/([^{}]+)\{([^}]*)\}/m).each do |selector, body|
-  key = selector.strip
-  next unless [ ":root", "[data-bs-theme=dark]" ].include?(key)
+LIGHT_SELECTOR = ":root, [data-bs-theme=light]"
+DARK_SELECTOR = "[data-bs-theme=dark]"
 
+rule_blocks = css.scan(/([^{}]+)\{([^}]*)\}/m).map do |selector, body|
+  normalised = selector.strip.gsub(/\s*,\s*/, ", ").gsub(/\s+/, " ")
   declarations = body.split(";").map(&:strip).reject(&:empty?).each_with_object({}) do |decl, acc|
     property, value = decl.split(":", 2)
     acc[property.to_s.strip] = value.to_s.strip
   end
-  (blocks[key] ||= {}).merge!(declarations)
+  [ normalised, declarations ]
 end
 
 failures = []
 
-%w[:root [data-bs-theme=dark]].each do |block|
-  failures << "MISSING BLOCK     #{block} — the partial did not emit this mode" unless blocks.key?(block)
+# 0. STRONG NEGATIVE (selectors) — the compiled partial must contain ONLY the two approved
+#    mode blocks. A stray rule (e.g. `.mds-avatar--nav { color: red !important }`) that could
+#    override the component's accessible inline foreground reds here rather than shipping green.
+allowed = [ LIGHT_SELECTOR, DARK_SELECTOR ]
+rule_blocks.each do |selector, _declarations|
+  next if allowed.include?(selector)
+
+  failures << "UNEXPECTED RULE   `#{selector}` — the partial may emit only `#{LIGHT_SELECTOR}` and `#{DARK_SELECTOR}`"
+end
+
+blocks = rule_blocks.to_h
+allowed.each do |selector|
+  failures << "MISSING BLOCK     #{selector} — the partial did not emit this mode" unless blocks.key?(selector)
 end
 
 unless failures.empty?
@@ -89,8 +110,19 @@ unless failures.empty?
   exit 1
 end
 
-light = blocks.fetch(":root")
-dark = blocks.fetch("[data-bs-theme=dark]")
+light = blocks.fetch(LIGHT_SELECTOR)
+dark = blocks.fetch(DARK_SELECTOR)
+
+# STRONG NEGATIVE (declarations) — every declaration in both blocks must be a
+# `--mds-avatar-*` custom property. Anything else (a stray `color:`, a raw hex on some other
+# property) is rejected, matching bin/verify-nav-bar-adaptive's per-property strong negative.
+{ LIGHT_SELECTOR => light, DARK_SELECTOR => dark }.each do |selector, declarations|
+  declarations.each_key do |property|
+    next if property.start_with?("--mds-avatar-")
+
+    failures << "STRAY DECL        `#{selector} { #{property} }` — only --mds-avatar-* custom properties are allowed"
+  end
+end
 
 def eq_hex?(one, other)
   one.to_s.downcase == other.to_s.downcase
@@ -105,12 +137,12 @@ palette.each do |role, colours|
 
   # 1/2. COVERAGE + BINDING, light
   if !light.key?(bg_prop)
-    failures << "MISSING (light)   #{bg_prop} — role absent from :root"
+    failures << "MISSING (light)   #{bg_prop} — role absent from the light block"
   elsif !eq_hex?(light[bg_prop], colours[:bg])
     failures << "WRONG (light)     #{bg_prop}: #{light[bg_prop]} — expected #{colours[:bg]}"
   end
   if !light.key?(fg_prop)
-    failures << "MISSING (light)   #{fg_prop} — role absent from :root"
+    failures << "MISSING (light)   #{fg_prop} — role absent from the light block"
   elsif !eq_hex?(light[fg_prop], colours[:fg])
     failures << "WRONG (light)     #{fg_prop}: #{light[fg_prop]} — expected #{colours[:fg]}"
   end
@@ -135,12 +167,12 @@ palette.each do |role, colours|
 end
 
 # 1. COVERAGE — no stray --mds-avatar-* beyond the palette roles.
-[ [ ":root", light ], [ "[data-bs-theme=dark]", dark ] ].each do |name, block|
+[ [ LIGHT_SELECTOR, light ], [ DARK_SELECTOR, dark ] ].each do |name, block|
   block.each_key do |property|
     next unless property.start_with?("--mds-avatar-")
     next if expected_props.include?(property)
 
-    failures << "UNEXPECTED        #{name} { #{property} } — not a palette role/foreground"
+    failures << "UNEXPECTED PROP   #{name} { #{property} } — not a palette role/foreground"
   end
 end
 
@@ -149,11 +181,12 @@ if failures.any?
   warn "Avatar adaptive check FAILED with #{failures.length} problem(s):"
   failures.each { |failure| warn "  #{failure}" }
   warn ""
-  warn "_avatar.scss must emit --mds-avatar-<role>(+ -fg) for every $mpi-avatar-palette role"
-  warn "in BOTH :root (bg/fg) and [data-bs-theme=dark] (bg-dark/fg-dark), and each role's"
-  warn "background must differ between the two modes."
+  warn "_avatar.scss must emit ONLY `#{LIGHT_SELECTOR}` (bg/fg) and `#{DARK_SELECTOR}` (bg-dark/fg-dark),"
+  warn "carrying --mds-avatar-<role>(+ -fg) for every $mpi-avatar-palette role and nothing else, and each"
+  warn "role's background must differ between the two modes."
   exit 1
 end
 
-puts "Avatar adaptive OK: _avatar.scss compiles standalone and materialises all #{palette.size} roles " \
-     "in both :root and [data-bs-theme=dark] with their exact palette values; every background adapts between modes"
+puts "Avatar adaptive OK: _avatar.scss compiles standalone into ONLY `#{LIGHT_SELECTOR}` and " \
+     "`#{DARK_SELECTOR}` (no stray rules or declarations), materialises all #{palette.size} roles in both " \
+     "with their exact palette values, and every background adapts between modes"

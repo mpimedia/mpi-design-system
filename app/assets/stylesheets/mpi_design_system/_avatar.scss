@@ -13,20 +13,24 @@
 // light palette and existing installs are unaffected. Import it to get
 // theme-adaptive (and re-brandable) avatars.
 //
-// Re-brand — the portable path, working on BOTH SCSS pipelines with no recompile —
-// is to override the custom properties in your OWN CSS. Override a background and its
+// Re-brand by overriding the custom properties in your OWN CSS — the one supported path,
+// working on BOTH SCSS pipelines with no recompile. Override a background and its
 // foreground together (an atomic pair the engine cannot re-derive at runtime):
 //
 //   :root { --mds-avatar-3: #6D28D9; --mds-avatar-3-fg: #fff; }
 //
-// Modern `@use` consumers may alternatively reconfigure the palette at compile time
-// (`@use "mpi_design_system/tokens_values" with ($mpi-avatar-palette: (...))`), which
-// propagates here through Sass's module config; legacy `@import` consumers cannot, so
-// runtime override is the documented mechanism.
+// `$mpi-avatar-palette` (tokens_values) is an INTERNAL source map, not a consumer API —
+// its shape may change — so re-brand via the runtime custom properties above, never by
+// reconfiguring the map.
 @use "sass:map";
 @use "tokens_values" as tokens;
 
-:root {
+// Light values on BOTH `:root` and `[data-bs-theme="light"]`, mirroring Bootstrap's own
+// `:root, [data-bs-theme="light"]` pattern. Custom properties inherit, so without the
+// explicit `light` selector a `<section data-bs-theme="light">` nested inside a dark app
+// would inherit the ancestor's DARK avatar tokens instead of resetting to light.
+:root,
+[data-bs-theme="light"] {
   @each $role, $colors in tokens.$mpi-avatar-palette {
     --mds-avatar-#{$role}: #{map.get($colors, bg)};
     --mds-avatar-#{$role}-fg: #{map.get($colors, fg)};

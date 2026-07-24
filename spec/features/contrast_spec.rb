@@ -180,6 +180,18 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
 
       expect(computed("[data-avatar-index='#{index}'] .rounded-circle", "color")).to eq("#FFFFFF")
     end
+
+    # F1 (#169): custom properties inherit, so a `[data-bs-theme="light"]` section nested
+    # inside a dark app would inherit the ancestor's DARK avatar tokens unless the partial
+    # emits the light palette on `[data-bs-theme="light"]` too (Bootstrap's `:root,
+    # [data-bs-theme="light"]` pattern). This nested-light avatar (index 7) must paint the
+    # LIGHT tone #4EA8DE, not the dark #58A2CE — the whole point of the grouped selector.
+    it "resets to the light palette in a light section nested inside the dark app" do
+      role = avatar_palette.fetch("7")
+
+      expect(computed("#nested-light-avatar .rounded-circle", "background")).to eq(role[:bg])
+      expect(role[:bg]).not_to eq(role[:bg_dark])
+    end
   end
 
   describe "AvatarStack overflow chip" do

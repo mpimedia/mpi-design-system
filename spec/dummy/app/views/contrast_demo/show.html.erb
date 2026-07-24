@@ -228,6 +228,13 @@
         <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new %>
       </span>
     </div>
+    <%# F1 (#169): a light section NESTED inside this dark wrapper must RESET to the light
+        avatar palette, not inherit the dark ancestor's --mds-avatar-* tokens. Because
+        `_avatar.scss` emits the light values on `:root, [data-bs-theme="light"]` (Bootstrap's
+        own pattern), index 7 here must paint its LIGHT tone (#4EA8DE), not the dark #58A2CE. %>
+    <div data-bs-theme="light" id="nested-light-avatar">
+      <%= render MpiDesignSystem::Admin::AvatarCircle::Component.new(name: "Mona Habib") %>
+    </div>
     <%# #150: the AvatarStack `+N` chip's separator ring is `var(--bs-body-bg)`. Inside
         this dark section `--bs-body-bg` resolves to Bootstrap's dark default (#212529),
         so the ring border must compute rgb(33, 37, 41) — proving the var resolved rather

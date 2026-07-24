@@ -161,6 +161,43 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
 
       expect(page).to have_css("a[style*='background-color: var(--mds-avatar-7, #4EA8DE)'][style*='color: var(--mds-avatar-7-fg, #000)']")
     end
+
+    # Exact-match the WHOLE style string, so a load-bearing non-colour declaration that has
+    # no Bootstrap-class equivalent (geometry, `text-decoration: none`, `line-height: 1`)
+    # cannot be silently dropped under the substring pins above — the FilterPanel/Pagination
+    # "pin the complete surviving inline style" lesson. render_inline emits the style verbatim,
+    # so the exact string is stable; any dropped/added/reordered declaration reddens on purpose.
+    describe "exact inline style (nothing load-bearing silently dropped)" do
+      it "pins the full style for a default span (md, index 7)" do
+        render_inline(described_class.new(name: "Mona Habib"))
+
+        expect(page).to have_css(
+          "span[style='width: 40px; height: 40px; font-size: 14px; " \
+          "background-color: var(--mds-avatar-7, #4EA8DE); color: var(--mds-avatar-7-fg, #000); " \
+          "text-decoration: none; line-height: 1']"
+        )
+      end
+
+      it "pins the full style for a linked avatar, keeping text-decoration: none" do
+        render_inline(described_class.new(name: "Mona Habib", href: "/contacts/1"))
+
+        expect(page).to have_css(
+          "a[href='/contacts/1'][style='width: 40px; height: 40px; font-size: 14px; " \
+          "background-color: var(--mds-avatar-7, #4EA8DE); color: var(--mds-avatar-7-fg, #000); " \
+          "text-decoration: none; line-height: 1']"
+        )
+      end
+
+      it "pins the full style for the placeholder" do
+        render_inline(described_class.new)
+
+        expect(page).to have_css(
+          "span[style='width: 40px; height: 40px; font-size: 14px; " \
+          "background-color: var(--mds-avatar-placeholder, #6C757D); color: var(--mds-avatar-placeholder-fg, #fff); " \
+          "text-decoration: none; line-height: 1']"
+        )
+      end
+    end
   end
 
   it "renders as a link when href is provided" do

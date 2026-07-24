@@ -116,6 +116,27 @@ RSpec.describe MpiDesignSystem::Admin::AvatarStack::Component, type: :component 
       expect(page).to have_css("span[style*='width: 28px'][style*='color: var(--mds-avatar-overflow-fg, #fff)']", text: "+2")
     end
 
+    # Exact-match the whole chip style at both sizes, so a load-bearing non-colour
+    # declaration with no Bootstrap equivalent (geometry, the `2px solid var(--bs-body-bg)`
+    # separator ring, `line-height: 1`) cannot be silently dropped under the substring pins
+    # above (the "pin the complete surviving inline style" lesson). render_inline emits the
+    # style verbatim; any dropped/added/reordered declaration reddens on purpose.
+    {
+      md: "40px",
+      sm: "28px"
+    }.each do |size, dimension|
+      it "pins the full chip style at #{size} size" do
+        render_inline(described_class.new(names: names, max: 4, size: size))
+
+        expect(page).to have_css(
+          "span[style='width: #{dimension}; height: #{dimension}; font-size: 11px; " \
+          "background-color: var(--mds-avatar-overflow, #64748B); color: var(--mds-avatar-overflow-fg, #fff); " \
+          "border: 2px solid var(--bs-body-bg); line-height: 1;']",
+          text: "+2"
+        )
+      end
+    end
+
     # AvatarStack's own only hex is the chip's background/foreground pair — its visible
     # avatars are AvatarCircle sub-renders, whose palette is swept by AvatarCircle's own
     # spec, so an unscoped rendered_content sweep would red on them.

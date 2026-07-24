@@ -64,18 +64,16 @@ $mpi-engagement-note: #E8913A !default;
 // Avatar identity palette (#169) — the deterministic name-hash palette
 // AvatarCircle paints, plus the placeholder and the AvatarStack "+N" overflow chip.
 // This map is the INTERNAL source for the `--mds-avatar-*` runtime custom properties
-// emitted by `_avatar.scss`. Each role pairs a background with the foreground
-// Bootstrap's `color-contrast()` derives for it (AA-verified by
-// `bin/verify-contrast-oracle`), plus a `-dark` counterpart for `data-bs-theme="dark"`.
+// emitted by `_avatar.scss` — NOT a consumer API; its shape may change. Each role pairs
+// a background with the foreground Bootstrap's `color-contrast()` derives for it
+// (AA-verified by `bin/verify-contrast-oracle`), plus a `-dark` counterpart for
+// `data-bs-theme="dark"`.
 //
-// Re-brand — the portable path, working on both SCSS pipelines with no recompile — is
-// to override the runtime custom properties in the consuming app's OWN CSS
-// (`:root { --mds-avatar-3: #…; --mds-avatar-3-fg: #… }`). Modern `@use` consumers may
-// alternatively reconfigure this whole map via `@use "…tokens_values" with
-// ($mpi-avatar-palette: …)`, which propagates into `_avatar.scss` through Sass module
-// config; legacy `@import` consumers cannot. Either way, override a background and its
-// foreground together (an atomic pair): the engine cannot re-derive a foreground for a
-// value you change.
+// Re-brand by overriding the runtime custom properties in the consuming app's OWN CSS
+// (`:root { --mds-avatar-3: #…; --mds-avatar-3-fg: #… }`) — the one supported path, working
+// on both SCSS pipelines with no recompile. Override a background and its foreground
+// together (an atomic pair): the engine cannot re-derive a foreground for a value you
+// change. Do not reconfigure this map to re-brand — treat it as internal.
 $mpi-avatar-palette: (
   0:           (bg: #2E75B6, fg: #fff, bg-dark: #4280B9, fg-dark: #000),
   1:           (bg: #8B5CF6, fg: #000, bg-dark: #8459E4, fg-dark: #fff),

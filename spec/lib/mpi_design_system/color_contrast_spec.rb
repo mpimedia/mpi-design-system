@@ -226,19 +226,44 @@ RSpec.describe MpiDesignSystem::ColorContrast do
     # Closes the one gap the shell oracle cannot see. Since #169 the palette's source
     # of truth is the `$mpi-avatar-palette` map in `_tokens_values.scss` — the same map
     # `_avatar.scss` materialises into the `--mds-avatar-*` custom properties and the
-    # oracle fixture runs `color-contrast()` over. The Ruby `COLORS` constant is the
-    # light-mode FALLBACK the component still paints when the partial is absent. This
-    # asserts the two agree in light mode — background AND the derived foreground — so
-    # neither the fixture nor the fallback can drift onto a palette the other dropped.
-    it "matches the light palette declared in the $mpi-avatar-palette source map" do
+    # oracle fixture runs `color-contrast()` over. The Ruby constants (`COLORS`,
+    # `PLACEHOLDER_COLOR`, `OVERFLOW_COLOR`) are the light-mode FALLBACK the components
+    # still paint when the partial is absent, and the component emits
+    # `var(--mds-avatar-<index>, <COLORS[index]>)` — so the token and its fallback are only
+    # consistent if the map agrees with the constants POSITIONALLY, role by role.
+    #
+    # The binding is asserted by ROLE, not by hex set: a hex-keyed multiset check stays
+    # green if two map entries are swapped (roles 0 and 1 trading colours), yet then
+    # `--mds-avatar-0` would paint purple while the index-0 fallback stays blue — the
+    # adaptive token diverging from its own fallback, and the wrong identity colour.
+    it "binds each $mpi-avatar-palette role to the Ruby constant it falls back to" do
+      circle = MpiDesignSystem::Admin::AvatarCircle::Component
+      stack = MpiDesignSystem::Admin::AvatarStack::Component
       tokens = File.read(File.expand_path("../../../app/assets/stylesheets/mpi_design_system/_tokens_values.scss", __dir__))
       map_body = tokens[/\$mpi-avatar-palette:\s*\((.*?)\)\s*!default;/m, 1].to_s
-      declared_light = map_body.scan(/\w+:\s*\(\s*bg:\s*(#\h+),\s*fg:\s*(#\h+),/).to_h
+      declared = map_body.scan(/(\w+):\s*\(\s*bg:\s*(#\h+),\s*fg:\s*(#\h+),/).to_h do |role, bg, fg|
+        [ role, { bg: bg, fg: fg } ]
+      end
 
-      expect(declared_light.keys).to match_array(expected_foregrounds.keys)
-      declared_light.each do |background, foreground|
-        expect(foreground.downcase).to eq(expected_foregrounds.fetch(background).downcase)
-        expect(described_class.accessible_foreground(background)).to eq(foreground)
+      # Exactly the 10 numbered roles + placeholder + overflow, nothing missing or extra.
+      expected_roles = (0...circle::COLORS.length).map(&:to_s) + %w[placeholder overflow]
+      expect(declared.keys).to match_array(expected_roles)
+
+      # Each numeric role's background IS the same-index fallback, and its declared
+      # foreground is the one ColorContrast derives for it.
+      circle::COLORS.each_with_index do |fallback_background, index|
+        entry = declared.fetch(index.to_s)
+        expect(entry[:bg]).to eq(fallback_background),
+          "role #{index} background #{entry[:bg]} != COLORS[#{index}] #{fallback_background} (a role swap?)"
+        expect(entry[:fg].downcase).to eq(expected_foregrounds.fetch(fallback_background).downcase)
+        expect(described_class.accessible_foreground(fallback_background)).to eq(entry[:fg])
+      end
+
+      # Named roles bind to their own constants.
+      expect(declared.fetch("placeholder")[:bg]).to eq(circle::PLACEHOLDER_COLOR)
+      expect(declared.fetch("overflow")[:bg]).to eq(stack::OVERFLOW_COLOR)
+      { "placeholder" => circle::PLACEHOLDER_COLOR, "overflow" => stack::OVERFLOW_COLOR }.each do |role, background|
+        expect(declared.fetch(role)[:fg].downcase).to eq(expected_foregrounds.fetch(background).downcase)
       end
     end
 
