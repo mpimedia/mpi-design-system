@@ -7,6 +7,8 @@ include breaking changes).
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-07-24
+
 ### Added
 - **Theme-adaptive, re-brandable avatar colours** — `AvatarCircle`'s name-hash identity palette
   (and `AvatarStack`'s "+N" chip) now paint runtime custom properties
@@ -490,7 +492,8 @@ Initial internal version: the ViewComponent library, design tokens, Stimulus con
 and Lookbook previews, prior to the adoption-prep packaging corrections above. (No release
 tag was cut for 0.1.0.)
 
-[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/mpimedia/mpi-design-system/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/mpimedia/mpi-design-system/compare/v0.8.0...v0.9.0
