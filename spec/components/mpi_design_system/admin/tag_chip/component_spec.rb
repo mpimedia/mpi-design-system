@@ -3,82 +3,162 @@
 require "spec_helper"
 
 RSpec.describe MpiDesignSystem::Admin::TagChip::Component, type: :component do
-  it "renders a tag chip with group color" do
+  # The chip's complete surviving inline style. Pinned by EXACT equality rather than
+  # `[style*=…]` fragments: a substring pin polices only the declarations it names, so
+  # every unnamed survivor stays deletable-green (#152). Any dropped, added or reordered
+  # declaration reddens this, which is the intent — a deliberate geometry change updates
+  # the constant on purpose.
+  let(:chip_style_md) { "font-size: 13px; padding: 0.25em 0.75em; line-height: 1.4" }
+  let(:chip_style_sm) { "font-size: 12px; padding: 0.25em 0.75em; line-height: 1.4" }
+  let(:dot_style) { "width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0" }
+  let(:remove_style) { "padding: 0; font-size: inherit; line-height: 1; cursor: pointer" }
+
+  it "renders the label inside a pill carrying its group's semantic pair" do
     render_inline(described_class.new(label: "Distribution", group: :distribution))
 
-    expect(page).to have_css("span[style*='#E8733A']", text: "Distribution")
-    expect(page).to have_css("span[style*='#FEF3EC']")
+    expect(page).to have_css(
+      "span.rounded-pill.bg-danger-subtle.text-danger-emphasis", text: "Distribution"
+    )
   end
 
-  it "renders different colors for different groups" do
-    render_inline(described_class.new(label: "Outreach", group: :outreach))
+  # Plumbing: every group reaches the utilities its mapping specifies. This does NOT
+  # prove the mapping itself — both sides read the same constant, so a remap would move
+  # them together and stay green. The exact-mapping example below is what pins that.
+  described_class::GROUP_VARIANTS.each do |group, variant|
+    it "renders the #{group} chip as the #{variant} subtle/emphasis pair" do
+      render_inline(described_class.new(label: group.to_s, group: group))
 
-    expect(page).to have_css("span[style*='#2DA67E']", text: "Outreach")
+      expect(page).to have_css("span.bg-#{variant}-subtle.text-#{variant}-emphasis", text: group.to_s)
+    end
   end
 
-  it "renders a colored dot indicator before the label" do
-    render_inline(described_class.new(label: "Distribution", group: :distribution))
+  describe "the decorative dot" do
+    # Child combinator, not a descendant selector: `span.bg-danger-subtle span[…]` would
+    # also pass if the semantic class landed on some ancestor wrapper rather than the
+    # chip itself — the exact regression this asserts against (#152).
+    it "nests directly inside the chip so it inherits the chip's foreground" do
+      render_inline(described_class.new(label: "Distribution", group: :distribution))
 
-    expect(page).to have_css("span[style*='background-color: #E8733A'][style*='border-radius: 50%']")
+      expect(page).to have_css(
+        "span.bg-danger-subtle.text-danger-emphasis > span[aria-hidden='true'][style='#{dot_style}']"
+      )
+    end
+
+    # currentColor is load-bearing, not incidental. A solid `bg-#{variant}` fill inside a
+    # `-subtle` chip measures 2.67:1 (success) / 2.62:1 (warning) — under the 3:1 floor
+    # `.claude/rules/frontend.md` sets for a decorative semantic dot. Inheriting the
+    # `-emphasis` foreground instead measures 9.43:1 / 9.34:1.
+    it "paints currentColor rather than a solid semantic fill" do
+      render_inline(described_class.new(label: "Outreach", group: :outreach))
+
+      expect(page).to have_css("span[aria-hidden='true'][style*='background-color: currentColor']")
+      expect(page).not_to have_css("span[aria-hidden='true'][class*='bg-']")
+    end
   end
 
-  it "renders dot with correct color for each group" do
-    render_inline(described_class.new(label: "Press/Festival", group: :press_festival))
+  describe "the remove control" do
+    it "renders a button that pins no colour and no opacity of its own" do
+      render_inline(described_class.new(label: "MIPCOM 2025", group: :distribution, removable: true))
 
-    expect(page).to have_css("span[style*='background-color: #2E75B6'][style*='border-radius: 50%']")
+      # Positive pin FIRST — an unpaired `not_to` would also pass if nothing rendered.
+      expect(page).to have_css(
+        "button.text-reset.bg-transparent.border-0[aria-label='Remove MIPCOM 2025'][style='#{remove_style}']"
+      )
+      expect(page).to have_css("i.bi.bi-x-lg")
+      # The retired `opacity: 0.6` faded an already-sub-AA foreground further (#130).
+      expect(page).not_to have_css("button[style*='opacity']")
+      expect(page).not_to have_css("button[style*='color']")
+    end
+
+    it "renders a turbo link with the same treatment when remove_url is given" do
+      render_inline(described_class.new(label: "MIPCOM 2025", group: :distribution, removable: true, remove_url: "/tags/1"))
+
+      expect(page).to have_css(
+        "a.text-reset.bg-transparent.border-0[href='/tags/1'][aria-label='Remove MIPCOM 2025'][style='#{remove_style}']"
+      )
+      expect(page).to have_css("a[data-turbo-method='delete']")
+      expect(page).not_to have_css("a[style*='opacity']")
+    end
+
+    it "does not show a remove control by default" do
+      render_inline(described_class.new(label: "Press/Festival", group: :press_festival))
+
+      expect(page).to have_css("span.rounded-pill", text: "Press/Festival")
+      expect(page).not_to have_css("button")
+      expect(page).not_to have_css("a")
+    end
   end
 
-  it "renders a removable chip with close button (no URL)" do
-    render_inline(described_class.new(label: "MIPCOM 2025", group: :distribution, removable: true))
+  describe "sizes" do
+    it "renders the default size with its complete geometry" do
+      render_inline(described_class.new(label: "Test", group: :internal))
 
-    expect(page).to have_css("button[aria-label='Remove MIPCOM 2025']")
-    expect(page).to have_css("i.bi.bi-x-lg")
+      expect(page).to have_css("span.rounded-pill[style='#{chip_style_md}']", text: "Test")
+    end
+
+    it "renders the small size with its complete geometry" do
+      render_inline(described_class.new(label: "Test", group: :internal, size: :sm))
+
+      expect(page).to have_css("span.rounded-pill[style='#{chip_style_sm}']", text: "Test")
+    end
+
+    it "falls back to the default size for an unknown size" do
+      render_inline(described_class.new(label: "Test", group: :internal, size: :enormous))
+
+      expect(page).to have_css("span.rounded-pill[style='#{chip_style_md}']", text: "Test")
+    end
   end
 
-  it "renders a removable chip as turbo link when remove_url provided" do
-    render_inline(described_class.new(label: "MIPCOM 2025", group: :distribution, removable: true, remove_url: "/tags/1"))
+  describe "edge cases" do
+    # :internal maps to :secondary, so this also proves the initializer's group
+    # coercion still runs after the conversion.
+    it "coerces an unknown group to internal" do
+      render_inline(described_class.new(label: "Mystery", group: :not_a_group))
 
-    expect(page).to have_css("a[href='/tags/1'][aria-label='Remove MIPCOM 2025']")
-    expect(page).to have_css("a[data-turbo-method='delete']")
+      expect(page).to have_css("span.bg-secondary-subtle.text-secondary-emphasis", text: "Mystery")
+    end
+
+    it "renders an empty label without raising" do
+      render_inline(described_class.new(label: "", group: :finance))
+
+      expect(page).to have_css("span.rounded-pill.bg-warning-subtle.text-warning-emphasis")
+    end
   end
 
-  it "does not show remove button by default" do
-    render_inline(described_class.new(label: "Press/Festival", group: :press_festival))
+  # #168's conversion guard. `.claude/rules/testing.md` requires this be watched RED
+  # against a real mutation — reintroducing `color: #{'#'}E8733A` into `chip_styles`
+  # reddens it, as does `opacity: 0.6` on the remove button.
+  describe "theme adaptivity (#168)" do
+    described_class::GROUP_VARIANTS.each_key do |group|
+      it "leaves no frozen-colour declaration on the #{group} chip, dot or remove button" do
+        render_inline(described_class.new(label: group.to_s, group: group, removable: true))
 
-    expect(page).not_to have_css("button")
+        expect(page).to have_css("span.rounded-pill", text: group.to_s)
+        inline_styles("span, button, a").each do |style|
+          expect(style).to be_free_of_frozen_colour
+        end
+      end
+    end
+
+    it "emits no hex literal anywhere in the rendered chip" do
+      render_inline(described_class.new(label: "Distribution", group: :distribution, removable: true))
+
+      expect(page).to have_css("span.bg-danger-subtle", text: "Distribution")
+      expect(page.native.to_html).not_to match(/#[0-9A-Fa-f]{6}\b/)
+    end
   end
 
-  it "renders at small size" do
-    render_inline(described_class.new(label: "Test", group: :internal, size: :sm))
-
-    expect(page).to have_css("span[style*='font-size: 12px']")
-  end
-
-  it "renders at default size" do
-    render_inline(described_class.new(label: "Test", group: :internal))
-
-    expect(page).to have_css("span[style*='font-size: 13px']")
-  end
-
-  it "has pill shape" do
-    render_inline(described_class.new(label: "Test", group: :vendors))
-
-    expect(page).to have_css("span[style*='border-radius: 999px']")
-  end
-
-  # GROUP_VARIANTS is the shared tag-group -> Bootstrap-semantic mapping that
-  # FilterChipBar and DataTable consume (#151). Every GROUPS key must have a mapping,
-  # or a converted consumer would hit `nil` and silently fall back to `secondary`.
-  describe "GROUP_VARIANTS mapping (#151)" do
+  # GROUP_VARIANTS is the shared tag-group -> Bootstrap-semantic mapping. Since #168
+  # every engine renderer of tag-group colour reads it, so a defect here is systemic.
+  describe "GROUP_VARIANTS mapping" do
     it "maps every GROUPS key to a semantic variant" do
       expect(described_class::GROUP_VARIANTS.keys).to match_array(described_class::GROUPS.keys)
     end
 
-    # The consumer loops (FilterChipBar/DataTable) read this same constant, so a
-    # semantic REMAP (e.g. distribution: :danger -> :success) would render and assert
-    # the new value identically and ship green there. Pinning the exact mapping makes
-    # any category recolour a deliberate, test-updating change — the crux design
-    # decision of #151 (info==primary collapses the three cool categories onto blue).
+    # The consumer loops throughout the suite read this same constant, so a semantic
+    # REMAP (e.g. distribution: :danger -> :success) would render and assert the new
+    # value identically and ship green everywhere. Pinning the exact mapping is the only
+    # assertion in the suite that catches it — it must not be replaced by a loop.
     it "maps each category to its issue-specified semantic" do
       expect(described_class::GROUP_VARIANTS).to eq(
         press_festival: :primary,
@@ -95,15 +175,28 @@ RSpec.describe MpiDesignSystem::Admin::TagChip::Component, type: :component do
       valid = %i[primary secondary success warning danger info light dark]
       expect(described_class::GROUP_VARIANTS.values.uniq - valid).to be_empty
     end
+  end
 
-    # TagChip's OWN rendering stays hex this phase — the conversion is limited to the
-    # two list-view consumers. This pins that scope: the chip still emits its frozen
-    # colour pair, so a future TagChip conversion is a deliberate, tested change rather
-    # than an accident. (#151 follow-up)
-    it "leaves TagChip's own rendering on the frozen hex palette" do
-      render_inline(described_class.new(label: "Distribution", group: :distribution))
+  # GROUPS is retained post-#168 as the canonical key set and the brand-hex reference,
+  # but nothing may render from it. #167 pinned the opposite ("leaves TagChip's own
+  # rendering on the frozen hex palette") so that converting TagChip could not happen by
+  # accident; #168 IS that deliberate change, so the guard is inverted rather than
+  # deleted — it now holds the chip to the semantics.
+  describe "GROUPS (retained, deprecated for rendering)" do
+    it "still defines the canonical group key set" do
+      expect(described_class::GROUPS.keys).to match_array(
+        %i[production distribution finance press_festival internal vendors outreach]
+      )
+    end
 
-      expect(page).to have_css("span[style*='color: #E8733A'][style*='background-color: #FEF3EC']", text: "Distribution")
+    it "no longer supplies any rendered colour" do
+      described_class::GROUPS.each do |group, pair|
+        render_inline(described_class.new(label: group.to_s, group: group))
+
+        expect(page).to have_css("span.rounded-pill", text: group.to_s)
+        expect(page.native.to_html).not_to include(pair[:color])
+        expect(page.native.to_html).not_to include(pair[:bg])
+      end
     end
   end
 end

@@ -23,85 +23,6 @@ require "spec_helper"
 # browser actually painted — following the computed-style precedent set by the
 # `mpi--tag-input` spec (see `.claude/rules/testing.md`).
 RSpec.describe "Derived foreground contrast", type: :feature, js: true do
-  # Resolves what a user actually SEES, which is not the same as the declared
-  # value in three ways this suite has to account for:
-  #
-  #   1. A colour may carry alpha. `.text-body-secondary` is
-  #      `rgba(<body-color>, .75)`, so reading the RGB channels and discarding
-  #      the alpha overstates contrast. Alpha is composited over the backdrop.
-  #   2. A background may be transparent, in which case the visible backdrop is
-  #      an ancestor's — so we walk up until we find an opaque one.
-  #   3. `opacity` on any ancestor fades the whole subtree. It is invisible to
-  #      the element's own computed `color`, which is how the retired
-  #      `opacity: 0.8` hid a 3.71:1 failure behind an AA-clean declaration.
-  RESOLVE_JS = <<~JS
-    (() => {
-      const parse = (value) => {
-        const parts = (value.match(/[\\d.]+/g) || []).map(Number);
-        return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
-      };
-      const opaqueBackdrop = (node) => {
-        for (let el = node; el; el = el.parentElement) {
-          const bg = parse(getComputedStyle(el).backgroundColor);
-          if (bg.a === 1) return bg;
-        }
-        return { r: 255, g: 255, b: 255, a: 1 };
-      };
-      const over = (fg, bg) => ({
-        r: fg.r * fg.a + bg.r * (1 - fg.a),
-        g: fg.g * fg.a + bg.g * (1 - fg.a),
-        b: fg.b * fg.a + bg.b * (1 - fg.a),
-      });
-      const hex = (c) => '#' + [c.r, c.g, c.b]
-        .map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
-
-      const el = document.querySelector(SELECTOR);
-      if (!el) return null;
-
-      let cumulativeOpacity = 1;
-      for (let n = el; n; n = n.parentElement) {
-        cumulativeOpacity *= parseFloat(getComputedStyle(n).opacity);
-      }
-
-      const backdrop = opaqueBackdrop(el);
-      const foreground = over(parse(getComputedStyle(el).color), backdrop);
-
-      return {
-        foreground: hex(foreground),
-        background: hex(backdrop),
-        cumulativeOpacity: cumulativeOpacity,
-      };
-    })()
-  JS
-
-  def resolve(selector)
-    result = page.evaluate_script(RESOLVE_JS.sub("SELECTOR", selector.to_json))
-    raise "no element matched #{selector}" if result.nil?
-
-    result.transform_keys(&:to_sym)
-  end
-
-  def ratio_for(selector)
-    resolved = resolve(selector)
-    measured = MpiDesignSystem::ColorContrast.ratio(resolved[:foreground], resolved[:background])
-
-    [ measured, resolved[:foreground], resolved[:background] ]
-  end
-
-  def border_color_of(selector)
-    page.evaluate_script(
-      "(() => { const e = document.querySelector(#{selector.to_json}); " \
-      "if (!e) throw new Error('no element matched'); " \
-      "return getComputedStyle(e).borderTopColor; })()"
-    )
-  end
-
-  def computed(selector, property)
-    key = property == "color" ? :foreground : :background
-
-    resolve(selector).fetch(key)
-  end
-
   before { visit "/contrast_demo" }
 
   # The avatar palette parsed from its source map (_tokens_values.scss), so this browser
@@ -814,6 +735,83 @@ RSpec.describe "Derived foreground contrast", type: :feature, js: true do
             expect(backdrop).to eq(expected[:surface])
             expect(measured).to be >= 3.0,
               "#{mode} #{variant} status dot #{fill} on resting #{backdrop} = #{measured.round(2)}:1"
+          end
+        end
+      end
+    end
+  end
+
+  # TagChip (#168). The conversion moved every tag renderer in the engine onto the shared
+  # group -> semantic mapping, and TagChip is the canonical one. Three claims a render
+  # spec cannot reach, proven here for EVERY distinct hue in BOTH colour modes:
+  #
+  #   * the `-subtle`/`-emphasis` pair actually clears AA once Bootstrap derives it —
+  #     the plan asserted this, and `bin/verify-contrast-oracle` is avatar-only, so
+  #     without these pins the AA claim would rest on nothing;
+  #   * the dot paints `currentColor`, i.e. the chip's own emphasis foreground. This is
+  #     the whole reason it is not a solid `bg-#{variant}` like DataTable's dots: a solid
+  #     semantic fill on its own `-subtle` surface measures 2.62:1-2.67:1, under the 3:1
+  #     floor for a decorative dot. Asserting the dot equals the chip foreground is what
+  #     proves the substitution, since a wrong fill would still be "some colour";
+  #   * the remove control inherits that same foreground through `text-reset` and is not
+  #     faded — the retired `opacity: 0.6` is asserted gone via cumulativeOpacity.
+  #
+  # Foreground/background are pinned as VALUES, not just ratios: inherited body text also
+  # clears AA on these surfaces, so a ratio-only assertion would stay green if the
+  # semantic classes stopped applying entirely (#149/#150).
+  describe "TagChip (#168)" do
+    def rgb_of(hex)
+      "rgb(#{hex[1..2].hex}, #{hex[3..4].hex}, #{hex[5..6].hex})"
+    end
+
+    {
+      "light" => {
+        root: "#tag-chip",
+        pairs: {
+          primary: %w[#122F49 #D5E3F0], success: %w[#0E402B #D3ECE1],
+          warning: %w[#553012 #F6E4D5], danger: %w[#58151C #F8D7DA],
+          secondary: %w[#2B2F32 #E2E3E5]
+        }
+      },
+      "dark" => {
+        root: "#dark-tag-chip",
+        pairs: {
+          primary: %w[#82ACD3 #091724], success: %w[#7AC6A6 #072015],
+          warning: %w[#E5AD80 #2A1809], danger: %w[#EA868F #2C0B0E],
+          secondary: %w[#A7ACB1 #161719]
+        }
+      }
+    }.each do |mode, expected|
+      context "in #{mode} mode" do
+        expected[:pairs].each do |variant, (foreground, background)|
+          # A plain local, NOT `let`: `let` is resolved when the example RUNS, so a
+          # definition inside this loop would be overwritten on every iteration and
+          # every example would silently measure the last variant.
+          chip = "#{expected[:root]} [data-variant='#{variant}'] span.rounded-pill"
+
+          it "paints the #{variant} chip's emphasis-on-subtle above the AA floor" do
+            measured, painted_fg, painted_bg = ratio_for(chip)
+
+            expect(painted_fg).to eq(foreground)
+            expect(painted_bg).to eq(background)
+            expect(measured).to be >= 4.5,
+              "#{mode} #{variant} chip #{painted_fg} on #{painted_bg} = #{measured.round(2)}:1"
+          end
+
+          it "paints the #{variant} dot in the chip's own foreground via currentColor" do
+            painted = page.evaluate_script(
+              "getComputedStyle(document.querySelector(#{"#{chip} > span[aria-hidden=\'true\']".to_json})).backgroundColor"
+            )
+
+            expect(painted).to eq(rgb_of(foreground))
+          end
+
+          it "leaves the #{variant} remove control inheriting an unfaded foreground" do
+            measured, painted_fg, = ratio_for("#{chip} button")
+
+            expect(painted_fg).to eq(foreground)
+            expect(measured).to be >= 4.5
+            expect(resolve("#{chip} button")[:cumulativeOpacity]).to eq(1.0)
           end
         end
       end

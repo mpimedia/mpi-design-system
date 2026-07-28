@@ -7,6 +7,70 @@ include breaking changes).
 
 ## [Unreleased]
 
+### Fixed
+- **Every CRM tag-group renderer is now theme-adaptive and WCAG AA clean (#168).** #167 moved
+  `FilterChipBar` and `DataTable` onto the shared
+  `TagChip::Component::GROUP_VARIANTS` mapping and deliberately left the other consumers on
+  frozen hex, producing a transient cross-consumer inconsistency. That is now closed: `TagChip`
+  itself, `Badge`'s `tag_group` variant, `ContactCard`, `EngagementCard`, `AccountListRow`,
+  `ContactListRow`, `AccountDetailPanel`, `ContactDetailPanel` and `TagInput` all resolve
+  category colour from the one mapping, so a category renders the same adaptive hue everywhere.
+  This also discharges **ISS#142 §1**: the retired hex pairs measured **2.77:1–4.34:1**, every
+  one below the AA floor. The `-subtle`/`-emphasis` pairs that replace them are
+  browser-measured at 9.34:1–10.52:1 (light) and 7.15:1–8.61:1 (dark), for all five distinct
+  hues in both colour modes.
+- **`tag_input_controller.js` painted six of seven tag groups grey (#168).** The Stimulus
+  controller carried its own frozen palette keyed on a stale vocabulary — `buyers`, `press`,
+  `festivals`, `sellers`, `institutional`, `organizations` — while the server sends the CRM
+  group names (`distribution`, `outreach`, `press_festival`, …). Only `internal` overlapped, so
+  every other group fell through to the grey fallback: a tag added interactively rendered grey
+  while the same tag rendered by the server rendered its category colour. The controller now
+  keys on the vocabulary the server actually sends and emits the same semantic classes as the
+  ERB, so an interactively-added chip is indistinguishable from a server-rendered one. Nothing
+  used the stale vocabulary, so this is not a consumer-facing rename.
+- **Faded remove controls (#130's opacity lesson, applied again).** `TagChip` and `TagInput`
+  paired a tag foreground with `opacity: 0.6`, compositing an already-sub-AA colour further
+  down. Both now use `text-reset bg-transparent border-0` and pin no colour or opacity.
+- Three false accessibility claims corrected in the catalog: `badge.md` ("All tag group color
+  pairs have been verified for WCAG AA compliance"), and `contact-card.md` ("Tag pill
+  text/background pairs all meet WCAG AA contrast" and "Avatar colors meet WCAG AA for white
+  text"). All three were false. `contact-card.md`'s palette table also documented a legacy
+  group vocabulary that no component has ever accepted.
+- `catalog/previews/filter-chip-bar.html`'s dark block declared three emphasis colours and **no**
+  `*-bg-subtle`, so a dark subtle chip kept its light surface; its dark success emphasis
+  (`#A7D9C4`) also disagreed with the compiled bundle (`#7AC6A6`). Pre-existing, fixed here.
+
+### Changed
+- **A tag dot's treatment now depends on its surface.** Inside a `-subtle` chip (`TagChip`,
+  `ContactCard`) the dot paints `background-color: currentColor`, inheriting the chip's
+  `-emphasis` foreground. It is **not** the solid `bg-#{semantic}` fill `DataTable` uses: a
+  solid semantic fill on its own `-subtle` surface measures **2.62:1–2.67:1**, below the 3:1
+  floor `.claude/rules/frontend.md` requires of a decorative semantic dot. Dots on a plain
+  card/row backdrop (`EngagementCard`, both list rows) keep the solid fill, where ≥3:1 holds.
+- `ContactCard`'s no-group/no-custom tag default now renders the adaptive `secondary` pair
+  instead of a frozen `#64748B` on `#F1F5F9` (4.34:1 — an ISS#142 failure). Caller-supplied
+  `color:` / `bg_color:` remain a deliberate passthrough (the ISS#172 principle) and are
+  unchanged, including their independent per-property fallbacks.
+- The tag labels beside the decorative dots in `AccountListRow`, `ContactListRow` and
+  `EngagementCard` moved to `text-body`. These are load-bearing, not an unrelated colour sweep:
+  the dots are `aria-hidden`, so the label is what carries the category — and the frozen
+  `#1B2A4A` navy measured **1.09:1** on Bootstrap's dark surface.
+- `spec/dummy/.../tag_input_demo` now uses the real CRM group vocabulary. It previously used the
+  controller's stale names, which is why the key mismatch went unnoticed: the one fixture anyone
+  would look at was written against the broken map's vocabulary.
+
+### Removed
+- `Badge::Component::TAG_GROUPS` — a byte-identical duplicate of `TagChip::Component::GROUPS`
+  that drifted independently. `Badge` reads `GROUP_VARIANTS` instead.
+- `AccountListRow::Component::TAG_DOT_COLORS` and `ContactListRow::Component::TAG_DOT_COLORS`.
+- `FilterChipBar::Component::GROUPS` — an alias left unused by #167.
+
+  All four are internal constants with no references outside this engine (verified across
+  Markaz, SFA, Garden and Harvest); pre-1.0, so formally breaking only if referenced directly.
+  **`TagChip::Component::GROUPS` is retained** — nothing renders from it, but it remains the
+  canonical group key set (`TagChip` validates `group:` against it, Badge's preview enumerates
+  it) and the record of the original brand hex.
+
 ## [0.12.0] - 2026-07-24
 
 ### Added

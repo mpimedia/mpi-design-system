@@ -283,6 +283,23 @@ Rules:
   designer decision. (Reference: #151 mapped the 7-category `TagChip::Component::GROUPS`, and
   `press_festival`/`production`/`vendors` all collapsed onto blue — Codex's plan review caught the
   `info==primary` fact the plan had missed.)
+- **A decorative semantic dot's treatment depends on the surface it sits on — a solid
+  `bg-#{semantic}` fill *cannot* clear 3:1 inside a `-subtle` chip.** The rule below reserves
+  solid `bg-#{semantic}` for decorative marks and requires ≥3:1 on the resting surface. That is
+  satisfiable on a card/row backdrop (`bg-body`), but **not** on the element's own
+  `-subtle` surface: `bg-success` on `bg-success-subtle` measures **2.67:1**, `bg-warning` on
+  `bg-warning-subtle` **2.62:1** — both below the floor, because a subtle surface is by
+  construction a tint of the same hue. So pick by placement:
+  **dot inside a `-subtle` chip → `background-color: currentColor`** (inherits the chip's
+  `-emphasis` foreground: 9.34:1–10.52:1 light, 7.15:1–8.61:1 dark, adaptive by construction, no
+  second token needed); **dot on a plain card/row surface → solid `bg-#{semantic}`**, the
+  documented fixed-hue exception. Note `currentColor` is also the one value a theme-adaptivity
+  guard should *allow* in a `background-color` declaration, alongside `transparent`, `inherit`
+  and `var(--bs-*)`. Prove it in a browser by asserting the dot's computed
+  `background-color` **equals the chip's computed foreground** — a wrong fill is still "some
+  colour", so only the equality catches it. (Reference: #168 converted the remaining nine tag
+  renderers; the plan promised solid dots *and* a ≥3:1 test, which Codex's plan review showed
+  could not both hold.)
 - **A solid `bg-#{semantic}` fill is a *fixed* hue, not theme-adaptive — it reads
   `--bs-#{semantic}-rgb`, which Bootstrap does not shift under `data-bs-theme`.** Only
   `-subtle`/`-emphasis`, `bg-body`, `text-body`/`text-body-secondary` and `--bs-link-color`

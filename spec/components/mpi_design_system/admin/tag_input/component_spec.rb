@@ -98,13 +98,85 @@ RSpec.describe MpiDesignSystem::Admin::TagInput::Component, type: :component do
     expect(page).to have_css("div[data-mpi--tag-input-target='dropdown'][style*='margin-top: 4px; display: none']", visible: :hidden)
   end
 
-  it "renders selected tag chips with correct colors" do
-    render_inline(described_class.new(
-      available_tags: available_tags,
-      selected_tags: [ { label: "VIP", group: :distribution } ]
-    ))
+  # Three separate colour-emitting paths live in this template — the selected chip, its
+  # remove button, and the derived-group pills — and before #168 only ONE had any
+  # coverage. Each is asserted by a selector unique to it, so a defect in one cannot be
+  # masked by another being right.
+  describe "selected tag chips (#168)" do
+    let(:chip) { "span[data-mpi--tag-input-target='tag']" }
+    let(:chip_style) { "font-size: 13px; padding: 0.25em 0.75em; line-height: 1.4" }
+    let(:remove_style) { "padding: 0; font-size: inherit; line-height: 1; cursor: pointer" }
 
-    expect(page).to have_css("span[style*='color: #E8733A']", text: "VIP")
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "renders a #{group} chip as the #{variant} subtle/emphasis pair" do
+        render_inline(described_class.new(
+          available_tags: available_tags, selected_tags: [ { label: "VIP", group: group } ]
+        ))
+
+        expect(page).to have_css(
+          "#{chip}.rounded-pill.bg-#{variant}-subtle.text-#{variant}-emphasis[style='#{chip_style}']",
+          text: "VIP"
+        )
+      end
+    end
+
+    it "falls back to the adaptive secondary pair for an unknown group" do
+      render_inline(described_class.new(
+        available_tags: available_tags, selected_tags: [ { label: "VIP", group: :not_a_group } ]
+      ))
+
+      expect(page).to have_css("#{chip}.bg-secondary-subtle.text-secondary-emphasis", text: "VIP")
+    end
+
+    it "renders a remove button that pins no colour and no opacity" do
+      render_inline(described_class.new(
+        available_tags: available_tags, selected_tags: [ { label: "VIP", group: :distribution } ]
+      ))
+
+      expect(page).to have_css(
+        "#{chip} > button.text-reset.bg-transparent.border-0[aria-label='Remove VIP'][style='#{remove_style}']"
+      )
+      expect(page).not_to have_css("#{chip} > button[style*='opacity']")
+      expect(page).not_to have_css("#{chip} > button[style*='color']")
+    end
+
+    it "leaves no frozen-colour declaration on the chip or its button" do
+      render_inline(described_class.new(
+        available_tags: available_tags, selected_tags: [ { label: "VIP", group: :distribution } ]
+      ))
+
+      expect(page).to have_css("#{chip}.bg-danger-subtle", text: "VIP")
+      inline_styles("#{chip}, #{chip} > button").each do |style|
+        expect(style).to be_free_of_frozen_colour
+      end
+    end
+  end
+
+  describe "derived group pills (#168)" do
+    # `d-inline-block` distinguishes the derived pill from the `d-inline-flex` chip, so
+    # these assertions cannot be satisfied by the chips being correct.
+    let(:derived) { "span.rounded-pill.d-inline-block" }
+
+    it "renders one pill per distinct group of the selected tags" do
+      render_inline(described_class.new(
+        available_tags: available_tags,
+        selected_tags: [
+          { label: "VIP", group: :distribution },
+          { label: "Press", group: :outreach },
+          { label: "Also VIP", group: :distribution }
+        ]
+      ))
+
+      expect(page).to have_css("#{derived}.bg-danger-subtle.text-danger-emphasis", text: "Distribution", count: 1)
+      expect(page).to have_css("#{derived}.bg-success-subtle.text-success-emphasis", text: "Outreach", count: 1)
+    end
+
+    it "renders no derived section when nothing is selected" do
+      render_inline(described_class.new(available_tags: available_tags))
+
+      expect(page).to have_css("div[data-controller='mpi--tag-input']")
+      expect(page).not_to have_css(derived)
+    end
   end
 
   it "renders Stimulus action bindings on input" do

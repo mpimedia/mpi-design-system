@@ -7,6 +7,32 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <style>
+    /* MPI tokens. These mockups load STOCK Bootstrap from a CDN, whose --bs-primary is
+       #0d6efd. Without this block every semantic utility below would paint Bootstrap's
+       indigo/cyan/grey instead of MPI's palette — looking converted while contradicting
+       the component it documents. Values are the compiled engine bundle's, verified in a
+       browser. (#168, see .claude/rules/frontend.md) */
+    :root, [data-bs-theme="light"] {
+      --bs-primary: #2E75B6; --bs-primary-rgb: 46, 117, 182;
+      --bs-success: #22A06B; --bs-success-rgb: 34, 160, 107;
+      --bs-warning: #D4772C; --bs-warning-rgb: 212, 119, 44;
+      --bs-danger: #DC3545;  --bs-danger-rgb: 220, 53, 69;
+      --bs-secondary: #6C757D; --bs-secondary-rgb: 108, 117, 125;
+      --bs-body-color: #1B2A4A; --bs-body-color-rgb: 27, 42, 74;
+      --bs-primary-bg-subtle: #D5E3F0;   --bs-primary-text-emphasis: #122F49;
+      --bs-success-bg-subtle: #D3ECE1;   --bs-success-text-emphasis: #0E402B;
+      --bs-warning-bg-subtle: #F6E4D5;   --bs-warning-text-emphasis: #553012;
+      --bs-danger-bg-subtle: #F8D7DA;    --bs-danger-text-emphasis: #58151C;
+      --bs-secondary-bg-subtle: #E2E3E5; --bs-secondary-text-emphasis: #2B2F32;
+    }
+    [data-bs-theme="dark"] {
+      --bs-body-color: #DEE2E6; --bs-body-color-rgb: 222, 226, 230;
+      --bs-primary-bg-subtle: #091724;   --bs-primary-text-emphasis: #82ACD3;
+      --bs-success-bg-subtle: #072015;   --bs-success-text-emphasis: #7AC6A6;
+      --bs-warning-bg-subtle: #2A1809;   --bs-warning-text-emphasis: #E5AD80;
+      --bs-danger-bg-subtle: #2C0B0E;    --bs-danger-text-emphasis: #EA868F;
+      --bs-secondary-bg-subtle: #161719; --bs-secondary-text-emphasis: #A7ACB1;
+    }
     body { padding: 32px; background: #fff; }
     .preview-section { margin-bottom: 32px; }
     .preview-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #6C757D; margin-bottom: 8px; }
@@ -72,8 +98,8 @@
         <button class="btn btn-outline-primary btn-sm"><i class="bi bi-funnel me-1"></i>Filter</button>
       </div>
       <div class="d-flex gap-1 mt-2">
-        <span class="tag-chip" style="color: #E8733A; background: #FEF3EC;">Buyers <span style="cursor:pointer;opacity:0.6;">&times;</span></span>
-        <span class="tag-chip" style="color: #2E75B6; background: #EBF3FB;">Festivals <span style="cursor:pointer;opacity:0.6;">&times;</span></span>
+        <span class="tag-chip bg-danger-subtle text-danger-emphasis" >Distribution <span class="text-reset" style="cursor:pointer;">&times;</span></span>
+        <span class="tag-chip bg-primary-subtle text-primary-emphasis" >Press/Festival <span class="text-reset" style="cursor:pointer;">&times;</span></span>
       </div>
     </div>
   </div>

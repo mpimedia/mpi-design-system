@@ -37,15 +37,20 @@ Pill-shaped badges used for status indicators, counts, and labels across all MPI
 
 ### Tag Group Colors
 
-| Group | Text | Background |
+| Group | Semantic | Rendered classes |
 |---|---|---|
-| Distribution | `#E8733A` | `#FEF3EC` |
-| Outreach | `#2DA67E` | `#ECF8F4` |
-| Press/Festival | `#2E75B6` | `#EBF3FB` |
-| Vendors | `#8B5CF6` | `#F3EFFE` |
-| Finance | `#D97706` | `#FEF9EC` |
-| Production | `#6366F1` | `#EEEFFE` |
-| Internal | `#64748B` | `#F1F5F9` |
+| Press/Festival | `primary` | `bg-primary-subtle text-primary-emphasis` |
+| Production | `primary` | `bg-primary-subtle text-primary-emphasis` |
+| Vendors | `primary` | `bg-primary-subtle text-primary-emphasis` |
+| Outreach | `success` | `bg-success-subtle text-success-emphasis` |
+| Finance | `warning` | `bg-warning-subtle text-warning-emphasis` |
+| Distribution | `danger` | `bg-danger-subtle text-danger-emphasis` |
+| Internal | `secondary` | `bg-secondary-subtle text-secondary-emphasis` |
+
+Colour resolves from `TagChip::Component::GROUP_VARIANTS` and follows `data-bs-theme`.
+Because MPI maps `$info` → `$primary`, the seven categories collapse onto **five** distinct
+hues; the always-present text label carries the identity. See `catalog/elements/tag-chip.md`
+for the full mapping rationale and the per-surface treatment table. (#168)
 
 ## Sizes
 
@@ -91,7 +96,13 @@ end
 - Filled badges derive their foreground via Bootstrap's `text-bg-*` utilities, so every
   semantic color meets WCAG AA automatically (previously `success` paired a hardcoded
   `text-white` for only 3.33:1 — see #128)
-- All tag group color pairs have been verified for WCAG AA compliance
+- The `tag_group` variant renders `bg-{semantic}-subtle` + `text-{semantic}-emphasis`
+  from the shared `TagChip::Component::GROUP_VARIANTS` map, so Bootstrap derives an
+  AA-clean pair per colour mode — browser-measured 9.34:1–10.52:1 light and
+  7.15:1–8.61:1 dark. This replaced Badge's own `TAG_GROUPS` hex duplicate, whose
+  seven pairs all measured **below** the 4.5:1 floor (2.77:1–4.34:1, ISS#142 §1) —
+  the earlier "all verified for WCAG AA" claim here was false (#168)
+- An unknown `tag_group:` renders an unstyled badge rather than guessing a colour
 - Use `aria-label` when badge text alone is insufficient context (e.g., a count badge)
 
 ## Usage Guidelines

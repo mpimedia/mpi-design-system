@@ -124,6 +124,25 @@
         ) %>
   </section>
 
+  <%# #168: one TagChip per DISTINCT GROUP_VARIANTS hue (the 7 categories collapse to 5,
+      since MPI maps $info -> $primary), shared by the light (#tag-chip) and dark
+      (#dark-tag-chip) renders so contrast_spec can loop every semantic in both modes.
+      Each chip is `removable` so the remove control's inherited foreground — and the
+      absence of the retired `opacity: 0.6` — are measurable too. %>
+  <% tag_chip_samples = MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS
+       .group_by { |_group, variant| variant }
+       .map { |variant, pairs| [ variant, pairs.first.first ] } %>
+
+  <section id="tag-chip" class="mb-4">
+    <% tag_chip_samples.each do |variant, group| %>
+      <span data-variant="<%= variant %>" class="me-1">
+        <%= render MpiDesignSystem::Admin::TagChip::Component.new(
+              label: group.to_s.titleize, group: group, removable: true
+            ) %>
+      </span>
+    <% end %>
+  </section>
+
   <section id="filter-chip-bar" class="mb-4">
     <%= render MpiDesignSystem::Admin::FilterChipBar::Component.new(
           groups: [
@@ -189,6 +208,19 @@
             clear_all_url: "#"
           ) %>
     </div>
+    <%# #168: the same five hues under dark mode. The `-subtle`/`-emphasis` pair must
+        re-resolve to its dark values, and the dot — which paints `currentColor` rather
+        than a solid `bg-#{variant}` — must follow the chip's dark foreground. %>
+    <div id="dark-tag-chip" class="mb-3">
+      <% tag_chip_samples.each do |variant, group| %>
+        <span data-variant="<%= variant %>" class="me-1">
+          <%= render MpiDesignSystem::Admin::TagChip::Component.new(
+                label: group.to_s.titleize, group: group, removable: true
+              ) %>
+        </span>
+      <% end %>
+    </div>
+
     <div id="dark-filter-chip-bar" class="mb-3">
       <%= render MpiDesignSystem::Admin::FilterChipBar::Component.new(
             groups: [

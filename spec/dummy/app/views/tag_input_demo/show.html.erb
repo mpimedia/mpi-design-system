@@ -1,14 +1,26 @@
 <% content_for :title, "Tag Input Demo" %>
 
+<%# Groups use the CRM vocabulary the component actually validates against
+    (`TagChip::Component::GROUP_VARIANTS`). This fixture previously used the LEGACY
+    names — buyers / sellers / festivals — which existed only in the Stimulus
+    controller's own stale colour map. That is why the tag_input_controller.js
+    key mismatch went unnoticed for so long: the one fixture anyone would look at was
+    written against the controller's vocabulary, so the JS path looked correct here
+    while every real component group fell through to grey. (#168)
+
+    One tag per distinct GROUP_VARIANTS hue, so the feature spec can prove the
+    interactively-added chip picks up the right semantic for more than one category. %>
 <main class="container py-4">
   <h1 class="h4 mb-3">Tag Input Demo</h1>
 
   <%= render MpiDesignSystem::Admin::TagInput::Component.new(
         available_tags: [
-          { label: "VIP", group: :buyers },
-          { label: "Priority", group: :sellers },
-          { label: "TIFF 2026", group: :festivals },
-          { label: "Cannes", group: :festivals }
+          { label: "VIP", group: :distribution },
+          { label: "Priority", group: :outreach },
+          { label: "TIFF 2026", group: :press_festival },
+          { label: "Cannes", group: :press_festival },
+          { label: "Budget", group: :finance },
+          { label: "Ops", group: :internal }
         ],
         name: "contact[tags][]"
       ) %>

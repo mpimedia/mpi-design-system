@@ -9,14 +9,15 @@
     <%# Selected tags rendered as styled chips matching TagChip appearance %>
     <div class="d-flex flex-wrap gap-1 mb-1" data-mpi--tag-input-target="selectedTags">
       <% @selected_tags.each do |tag| %>
-        <span class="d-inline-flex align-items-center gap-1 fw-semibold"
-              style="color: <%= tag_color(tag[:group]) %>; background-color: <%= tag_bg(tag[:group]) %>; font-size: 13px; padding: 0.25em 0.75em; border-radius: 999px; line-height: 1.4;"
+        <span class="d-inline-flex align-items-center gap-1 fw-semibold <%= tag_chip_classes(tag[:group]) %>"
+              style="<%= tag_chip_styles %>"
               data-mpi--tag-input-target="tag"
               data-tag-label="<%= tag[:label] %>"
               data-tag-group="<%= tag[:group] %>">
           <%= tag[:label] %>
           <button type="button"
-                  style="color: <%= tag_color(tag[:group]) %>; opacity: 0.6; background: none; border: none; padding: 0; font-size: inherit; line-height: 1; cursor: pointer;"
+                  class="text-reset bg-transparent border-0"
+                  style="<%= tag_remove_button_styles %>"
                   aria-label="Remove <%= tag[:label] %>"
                   data-action="mpi--tag-input#removeTag">
             <i class="bi bi-x-lg" aria-hidden="true"></i>
@@ -50,7 +51,7 @@
       <div style="<%= section_heading_styles %>">Auto-Derived Groups</div>
       <div class="d-flex flex-wrap gap-1">
         <% derived_groups.each do |group_sym| %>
-          <span style="<%= derived_group_styles(group_sym) %>"><%= derived_group_label(group_sym) %></span>
+          <span class="<%= derived_group_classes(group_sym) %>" style="<%= derived_group_styles %>"><%= derived_group_label(group_sym) %></span>
         <% end %>
       </div>
     </div>
