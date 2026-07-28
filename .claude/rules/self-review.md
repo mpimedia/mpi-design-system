@@ -32,6 +32,26 @@ HC the work is complete:
       - `bundle exec rubocop -a` — zero offenses
       - `bundle exec rspec` — zero failures
 
+## Re-Review the Review-Response Commit
+
+Fixes written in response to review are the one part of a PR that **nobody has reviewed**. The
+diff review ran against the original commit; the fixes landed after it. Nothing looks at them
+again unless you ask for it — and they are written fast, under the assumption that a reviewed
+finding has an obvious correction.
+
+#168 commissioned a second review pass on its own review-response commit and it returned
+**1 P0, 3 P1, 2 P2** — including a **P0 introduced while fixing a P0**: reverting a dropdown
+option's text to a frozen colour fixed the *resting* state, while a surface change made in the
+same commit left the hovered and keyboard-active states at **1.07:1**. The same pass found that
+neither of the commit's two guard fixes was isolated by its own test (see
+`.claude/rules/testing.md`, "A red suite is not a red *rule*").
+
+So: after addressing review findings, review the fix commit as its own diff — ideally with a
+second model, since the author who just wrote the fixes is the least able to see what they broke.
+Weight it toward the classes of defect that fixes specifically introduce: a correction applied
+more broadly than the finding warranted, a second state or code path the fix did not reach, and a
+new assertion that passes for a reason other than the one intended.
+
 ## Never Deflect Work
 
 - Never say "needs manual testing" without proving `render_inline` + Capybara matchers

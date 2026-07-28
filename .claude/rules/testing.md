@@ -198,6 +198,15 @@ form stays green. (#152.)
 **Related:** when a constant drives behavior (`ACTION_METHODS`, `COLORS`, `SIZES`), loop it
 rather than spot-checking one member — otherwise a typo in the constant ships green.
 
+**Related — when the mapping is many-to-one, loop the *domain*, not the codomain.** Looping the
+distinct *outputs* of a mapping feels equivalent to looping its keys and is not: keys that share an
+output are covered by whichever one the loop happens to reach, so a typo in any of the others ships
+green. `TagChip::Component::GROUP_VARIANTS` maps seven groups onto five semantics, with
+`press_festival`/`production`/`vendors` all on `primary` — a per-*hue* loop therefore leaves two of
+the seven keys entirely unproven, including in the JS mirror where the keys are duplicated by hand.
+Loop `GROUP_VARIANTS.each_key`, and assert the resolved value per key. (Reference: #168 — external
+review caught the per-hue loop; two duplicated JS keys had never been exercised.)
+
 **Related — `render_inline` lowercases SVG attribute names, so a camelCase selector silently
 matches nothing.** ViewComponent's `render_inline` parses output through Nokogiri's HTML parser,
 which downcases attribute *names* (`viewBox` → `viewbox`, `preserveAspectRatio` →
@@ -294,13 +303,38 @@ end
 Note the positive half: without it the example passes on a pattern that matches nothing at
 all. Proving a guard can fail does not exempt it from False Green #2.
 
-Two practical rules when mutation-testing:
+Three practical rules when mutation-testing:
 
 - **Isolate the spec file.** `version_spec.rb` independently pins the version, so bumping
   `VERSION` reddens it regardless — a full-suite red proves nothing about the guard you are
   testing. Run the single file.
 - **Never mutate with `git stash`** (shared stash stack, see `CLAUDE.md`). Edit, capture the
   failure, revert, then confirm `git diff` shows only the intended change.
+- **A red suite is not a red *rule* — when two checks can catch the same mutation, neither is
+  individually proven.** Isolating the *file* is not enough; overlapping checks inside it produce
+  the same false confidence. #168's theme-adaptivity guard ran a property scan and a literal scan.
+  Its recursive-fallback fix was *also* caught by the literal scan, and its independent-scans fix
+  was *also* caught by the property rule — so **either fix could be deleted with the suite still
+  green**, after the author had watched red and while every example passed. Exercise the unit
+  directly, assert *which* check produced the offence, and choose a fixture only the target check
+  can reject: #168's custom-property case used `chartreuse`, which the named-colour scan also
+  catches, and became isolating only as `papayawhip` — absent from the blacklist and not a
+  literal. Delete each rule one at a time and confirm the failure count changes by exactly what
+  that rule owns. (Reference: #168 round 2 — the sharpest of three review passes; round 1's fixes
+  were correct and effectively untested.)
+
+**A guard must fail *closed* on input it cannot parse.** A validator has three outcomes, not two —
+pass, fail, and *don't know* — and routing "don't know" to pass is how a guard ships fail-open with
+its own tests green. #168's `adaptive_value?` returned `nil` both for "this value has no fallback"
+and for "I could not parse this value", and `nil` meant adaptive; executed against the guard,
+`color: var(--bs-body-color, chartreuse) !important`, `text-shadow: 0 0 2px chartreuse`,
+`--x: chartreuse` and `caret-color: light-dark(chartreuse, papayawhip)` each returned **zero
+offences**. Make the unparseable branch reject, treat every un-excepted custom property as
+in-scope, and enumerate the bypasses by running them rather than by reasoning about coverage.
+Related: **do not describe a guard as a whitelist when one of its axes is a blacklist.** That
+file's doc comment claimed a "whitelist on both axes"; the value axis is a named-colour blacklist
+and can never be complete. Claiming a guarantee the code does not provide is the prose-only
+assurance this file warns about. (Reference: #168 round 2.)
 
 **Verify claims about a pattern by executing it, not by reading it.** #127's plan review
 produced a confident, wrong claim that `\[`/`\]` form a character class; a three-line Ruby
@@ -400,6 +434,13 @@ catches the fail-open you wrote and therefore cannot see. (The hardened block li
   `sort -u` CI gate was sound while the `gh` producer feeding it silently dropped a still-running
   check; the fail-open lived in the producer, and only an independent adversary caught it — see
   **A check written in documentation is still a check** above
+- Never treat a red suite as proof that a *specific* rule is load-bearing when a second check
+  catches the same mutation — assert which one fired — see **A red suite is not a red rule** above
+- Never let a guard pass input it could not parse; "don't know" must route to reject, and never
+  call a guard a whitelist when one of its axes is an unclosable blacklist — see **A guard must
+  fail closed** above
+- Never loop a many-to-one mapping by its distinct outputs — loop the keys, or the keys sharing an
+  output ship untested — see **when the mapping is many-to-one** above
 - Never test private methods — test through the rendered output
 - Never reference models, the database, or request specs — the engine has none (browser
   feature specs exist, but only for genuine JS behavior — see Stack; default to `render_inline`)
