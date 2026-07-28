@@ -8,8 +8,11 @@
     written against the controller's vocabulary, so the JS path looked correct here
     while every real component group fell through to grey. (#168)
 
-    One tag per distinct GROUP_VARIANTS hue, so the feature spec can prove the
-    interactively-added chip picks up the right semantic for more than one category. %>
+    ALL SEVEN groups are present, not one per distinct hue: the Stimulus controller
+    duplicates the mapping in JavaScript (it cannot read the Ruby constant), so the
+    feature spec has to exercise every KEY to prove the duplicate is complete. Covering
+    only the five hues would let a missing `production` or `vendors` key fall through to
+    the secondary fallback unnoticed. %>
 <main class="container py-4">
   <h1 class="h4 mb-3">Tag Input Demo</h1>
 
@@ -20,7 +23,9 @@
           { label: "TIFF 2026", group: :press_festival },
           { label: "Cannes", group: :press_festival },
           { label: "Budget", group: :finance },
-          { label: "Ops", group: :internal }
+          { label: "Ops", group: :internal },
+          { label: "Studio", group: :production },
+          { label: "Agency", group: :vendors }
         ],
         name: "contact[tags][]"
       ) %>

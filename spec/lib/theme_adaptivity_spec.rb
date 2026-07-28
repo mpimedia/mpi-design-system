@@ -49,7 +49,19 @@ RSpec.describe ThemeAdaptivity do
       "a hex inside a shorthand function" => "background: linear-gradient(#fff, #000)",
       # A non-Bootstrap custom property may not resolve at all, so its hex fallback is
       # what actually paints — a frozen colour by another name.
-      "a non-Bootstrap var() with a hex fallback" => "background-color: var(--mds-avatar-0, #64748B)"
+      "a non-Bootstrap var() with a hex fallback" => "background-color: var(--mds-avatar-0, #64748B)",
+      # Codex PR review, P1-3. The prefix check alone accepted this, and the literal scan
+      # was an `elsif`, so the frozen fallback was never examined. An absent token makes
+      # that fallback the colour that actually paints (the #155 un-imported-partial case).
+      "a var(--bs-*) whose FALLBACK is a frozen hex" => "background-color: var(--bs-body-bg, #fff)",
+      "a var(--bs-*) whose fallback is a named colour" => "color: var(--bs-body-color, black)",
+      # Same review: a named colour on a property the list does not name.
+      "a named colour on an unlisted property" => "caret-color: red",
+      "a named colour in a text-shadow" => "text-shadow: 0 0 2px black",
+      # Modern colour spaces a narrow rgb()/hsl() regex misses entirely.
+      "an oklch() value" => "caret-color: oklch(0.7 0.1 200)",
+      "a color() value" => "caret-color: color(display-p3 1 0 0)",
+      "a color-mix() value" => "background: color-mix(in srgb, red, blue)"
     }.each do |label, style|
       it "rejects #{label}" do
         expect(offences(style)).not_to be_empty
@@ -64,8 +76,24 @@ RSpec.describe ThemeAdaptivity do
     expect(message).to include("does not re-resolve per colour mode")
   end
 
-  it "reports every offence in a style, not merely the first" do
-    expect(offences("color: #fff; opacity: 0.5; padding: 0").size).to eq(2)
+  it "reports every offending declaration in a style, not merely the first" do
+    reported = offences("color: #fff; opacity: 0.5; padding: 0")
+
+    # One declaration can trip both scans (a hex on a paint property trips the property
+    # rule AND the literal rule), so assert on which DECLARATIONS were named.
+    expect(reported.select { |o| o.include?("color: #fff") }).not_to be_empty
+    expect(reported.select { |o| o.include?("opacity: 0.5") }).not_to be_empty
+    expect(reported.select { |o| o.include?("padding: 0") }).to be_empty
+  end
+
+  # The property scan and the literal scan must both run on the same declaration; when
+  # they were an if/elsif, a value the property rule accepted skipped the literal scan.
+  it "reports a nested literal even when the property rule accepts the value shape" do
+    expect(offences("background-color: var(--bs-body-bg, #fff)")).not_to be_empty
+  end
+
+  it "still allows a var(--bs-*) whose fallback is itself adaptive" do
+    expect(offences("color: var(--bs-body-color, currentColor)")).to be_empty
   end
 
   # A known, deliberate limitation rather than a defect: the `var(--mds-*, <hex>)` pattern

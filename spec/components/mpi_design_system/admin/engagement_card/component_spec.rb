@@ -124,21 +124,34 @@ RSpec.describe MpiDesignSystem::Admin::EngagementCard::Component, type: :compone
       expect(page).to have_text("Press")
     end
 
-    # The label beside the dot is what actually carries the category for a screen
-    # reader (the dot is aria-hidden), so it must stay legible in BOTH colour modes.
-    # The frozen #1B2A4A navy it used to paint measures 1.09:1 on Bootstrap's dark
-    # surface — which would have quietly invalidated the decorative-dot rationale.
-    it "renders the accompanying label in adaptive text-body" do
+    # DELIBERATELY the opposite of the list rows' equivalent example. This card paints
+    # its own hardcoded `background: #fff`, so the label sits on a fixed white surface in
+    # both colour modes: the navy measures 14.22:1 there, whereas an adaptive `text-body`
+    # would resolve to #DEE2E6 in dark mode and paint 1.30:1 on that same white card.
+    # `text-body` is correct only where the surface adapts too. Pinning the navy here
+    # stops a well-meaning "make it adaptive" edit from reintroducing that regression.
+    it "keeps the frozen navy label, because the card surface is fixed white" do
       render_inline(described_class.new(**default_params.merge(tags: [ { group: :distribution, role: "Acquisitions" } ])))
 
-      expect(page).to have_css("span.text-body", text: "Acquisitions")
-      expect(inline_style("span.text-body")).to be_free_of_frozen_colour
+      expect(page).to have_css("span[style='font-size: 12px; color: #1B2A4A;']", text: "Acquisitions")
+      expect(page).not_to have_css("span.text-body", text: "Acquisitions")
+    end
+
+    it "still paints that label against a white card, so the pair stays AA in both modes" do
+      render_inline(described_class.new(**default_params.merge(tags: [ { group: :distribution, role: "Acquisitions" } ])))
+
+      expect(page).to have_css("article[style*='background: #fff']")
+      expect(MpiDesignSystem::ColorContrast.ratio("#1B2A4A", "#FFFFFF")).to be >= 4.5
     end
 
     it "renders no dots when there are no tags" do
       render_inline(described_class.new(**default_params.merge(tags: [])))
 
       expect(page).to have_css("span, div")
+      # Reject ANY tag dot, not merely one carrying `bg-*`: a dot that lost its semantic
+      # class is exactly the regression this should catch, and a `bg-*`-scoped absence
+      # assertion would pass right through it (Codex PR review, P1-8).
+      expect(page).not_to have_css("span[aria-hidden='true'][style*='border-radius: 50%']:not([style*='width: 8px'])")
       expect(page).not_to have_css("span[aria-hidden='true'][class*='bg-']")
     end
 

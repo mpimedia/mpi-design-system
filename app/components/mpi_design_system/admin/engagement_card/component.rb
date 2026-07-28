@@ -139,12 +139,16 @@ module MpiDesignSystem
           "width: 6px; height: 6px; border-radius: 50%;"
         end
 
-        # The label beside the decorative dot IS the category's accessible carrier, so
-        # it must stay readable in both colour modes — the frozen #1B2A4A navy it used
-        # to paint measures 1.09:1 on Bootstrap's dark surface. `text-body` in the
-        # template. (#168)
+        # Keeps the frozen navy DELIBERATELY, unlike the list rows' equivalent label.
+        # This card paints its own hardcoded `background: #fff` (`card_styles`), so the
+        # label sits on a fixed white surface in BOTH colour modes: navy measures
+        # 14.22:1 there, while an adaptive `text-body` would resolve to #DEE2E6 in dark
+        # mode and paint 1.30:1 on that same white card — a regression, not a fix.
+        # `text-body` is correct only where the surface adapts too (AccountListRow /
+        # ContactListRow inherit the page background and have no card of their own).
+        # Converting this card to `bg-body` is ISS#142 §3 work. (#168)
         def tag_text_styles
-          "font-size: 12px;"
+          "font-size: 12px; color: #1B2A4A;"
         end
 
         def title_link_styles

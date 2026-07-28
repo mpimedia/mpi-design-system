@@ -158,9 +158,13 @@ export default class extends Controller {
 
     this.dropdownTarget.innerHTML = matches.map(tag => {
       const variant = variantFor(tag.group)
+      // The dropdown panel paints a hardcoded white background (`dropdown_styles`), so
+      // the option keeps the frozen navy: 14.22:1 on that fixed surface in both colour
+      // modes, where an adaptive `text-body` would drop to 1.30:1 in dark mode. The
+      // category DOT below is a solid semantic fill, which is a fixed hue and therefore
+      // safe on white. Converting the panel itself is ISS#142 §3. (#168)
       return `<div role="option"
-                   class="text-body"
-                   style="padding: 8px 12px; cursor: pointer; font-size: 13px;"
+                   style="padding: 8px 12px; cursor: pointer; font-size: 13px; color: #1B2A4A;"
                    data-tag-label="${this.escapeHtml(tag.label)}"
                    data-tag-group="${this.escapeHtml(tag.group)}"
                    data-action="click->mpi--tag-input#onDropdownItemClick mouseover->mpi--tag-input#onDropdownItemHover">

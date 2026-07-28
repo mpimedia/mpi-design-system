@@ -137,6 +137,19 @@ RSpec.describe MpiDesignSystem::Admin::ContactCard::Component, type: :component 
         )
       end
 
+      # Codex PR review flagged this as the one place the conversion is NOT byte-identical
+      # to the retired helpers, and it is an intentional improvement: `"" || default`
+      # returned `""` (empty strings are truthy in Ruby), so the old code emitted the
+      # invalid declaration `color: ;`. Pinned so the choice is visible rather than latent.
+      it "treats a blank custom colour as absent rather than emitting an empty declaration" do
+        render_inline(described_class.new(name: "Test", tags: [ { label: "Blank", color: "" } ]))
+
+        expect(page).to have_css(
+          "span.rounded-pill.bg-secondary-subtle.text-secondary-emphasis", text: "Blank"
+        )
+        expect(page).not_to have_css("span[style*='color: ;']")
+      end
+
       it "keeps a custom background while defaulting the foreground" do
         render_inline(described_class.new(name: "Test", tags: [ { label: "BgOnly", bg_color: "#654321" } ]))
 
@@ -190,7 +203,12 @@ RSpec.describe MpiDesignSystem::Admin::ContactCard::Component, type: :component 
   it "renders without tags" do
     render_inline(described_class.new(name: "Test User", tags: [], path: "/contacts/2"))
 
-    expect(page).not_to have_css("span[style*='border-radius: 999px']")
+    # Positive anchor first, then the absence. The old form asserted no inline
+    # `border-radius: 999px` — which the conversion moved to `.rounded-pill`, so it
+    # became vacuous and passed even if a pill DID render (Codex PR review, P1-8).
+    expect(page).to have_css("a[href='/contacts/2']", text: "Test User")
+    expect(page).not_to have_css("span.rounded-pill")
+    expect(page).not_to have_css("span[aria-hidden='true']")
   end
 
   it "hides owner when not provided" do

@@ -34,8 +34,26 @@ module ThemeAdaptivity
   # Values that re-resolve per colour mode, so they survive a `data-bs-theme` flip.
   ADAPTIVE_VALUES = %w[currentcolor transparent inherit].freeze
 
-  # A hex literal, or an rgb()/rgba()/hsl()/hsla() function call.
-  COLOUR_LITERAL = /#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i
+  # A hex literal, or any CSS colour function. The function list is deliberately broad —
+  # a guard that knows only rgb()/hsl() lets a modern colour space through silently.
+  COLOUR_LITERAL = /
+    \#[0-9a-f]{3,8}\b
+    | \b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|device-cmyk)\(
+  /xi
+
+  # CSS named colours. Not exhaustive by intent — it covers the ones a human would
+  # actually reach for, and the property whitelist above is what catches the rest on a
+  # colour-bearing property. Its job is the residual case: a named colour on a property
+  # COLOUR_PROPERTIES does not list (e.g. `caret-color: red`).
+  NAMED_COLOURS = %w[
+    black white red green blue yellow orange purple pink brown grey gray silver gold
+    navy teal aqua cyan magenta maroon olive lime indigo violet crimson salmon coral
+    tomato khaki plum orchid tan beige ivory azure lavender turquoise chocolate
+    firebrick forestgreen goldenrod hotpink lightblue lightgreen midnightblue
+    rebeccapurple seagreen skyblue slategray slategrey steelblue whitesmoke
+  ].freeze
+
+  NAMED_COLOUR_PATTERN = /\b(?:#{NAMED_COLOURS.join('|')})\b/i
 
   module_function
 
@@ -53,26 +71,43 @@ module ThemeAdaptivity
     declaration.split(":", 2).last.to_s.strip
   end
 
+  # A `var(--bs-*)` reference re-resolves per colour mode — but only if it actually
+  # resolves. `var(--bs-body-bg, #fff)` falls back to a FROZEN colour whenever the token
+  # is absent, which is precisely the situation an un-imported partial creates (#155).
+  # So the token form is adaptive only when its fallback is itself adaptive, or absent.
   def adaptive_value?(value)
     normalised = value.strip.downcase
-    ADAPTIVE_VALUES.include?(normalised) || normalised.start_with?("var(--bs-")
+    return true if ADAPTIVE_VALUES.include?(normalised)
+    return false unless normalised.start_with?("var(--bs-")
+
+    fallback = normalised[/\Avar\(\s*--bs-[a-z0-9-]+\s*,(.*)\)\z/m, 1]
+    fallback.nil? || adaptive_value?(fallback)
   end
 
   # Returns [] when the style makes no frozen-colour decision, else the offending
   # declarations with the reason each was rejected.
+  #
+  # The two scans are INDEPENDENT, not an if/elsif chain: a value accepted by the
+  # property rule must still be checked for an embedded literal, or
+  # `background-color: var(--bs-body-bg, #fff)` passes on the strength of its prefix
+  # while a frozen hex rides along in the fallback.
   def frozen_colour_offences(style)
-    declarations(style).filter_map do |declaration|
+    declarations(style).flat_map do |declaration|
       property = property_of(declaration)
       value = value_of(declaration)
+      next [] if GEOMETRY_EXCEPTIONS.include?(property)
 
-      next if GEOMETRY_EXCEPTIONS.include?(property)
-
+      offences = []
       if COLOUR_PROPERTIES.include?(property) && !adaptive_value?(value)
-        "#{declaration.inspect} — `#{property}` paints, and #{value.inspect} does not " \
+        offences << "#{declaration.inspect} — `#{property}` paints, and #{value.inspect} does not " \
           "re-resolve per colour mode (allowed: currentColor, transparent, inherit, var(--bs-*))"
-      elsif declaration.match?(COLOUR_LITERAL)
-        "#{declaration.inspect} — carries a colour literal"
       end
+      if value.match?(COLOUR_LITERAL)
+        offences << "#{declaration.inspect} — carries a colour literal"
+      elsif value.match?(NAMED_COLOUR_PATTERN)
+        offences << "#{declaration.inspect} — carries a named CSS colour"
+      end
+      offences
     end
   end
 end

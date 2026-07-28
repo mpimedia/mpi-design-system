@@ -56,6 +56,11 @@ module MpiDesignSystem
           GROUP_VARIANTS[tag[:group]]
         end
 
+        # `present?`, not a bare truthiness check, is one DELIBERATE difference from the
+        # retired `resolve_color`/`resolve_bg`. Those used `tag[:color] || default`, and an
+        # empty string is truthy in Ruby — so `color: ""` was treated as supplied and
+        # emitted the invalid declaration `color: ;`. A blank value now falls through to
+        # the semantic pair instead. Every non-blank value behaves exactly as before.
         def custom_tag?(tag)
           tag_variant(tag).nil? && (tag[:color].present? || tag[:bg_color].present?)
         end

@@ -51,11 +51,18 @@ include breaking changes).
   instead of a frozen `#64748B` on `#F1F5F9` (4.34:1 — an ISS#142 failure). Caller-supplied
   `color:` / `bg_color:` remain a deliberate passthrough (the ISS#172 principle) and are
   unchanged, including their independent per-property fallbacks.
-- The tag labels beside the decorative dots in `AccountListRow`, `ContactListRow` and
-  `EngagementCard` moved to `text-body`. These are load-bearing, not an unrelated colour sweep:
-  the dots are `aria-hidden`, so the label is what carries the category — and the frozen
-  `#1B2A4A` navy measured **1.09:1** on Bootstrap's dark surface.
-- `spec/dummy/.../tag_input_demo` now uses the real CRM group vocabulary. It previously used the
+- **A tag label's foreground now depends on whether its component's surface adapts.** The dots
+  are `aria-hidden`, so the adjacent label is what carries the category and must stay legible in
+  both colour modes — but "adaptive" is only correct where the *surface* adapts too.
+  `AccountListRow` and `ContactListRow` have no card of their own and inherit the page, so their
+  labels moved to `text-body` (the frozen `#1B2A4A` measured **1.09:1** on a dark page).
+  `EngagementCard` and `TagInput`'s dropdown paint their own hardcoded `background: #fff`, so
+  theirs **keep** the navy: it measures 14.22:1 on that fixed white, whereas `text-body` would
+  resolve to `#DEE2E6` in dark mode and paint **1.30:1** on the same white card — a regression,
+  not a fix. Converting those two shells to `bg-body` is ISS#142 §3 work.
+- `spec/dummy/.../tag_input_demo` now uses the real CRM group vocabulary, and carries all seven
+  groups so the feature spec exercises every duplicated JS key (three share the `primary` hue, so
+  a per-hue loop would leave two unproven). It previously used the
   controller's stale names, which is why the key mismatch went unnoticed: the one fixture anyone
   would look at was written against the broken map's vocabulary.
 

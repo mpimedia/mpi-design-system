@@ -52,18 +52,18 @@
 </head>
 <body>
   <h4 class="mb-1">TagChip</h4>
-  <p class="text-muted small mb-4">Color-coded tag chips for CRM contact/account classification. Each group has a designated primary + background color pair.</p>
+  <p class="text-muted small mb-4">Category tag chips for CRM contact/account classification. Colour resolves from <code>TagChip::Component::GROUP_VARIANTS</code> as a Bootstrap <code>-subtle</code>/<code>-emphasis</code> pair, so it follows <code>data-bs-theme</code>. The leading dot paints <code>currentColor</code> — inheriting the chip's emphasis foreground — rather than a solid <code>bg-{semantic}</code>, which on a subtle surface would measure only ~2.6:1. Seven categories collapse onto five hues because MPI maps <code>$info → $primary</code>; the text label carries the identity.</p>
 
   <div class="preview-section">
     <div class="preview-label">All Tag Groups</div>
     <div class="preview-row">
-      <span class="tag-chip bg-danger-subtle text-danger-emphasis" >Distribution</span>
-      <span class="tag-chip bg-success-subtle text-success-emphasis" >Outreach</span>
-      <span class="tag-chip bg-primary-subtle text-primary-emphasis" >Press/Festival</span>
-      <span class="tag-chip bg-primary-subtle text-primary-emphasis" >Vendors</span>
-      <span class="tag-chip bg-warning-subtle text-warning-emphasis" >Finance</span>
-      <span class="tag-chip bg-primary-subtle text-primary-emphasis" >Production</span>
-      <span class="tag-chip bg-secondary-subtle text-secondary-emphasis" >Internal</span>
+      <span class="tag-chip bg-danger-subtle text-danger-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Distribution</span>
+      <span class="tag-chip bg-success-subtle text-success-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Outreach</span>
+      <span class="tag-chip bg-primary-subtle text-primary-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Press/Festival</span>
+      <span class="tag-chip bg-primary-subtle text-primary-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Vendors</span>
+      <span class="tag-chip bg-warning-subtle text-warning-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Finance</span>
+      <span class="tag-chip bg-primary-subtle text-primary-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Production</span>
+      <span class="tag-chip bg-secondary-subtle text-secondary-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Internal</span>
     </div>
   </div>
 
@@ -85,10 +85,10 @@
   <div class="preview-section">
     <div class="preview-label">With Specific Tags</div>
     <div class="preview-row">
-      <span class="tag-chip bg-danger-subtle text-danger-emphasis" >MIPCOM 2025</span>
-      <span class="tag-chip bg-success-subtle text-success-emphasis" >Variety</span>
-      <span class="tag-chip bg-primary-subtle text-primary-emphasis" >Cannes 2025</span>
-      <span class="tag-chip bg-primary-subtle text-primary-emphasis" >Netflix</span>
+      <span class="tag-chip bg-danger-subtle text-danger-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>MIPCOM 2025</span>
+      <span class="tag-chip bg-success-subtle text-success-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Variety</span>
+      <span class="tag-chip bg-primary-subtle text-primary-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Cannes 2025</span>
+      <span class="tag-chip bg-primary-subtle text-primary-emphasis" ><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Netflix</span>
     </div>
   </div>
 
@@ -104,9 +104,9 @@
           </div>
         </div>
         <div class="preview-row mt-2">
-          <span class="tag-chip bg-danger-subtle text-danger-emphasis" style="font-size: 12px;">Distribution</span>
-          <span class="tag-chip bg-primary-subtle text-primary-emphasis" style="font-size: 12px;">MIPCOM 2025</span>
-          <span class="tag-chip bg-primary-subtle text-primary-emphasis" style="font-size: 12px;">Priority</span>
+          <span class="tag-chip bg-danger-subtle text-danger-emphasis" style="font-size: 12px;"><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Distribution</span>
+          <span class="tag-chip bg-primary-subtle text-primary-emphasis" style="font-size: 12px;"><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>MIPCOM 2025</span>
+          <span class="tag-chip bg-primary-subtle text-primary-emphasis" style="font-size: 12px;"><span style="width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; flex-shrink: 0;"></span>Priority</span>
         </div>
       </div>
     </div>

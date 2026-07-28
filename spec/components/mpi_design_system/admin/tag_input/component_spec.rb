@@ -171,6 +171,30 @@ RSpec.describe MpiDesignSystem::Admin::TagInput::Component, type: :component do
       expect(page).to have_css("#{derived}.bg-success-subtle.text-success-emphasis", text: "Outreach", count: 1)
     end
 
+    # Complete surviving inline style, exact equality. Without this, deleting
+    # `derived_group_styles` outright or dropping one declaration both ship green — the
+    # #152 "guards police what LEFT, not what stayed" lesson.
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "renders the #{group} derived pill as the #{variant} pair with its complete geometry" do
+        render_inline(described_class.new(
+          available_tags: available_tags, selected_tags: [ { label: "X", group: group } ]
+        ))
+
+        expect(page).to have_css(
+          "#{derived}.bg-#{variant}-subtle.text-#{variant}-emphasis[style='padding: 2px 8px; font-size: 11px; font-weight: 500']"
+        )
+      end
+    end
+
+    it "leaves no frozen-colour declaration on a derived pill" do
+      render_inline(described_class.new(
+        available_tags: available_tags, selected_tags: [ { label: "X", group: :distribution } ]
+      ))
+
+      expect(page).to have_css("#{derived}.bg-danger-subtle")
+      inline_styles(derived).each { |style| expect(style).to be_free_of_frozen_colour }
+    end
+
     it "renders no derived section when nothing is selected" do
       render_inline(described_class.new(available_tags: available_tags))
 

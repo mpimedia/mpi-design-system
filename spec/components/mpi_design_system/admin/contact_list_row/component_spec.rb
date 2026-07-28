@@ -81,6 +81,10 @@ RSpec.describe MpiDesignSystem::Admin::ContactListRow::Component, type: :compone
       render_inline(described_class.new(**default_params.merge(tags: [])))
 
       expect(page).to have_css("span, div")
+      # Reject ANY tag dot, not merely one carrying `bg-*`: a dot that lost its semantic
+      # class is exactly the regression this should catch, and a `bg-*`-scoped absence
+      # assertion would pass right through it (Codex PR review, P1-8).
+      expect(page).not_to have_css("span[aria-hidden='true'][style*='border-radius: 50%']:not([style*='width: 8px'])")
       expect(page).not_to have_css("span[aria-hidden='true'][class*='bg-']")
     end
 

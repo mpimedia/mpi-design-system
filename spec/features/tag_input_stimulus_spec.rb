@@ -82,11 +82,18 @@ RSpec.describe "TagInput Stimulus controller", type: :feature, js: true do
     # compiled engine bundle in light mode. Pinning the PAINTED value (not merely the
     # class) is what proves the controller resolved the right variant: an unstyled or
     # wrongly-keyed chip would inherit its parent's background instead.
+    # Every one of the seven GROUP_VARIANTS keys, not one per distinct hue. The
+    # controller duplicates the mapping in JavaScript, so a missing or mistyped KEY is
+    # the failure mode — and `production`/`vendors`/`press_festival` all resolve to the
+    # same `primary` hue, meaning a per-hue loop would leave two of them unproven.
     {
       "VIP" => { group: "distribution", variant: "danger", surface: "#F8D7DA", foreground: "#58151C" },
       "Priority" => { group: "outreach", variant: "success", surface: "#D3ECE1", foreground: "#0E402B" },
       "Budget" => { group: "finance", variant: "warning", surface: "#F6E4D5", foreground: "#553012" },
-      "Ops" => { group: "internal", variant: "secondary", surface: "#E2E3E5", foreground: "#2B2F32" }
+      "Ops" => { group: "internal", variant: "secondary", surface: "#E2E3E5", foreground: "#2B2F32" },
+      "TIFF 2026" => { group: "press_festival", variant: "primary", surface: "#D5E3F0", foreground: "#122F49" },
+      "Studio" => { group: "production", variant: "primary", surface: "#D5E3F0", foreground: "#122F49" },
+      "Agency" => { group: "vendors", variant: "primary", surface: "#D5E3F0", foreground: "#122F49" }
     }.each do |label, expected|
       it "paints a #{expected[:group]} chip with the #{expected[:variant]} subtle/emphasis pair" do
         visit "/tag_input_demo"
@@ -132,23 +139,39 @@ RSpec.describe "TagInput Stimulus controller", type: :feature, js: true do
     end
 
     # A chip added after load must be indistinguishable from one rendered by the server.
-    # This is the assertion the old vocabulary mismatch would have failed outright.
-    it "matches the server-rendered chip's classes exactly" do
-      visit "/tag_input_demo"
+    # Comparing against a second hardcoded list would only restate the JS; this renders
+    # the REAL server markup and diffs against it, so future server/JS drift reddens.
+    it "matches the server-rendered chip's classes and inline style exactly" do
+      server = ActionController::Base.render(
+        MpiDesignSystem::Admin::TagInput::Component.new(
+          available_tags: [ { label: "VIP", group: :distribution } ],
+          selected_tags: [ { label: "VIP", group: :distribution } ],
+          name: "contact[tags][]"
+        )
+      )
+      server_node = Nokogiri::HTML.fragment(server).at_css("span[data-mpi--tag-input-target='tag']")
+      server_button = server_node.at_css("button")
 
+      visit "/tag_input_demo"
       fill_tag_input("VIP")
       find("[role='option']", text: "VIP").click
       expect(page).to have_css(chip, text: "VIP")
 
       added = page.evaluate_script(
-        "document.querySelector(\"#{chip}[data-tag-label='VIP']\").className.split(/\\s+/).sort().join(' ')"
+        "(() => { const c = document.querySelector(\"#{chip}[data-tag-label='VIP']\");" \
+        "const b = c.querySelector('button');" \
+        "return { cls: c.className, style: c.getAttribute('style')," \
+        "         btnCls: b.className, btnStyle: b.getAttribute('style') }; })()"
       )
-      expect(added).to eq(
-        %w[
-          align-items-center bg-danger-subtle d-inline-flex fw-semibold gap-1
-          rounded-pill text-danger-emphasis
-        ].join(" ")
-      )
+
+      norm = ->(value) { value.to_s.split(/\s+/).reject(&:empty?).sort.join(" ") }
+      expect(norm.call(added["cls"])).to eq(norm.call(server_node["class"]))
+      expect(norm.call(added["btnCls"])).to eq(norm.call(server_button["class"]))
+      # Declaration sets, order-insensitive — the server joins with "; " and the JS
+      # writes a cssText string, so a literal string compare would be brittle noise.
+      decls = ->(style) { style.to_s.split(";").map { |d| d.strip.chomp(";") }.reject(&:empty?).sort }
+      expect(decls.call(added["style"])).to eq(decls.call(server_node["style"]))
+      expect(decls.call(added["btnStyle"])).to eq(decls.call(server_button["style"]))
     end
 
     it "gives the dropdown suggestion dot its group's semantic fill" do
@@ -157,7 +180,12 @@ RSpec.describe "TagInput Stimulus controller", type: :feature, js: true do
       fill_tag_input("VIP")
 
       expect(page).to have_css("[role='option'] span.d-inline-block.bg-danger")
-      expect(page).to have_css("[role='option'].text-body", text: "VIP")
+      # The option TEXT deliberately keeps the frozen navy: the dropdown panel paints a
+      # hardcoded white background, so an adaptive `text-body` would render #DEE2E6 on
+      # white (1.30:1) in dark mode. The dot's solid semantic fill is a fixed hue and is
+      # safe on that white. Converting the panel is ISS#142 §3.
+      expect(page).to have_css("[role='option'][style*='color: #1B2A4A']", text: "VIP")
+      expect(page).not_to have_css("[role='option'].text-body")
     end
   end
 
