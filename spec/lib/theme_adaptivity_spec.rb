@@ -61,11 +61,67 @@ RSpec.describe ThemeAdaptivity do
       # Modern colour spaces a narrow rgb()/hsl() regex misses entirely.
       "an oklch() value" => "caret-color: oklch(0.7 0.1 200)",
       "a color() value" => "caret-color: color(display-p3 1 0 0)",
-      "a color-mix() value" => "background: color-mix(in srgb, red, blue)"
+      "a color-mix() value" => "background: color-mix(in srgb, red, blue)",
+      # Codex round 2, P1. A custom property can hold anything and nothing downstream
+      # constrains it. `papayawhip` is deliberately absent from NAMED_COLOURS and is not a
+      # literal, so ONLY the custom-property rule can reject this — which is what makes
+      # the example isolating. With a value the blacklist knows (e.g. `red`), deleting
+      # that rule would leave the test green.
+      "a colour in a custom property" => "--tag-fill: papayawhip",
+      "an unparseable var() fallback (must fail closed)" => "color: var(--bs-body-color, chartreuse) !important"
     }.each do |label, style|
       it "rejects #{label}" do
         expect(offences(style)).not_to be_empty
       end
+    end
+  end
+
+  # Codex round 2, P1: the earlier examples for these two fixes were NOT isolating. A
+  # frozen fallback was caught by the literal scan too, so removing the recursion left
+  # them green; and the "independent scans" example was caught by the property rule too,
+  # so restoring the `elsif` left IT green. Either fix could be deleted individually
+  # without a red test — which is the mutation requirement, not merely a passing suite.
+  # These target each mechanism directly.
+  describe "the var() fallback recursion, in isolation" do
+    it "accepts a bare adaptive token" do
+      expect(described_class.adaptive_value?("var(--bs-body-color)")).to be true
+    end
+
+    it "rejects a token whose fallback is frozen" do
+      expect(described_class.adaptive_value?("var(--bs-body-color, #fff)")).to be false
+    end
+
+    it "accepts a token whose fallback is itself adaptive" do
+      expect(described_class.adaptive_value?("var(--bs-body-color, currentColor)")).to be true
+    end
+
+    it "recurses through a nested fallback" do
+      expect(described_class.adaptive_value?("var(--bs-a, var(--bs-b, #fff))")).to be false
+      expect(described_class.adaptive_value?("var(--bs-a, var(--bs-b, inherit))")).to be true
+    end
+
+    # Fail CLOSED: "did not parse" must not be answered the same way as "no fallback".
+    # This is what let `var(--bs-body-color, chartreuse) !important` through.
+    it "rejects a token it cannot parse confidently" do
+      expect(described_class.adaptive_value?("var(--bs-body-color, chartreuse) !important")).to be false
+      expect(described_class.adaptive_value?("var(--bs-body-color,)")).to be false
+    end
+  end
+
+  describe "the two scans, in isolation" do
+    # A value the PROPERTY rule accepts must still be examined by the literal scan.
+    # Under the old `elsif` this returned zero offences.
+    it "runs the literal scan even when the property rule accepts the value" do
+      offending = offences("background-color: var(--bs-tertiary-bg, #F5F7FA)")
+
+      expect(offending.any? { |o| o.include?("colour literal") }).to be true
+    end
+
+    # And a value the literal scan cannot see must still be caught by the property rule.
+    it "runs the property rule even when the value carries no literal" do
+      offending = offences("background-color: linear-gradient(in oklab, currentColor, currentColor)")
+
+      expect(offending.any? { |o| o.include?("re-resolve per colour mode") }).to be true
     end
   end
 

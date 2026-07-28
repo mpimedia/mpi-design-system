@@ -181,12 +181,14 @@ export default class extends Controller {
     this.selectTag(item.dataset.tagLabel, item.dataset.tagGroup)
   }
 
-  // The active/hover surface resolves from Bootstrap's adaptive tertiary background
-  // rather than the frozen #F5F7FA it used to paint. Converting the option's text to
-  // `text-body` (adaptive) while leaving a fixed LIGHT hover behind it would put
-  // near-white text on a near-white surface in dark mode — so the pair moves
-  // together. (#168)
-  static ACTIVE_SURFACE = "var(--bs-tertiary-bg)"
+  // A FIXED light neutral, deliberately — the dropdown panel paints a hardcoded white
+  // background and its option text is frozen navy, so the hover surface has to be frozen
+  // too or the pair desynchronises. An earlier revision made this
+  // `var(--bs-tertiary-bg)`, which resolves to ~#2B3035 in dark mode and left navy text
+  // at 1.07:1 on a hovered option — fixing the resting state while breaking the
+  // interactive one. Navy on this neutral measures 13.25:1. The whole dropdown converts
+  // together, or not at all; doing that is ISS#142 §3. (#168)
+  static ACTIVE_SURFACE = "#F5F7FA"
 
   onDropdownItemHover(event) {
     const items = this.dropdownTarget.querySelectorAll("[role='option']")

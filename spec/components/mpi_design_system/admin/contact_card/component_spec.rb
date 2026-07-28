@@ -150,6 +150,29 @@ RSpec.describe MpiDesignSystem::Admin::ContactCard::Component, type: :component 
         expect(page).not_to have_css("span[style*='color: ;']")
       end
 
+      # Codex round 2, P1: the blank-value example above avoids the MIXED path, where
+      # the other field is present so the custom branch is taken and the blank half is
+      # still interpolated. Both directions asserted.
+      it "defaults a blank foreground when a custom background is supplied" do
+        render_inline(described_class.new(name: "Test", tags: [ { label: "Mixed", color: "", bg_color: "#654321" } ]))
+
+        expect(page).to have_css(
+          "span.rounded-pill[style='#{semantic_pill_style}; color: #64748B; background-color: #654321']",
+          text: "Mixed"
+        )
+        expect(page).not_to have_css("span[style*='color: ;']")
+      end
+
+      it "defaults a blank background when a custom foreground is supplied" do
+        render_inline(described_class.new(name: "Test", tags: [ { label: "Mixed2", color: "#123456", bg_color: "" } ]))
+
+        expect(page).to have_css(
+          "span.rounded-pill[style='#{semantic_pill_style}; color: #123456; background-color: #F1F5F9']",
+          text: "Mixed2"
+        )
+        expect(page).not_to have_css("span[style*='background-color: ;']")
+      end
+
       it "keeps a custom background while defaulting the foreground" do
         render_inline(described_class.new(name: "Test", tags: [ { label: "BgOnly", bg_color: "#654321" } ]))
 

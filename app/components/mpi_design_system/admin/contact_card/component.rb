@@ -88,9 +88,15 @@ module MpiDesignSystem
           # Each half falls back independently, exactly as `resolve_color`/
           # `resolve_bg` did, so a caller supplying only one keeps the other's
           # historical default.
+          # `presence ||`, not a bare `||`. An empty string is truthy in Ruby, so the
+          # retired helpers emitted the invalid declaration `color: ;` for a blank value —
+          # and using `present?` in `custom_tag?` alone did not fix the MIXED case
+          # (`{ color: "", bg_color: "#654321" }` still took the custom branch and
+          # emitted the empty half). Both halves now fall back independently on BLANK,
+          # not merely on nil.
           geometry.push(
-            "color: #{tag[:color] || '#64748B'}",
-            "background-color: #{tag[:bg_color] || '#F1F5F9'}"
+            "color: #{tag[:color].presence || '#64748B'}",
+            "background-color: #{tag[:bg_color].presence || '#F1F5F9'}"
           ).join("; ")
         end
 

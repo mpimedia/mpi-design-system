@@ -64,6 +64,14 @@
       --mds-avatar-placeholder: #787F86; --mds-avatar-placeholder-fg: #000;
       --mds-avatar-overflow: #707E91; --mds-avatar-overflow-fg: #000;
     }
+    /* Dark semantic pair for the two converted tag badges. Declaring these light-only
+       left them on the light pair under a global dark theme, since the light :root here
+       is declared after the avatar dark block. (#168) */
+    [data-bs-theme="dark"] {
+      --bs-primary-bg-subtle: #091724; --bs-primary-text-emphasis: #82ACD3;
+      --bs-success-bg-subtle: #072015; --bs-success-text-emphasis: #7AC6A6;
+      --bs-danger-bg-subtle: #2C0B0E;  --bs-danger-text-emphasis: #EA868F;
+    }
     .avatar {
       display: inline-flex; align-items: center; justify-content: center;
       border-radius: 50%; font-weight: 600;

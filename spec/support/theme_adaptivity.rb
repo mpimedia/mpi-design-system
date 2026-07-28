@@ -11,11 +11,19 @@
 #     `border: 1px solid red` (a named colour) and `border: none` both passed;
 #   * rejecting a blacklist of named colours, which can never be complete.
 #
-# So this is a WHITELIST on both axes. A colour-bearing property may hold only a value
-# that re-resolves at runtime (`currentColor`, `transparent`, `inherit`, or a
-# `var(--bs-*)` token); everything else fails, whether or not the value looks like a
-# colour. Independently, NO property may carry a hex / rgb() / hsl() literal, which
-# catches a colour smuggled into a property this list does not know about.
+# The PROPERTY axis is the authoritative whitelist and is where the real strength lies:
+# any property that can paint — including every un-excepted `--*` custom property — may
+# hold only a value that re-resolves at runtime (`currentColor`, `transparent`,
+# `inherit`, or a `var(--bs-*)` whose fallback is itself adaptive). Everything else
+# fails, whether or not the value looks like a colour, and an unparseable `var()` fails
+# CLOSED.
+#
+# The VALUE axis is a deliberate best-effort BACKSTOP, not a whitelist: it catches hex,
+# colour functions and common named colours smuggled into a property the list does not
+# know about. A named-colour blacklist can never be complete, and claiming otherwise
+# would be the sort of prose-only assurance `.claude/rules/testing.md` warns about — so
+# the honest statement is that a novel named colour on an unlisted property can still
+# slip through. Widen COLOUR_PROPERTIES when that matters.
 module ThemeAdaptivity
   # Properties that paint. `opacity` is here because a declared pair can be AA-clean and
   # still fail once faded — #130's ActiveFilterBar composited white at 0.8 to 3.71:1, and
@@ -24,7 +32,8 @@ module ThemeAdaptivity
     color background background-color background-image
     border border-top border-right border-bottom border-left
     border-color border-style border-width
-    outline outline-color outline-style box-shadow opacity fill stroke
+    outline outline-color outline-style box-shadow text-shadow opacity fill stroke
+    accent-color caret-color column-rule column-rule-color text-decoration-color
   ].freeze
 
   # Geometry that merely shares a `border-*` prefix. `--bs-border-width` is the documented
@@ -38,7 +47,7 @@ module ThemeAdaptivity
   # a guard that knows only rgb()/hsl() lets a modern colour space through silently.
   COLOUR_LITERAL = /
     \#[0-9a-f]{3,8}\b
-    | \b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|device-cmyk)\(
+    | \b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|device-cmyk|light-dark)\(
   /xi
 
   # CSS named colours. Not exhaustive by intent — it covers the ones a human would
@@ -80,8 +89,17 @@ module ThemeAdaptivity
     return true if ADAPTIVE_VALUES.include?(normalised)
     return false unless normalised.start_with?("var(--bs-")
 
+    # Fail CLOSED. A `var(--bs-*)` with no fallback is adaptive; one WITH a fallback is
+    # adaptive only if the fallback is too. Anything this cannot parse confidently —
+    # a trailing `!important`, nested parens, an empty fallback — is rejected rather
+    # than waved through, because "did not parse" and "no fallback" are different
+    # answers and conflating them is how the guard shipped fail-open.
+    return true if normalised.match?(/\Avar\(\s*--bs-[a-z0-9-]+\s*\)\z/)
+
     fallback = normalised[/\Avar\(\s*--bs-[a-z0-9-]+\s*,(.*)\)\z/m, 1]
-    fallback.nil? || adaptive_value?(fallback)
+    return false if fallback.nil? || fallback.strip.empty?
+
+    adaptive_value?(fallback)
   end
 
   # Returns [] when the style makes no frozen-colour decision, else the offending
@@ -97,8 +115,12 @@ module ThemeAdaptivity
       value = value_of(declaration)
       next [] if GEOMETRY_EXCEPTIONS.include?(property)
 
+      # A custom property can hold anything, including a colour, and nothing downstream
+      # constrains it — so treat every un-excepted `--*` as colour-bearing.
+      paints = COLOUR_PROPERTIES.include?(property) || property.start_with?("--")
+
       offences = []
-      if COLOUR_PROPERTIES.include?(property) && !adaptive_value?(value)
+      if paints && !adaptive_value?(value)
         offences << "#{declaration.inspect} — `#{property}` paints, and #{value.inspect} does not " \
           "re-resolve per colour mode (allowed: currentColor, transparent, inherit, var(--bs-*))"
       end

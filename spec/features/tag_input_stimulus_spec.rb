@@ -187,6 +187,39 @@ RSpec.describe "TagInput Stimulus controller", type: :feature, js: true do
       expect(page).to have_css("[role='option'][style*='color: #1B2A4A']", text: "VIP")
       expect(page).not_to have_css("[role='option'].text-body")
     end
+
+    # The RESTING option is not the whole story. A previous revision fixed the resting
+    # state and left the hover/keyboard-active surface adaptive, so navy text sat on
+    # ~#2B3035 in dark mode at 1.07:1 — a fix that introduced an inaccessible
+    # interactive state, which a resting-only assertion could never catch.
+    it "keeps a hovered option readable, not just a resting one" do
+      visit "/tag_input_demo"
+      fill_tag_input("VIP")
+      expect(page).to have_css("[role='option']", text: "VIP")
+
+      find("[role='option']", text: "VIP").hover
+
+      measured, foreground, background = ratio_for("[role='option']")
+      expect(foreground).to eq("#1B2A4A")
+      expect(background).to eq("#F5F7FA")
+      expect(measured).to be >= 4.5,
+        "hovered option #{foreground} on #{background} = #{measured.round(2)}:1"
+    end
+
+    # Keyboard navigation paints the same surface by a different code path
+    # (`highlightItem`), so it needs its own proof.
+    it "keeps a keyboard-highlighted option readable" do
+      visit "/tag_input_demo"
+      fill_tag_input("VIP")
+      expect(page).to have_css("[role='option']", text: "VIP")
+
+      find("#{root} [data-mpi--tag-input-target='input']").send_keys(:arrow_down)
+
+      measured, foreground, background = ratio_for("[role='option']")
+      expect(foreground).to eq("#1B2A4A")
+      expect(background).to eq("#F5F7FA")
+      expect(measured).to be >= 4.5
+    end
   end
 
   describe "removing a tag" do
