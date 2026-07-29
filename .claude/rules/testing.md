@@ -39,6 +39,34 @@ Applies to: `spec/**`
   CSS meant to hide it was dropped. To prove an element is actually hidden in a browser spec,
   read the computed style — `page.evaluate_script("getComputedStyle(el).display")` — as the
   `mpi--tag-input` feature spec does. (#111.)
+- **Seven `spec/bin/guard_protected_branch_spec.rb` failures are an environment artefact when — and
+  only when — your commit signer is *unreachable*.** That spec builds a throwaway git repo and runs
+  `git commit` inside it (`spec/bin/guard_protected_branch_spec.rb:41`), setting only `user.email`
+  and `user.name`, so the temp repo inherits your global `commit.gpgsign` / `gpg.format`. Signing
+  being *enabled* is not the trigger: with `commit.gpgsign=true`, `gpg.format=ssh` and the 1Password
+  agent **unlocked**, all 8 examples pass. The failures appear when the signer cannot be reached (agent
+  locked, key unavailable) — the commit fails to sign and the `exception: true` setup raises before
+  the example under test ever runs. Measured, all three cases:
+
+  | `commit.gpgsign` | signer | result |
+  |---|---|---|
+  | `true` | reachable | 8 examples, **0 failures** |
+  | `true` | unreachable | 8 examples, **7 failures** |
+  | `false` | unreachable | 8 examples, **0 failures** |
+
+  So the fix is to take signing out of the equation for that process only — no change to your global
+  config, nothing written to the repo:
+
+  ```bash
+  GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false bundle exec rspec
+  ```
+
+  CI never hits this (it has no signing key at all), so green CI plus exactly seven local failures of
+  this shape is the expected signature. Confirm rather than assume: with the override the count must
+  go to **zero**. Any survivor is a real failure. Reproduce the broken state on demand — without
+  locking anything — by pointing the signer at a program that always fails:
+  `GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=true
+  GIT_CONFIG_KEY_1=gpg.ssh.program GIT_CONFIG_VALUE_1=/bin/false bundle exec rspec spec/bin/`.
 
 ## Layout
 
@@ -310,8 +338,22 @@ inherited the claim, and both are false: they resolve through the same
 `--bs-#{semantic}-text-emphasis`/`-bg-subtle`/`-border-subtle` tokens the `-subtle`/`-emphasis`
 utilities use, all of which the dark block redefines. Do not widen tiers 1–2 casually: their contents
 *and* the family classifier are asserted directly in `spec/lib/theme_adaptivity_spec.rb` precisely so
-that widening either is a visible, reviewable act rather than a quiet weakening of all fourteen
+that widening either is a visible, reviewable act rather than a quiet weakening of all twenty-one
 guarded specs at once.
+
+That count is also why **conditional** adaptivity stays out of the shared allowlist. Two families
+re-resolve per colour mode only when the consuming app imports an optional engine partial —
+`AvatarCircle`'s `var(--mds-avatar-N, #hex)` (needs `_avatar.scss`) and `.btn-outline-*` (needs
+`_buttons.scss`, the ISS#183 follow-up that fixed all six variants' sub-AA resting text). Both are
+genuinely adaptive where the partial is loaded and genuinely frozen where it is not, and the module
+cannot see which. Teaching `adaptive_value?` to accept any `var(--mds-*, …)`, or adding
+`btn-outline-*` to `ADAPTIVE_UTILITIES`, would make every guarded spec assert a property that
+depends on an import none of them controls — and would silently pass a `var(--mds-anything, #fff)`
+no partial defines. So each takes a **local, commented exception at its call site**, backed by the
+guards that *can* see what a markup scan cannot: a per-selector compile guard
+(`bin/verify-avatar-adaptive`, `bin/verify-outline-button-adaptive`) and a browser spec reading
+computed values under both modes (`contrast_spec`, `outline_button_theme_spec`). A local exception
+costs one comment; a widened allowlist costs the guarantee everywhere.
 
 **Take a tier-3 exception by removing the sanctioned CLASS — not by `allowing:`, and not by removing
 the NODE.** Both wrong answers are wrong in opposite directions, and #183 shipped each in turn.

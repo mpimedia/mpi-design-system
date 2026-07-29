@@ -1,0 +1,7 @@
+// Compat fixture — compiles the shipped `_buttons.scss` standalone (no Bootstrap, no
+// MPI tokens, no app config) so `bin/verify-outline-button-adaptive` can assert each
+// `.btn-outline-<semantic>` binds `--bs-btn-color` to its OWN
+// `--bs-<semantic>-text-emphasis`. That it compiles at all proves the partial carries no
+// compile-time Sass colour dependency — a regression to `$primary` would fail here
+// before the guard ever ran. (ISS#183 follow-up)
+@use "mpi_design_system/buttons";

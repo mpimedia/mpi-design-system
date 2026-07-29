@@ -25,6 +25,11 @@ Rails.application.routes.draw do
   # nav surfaces/foregrounds adapt to the colour mode and clear WCAG AA.
   get "nav_theme_demo" => "nav_theme_demo#show"
 
+  # Every ActionButton outline variant in both colour modes against real compiled
+  # Bootstrap, so the spec can read the COMPUTED resting foreground and prove the
+  # `_buttons.scss` fix clears WCAG AA in each mode. (ISS#183 follow-up)
+  get "outline_button_theme_demo" => "outline_button_theme_demo#show"
+
   if Rails.env.development?
     mount Lookbook::Engine, at: "/lookbook"
     root to: redirect("/lookbook")

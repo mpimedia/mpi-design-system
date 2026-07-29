@@ -8,6 +8,50 @@ include breaking changes).
 ## [Unreleased]
 
 ### Fixed
+- **Every `.btn-outline-*` variant was below WCAG AA in one colour mode, and now adapts (#183
+  follow-up).** Bootstrap 5.3 defines `.btn-outline-#{semantic}` exactly once and never under a
+  `[data-bs-theme]` scope, so its resting text kept the raw semantic hue while the body surface
+  flipped. Measured on MPI's own palette, **all six failed** the 4.5:1 floor in one mode or the
+  other — primary/info **3.185**, danger **3.407**, secondary **3.290** in dark; success **3.329**,
+  warning **3.243** in light. This was a shipped defect reaching all four consuming apps, found by
+  extending ISS#183's guard to the five `btn-*`-emitting components that consolidation had left
+  unguarded.
+  - The fix is a new `app/assets/stylesheets/mpi_design_system/_buttons.scss` that re-points only
+    the resting `--bs-btn-color` at `--bs-#{semantic}-text-emphasis`, the one token family in play
+    that genuinely re-resolves per mode. Every variant now clears AA by a wide margin in both:
+    13.739/6.458 primary·info, 13.502/6.743 secondary, 11.752/7.681 success, 11.553/7.802 warning,
+    13.645/6.101 danger. The dark-mode primary lands on `#82ACD3` — the same value
+    `.claude/rules/frontend.md` already records as AA-safe interactive text for the navbar.
+  - **This is a consumer-visible change and requires an import.** The engine ships SCSS as source
+    with no asset-pipeline initializer, so a partial the app does not import never compiles and the
+    defect stands. `@import "mpi_design_system/buttons"` is added to **both** README install
+    snippets alongside `nav_bar` and `avatar`, and unlike those it must come **after** Bootstrap,
+    since it overrides a custom property Bootstrap declares.
+  - Border, hover, active and disabled are deliberately left on the raw hue and pinned as such:
+    the border is a non-text boundary held to SC 1.4.11's 3:1 (worst case 3.185, clears), hover
+    fills solid and is already AA, and disabled is exempt under 1.4.3. Proven at compile level by
+    `bin/verify-outline-button-adaptive` (per-selector binding, run from `yarn build:css:compat`)
+    and per painted mode by `spec/features/outline_button_theme_spec.rb`.
+- **The five `btn-*`-emitting components ISS#183 left unguarded are now guarded, plus
+  `AvatarCircle` (#183 follow-up).** `SearchBar`, `NavBar`, `ActionButton`, `BatchActionButton` and
+  `BatchActionModalButton` all emit colour-bearing button classes and carried no theme-adaptivity
+  matcher; the consolidation's own CHANGELOG named them as the reason its `btn-*` classifier branch
+  was exercised only by injection. 15 guarded specs → 21.
+  - `AvatarCircle` had to be guarded first, because `NavBar` embeds it and a parent may only strip
+    a child subtree that is **independently** guarded — ISS#183's own round-1 P0-4, where
+    `AccountDetailPanel` stripped an unguarded `Badge` and the strip removed the evidence.
+  - `AvatarCircle`'s `var(--mds-avatar-N, #hex)` declarations — the pattern `frontend.md`
+    *prescribes* (#169) — read as frozen to the shared scan, which allows only `var(--bs-*)`. The
+    exception is taken locally rather than by widening `adaptive_value?`: a blanket
+    `var(--mds-*, …)` allowance would weaken all guarded specs, since a token no partial defines
+    would start passing everywhere. It is backed by the two guards that can see what the scan
+    cannot — `bin/verify-avatar-adaptive` and the browser `contrast_spec`.
+  - `ActionButton` is looped over the **Cartesian product** of `COLORS` × `VARIANTS`, not one
+    example per axis — `css_classes` composes both, so a per-axis loop never renders the
+    combination a caller actually uses (ISS#183 round-2 P0-B).
+  - `btn-outline-*` is stripped at its call sites rather than added to `ADAPTIVE_UTILITIES`,
+    because its adaptivity is conditional on the consumer importing the new partial and the shared
+    allowlist deliberately encodes only what Bootstrap itself re-resolves.
 - **The repo's three divergent theme-adaptivity guards are consolidated onto one shared module,
   and all fourteen guarded specs now check colour-bearing CLASSES as well as declarations
   (#183).** `spec/support/theme_adaptivity.rb` is now the canonical guard, with three matchers:

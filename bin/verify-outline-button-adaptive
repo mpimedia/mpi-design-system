@@ -1,0 +1,130 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Verifies the theme-adaptive outline-button partial (ISS#183 follow-up).
+# `_buttons.scss` re-points each `.btn-outline-#{semantic}`'s RESTING foreground at
+# `--bs-#{semantic}-text-emphasis`, the one Bootstrap 5.3 token family in play that
+# re-resolves under `data-bs-theme`. Without it every outline variant sits below the
+# 4.5:1 AA floor in one colour mode or the other (measured table in the partial).
+# This is the compile-level guard; the painted-value proof per mode lives in
+# spec/features/outline_button_theme_spec.rb.
+#
+# It runs against the STANDALONE-compiled fixture (spec/fixtures/scss/
+# outline_button_adaptive.scss -> tmp/compat/outline_button.css). The fixture imports
+# the partial with neither MPI tokens nor Bootstrap in scope, so a regression to a
+# compile-time `$primary` would fail to compile before reaching this script — the file
+# arriving here at all proves it is Sass-colour-var-free. This script proves the
+# stronger claims a "does the token appear?" grep cannot:
+#
+#   1. PER-SELECTOR BINDING — each of the six selectors binds `--bs-btn-color` to its
+#      OWN semantic's emphasis token. A primary<->danger swap keeps both tokens in the
+#      file and passes any presence grep; it reds here.
+#   2. EXACT COVERAGE — all six semantics present, and no EXTRA selector. `light`/`dark`
+#      are excluded on purpose: both `--bs-light-text-emphasis` and
+#      `--bs-dark-text-emphasis` compile to #495057 in light mode, so binding them would
+#      erase the distinction between the two variants.
+#   3. STRONG NEGATIVE — no declaration may carry a raw colour (hex, rgb()/hsl(), or a
+#      CSS named colour) in ANY property. A regression to `--bs-btn-color: #2E75B6` reds
+#      as WRONG BINDING *and* RAW COLOUR.
+#   4. SCOPE — the partial must not touch border, hover, active or disabled custom
+#      properties. Those are deliberately left on the raw semantic hue (border is a
+#      non-text boundary at the 3:1 SC 1.4.11 floor, which every semantic clears; hover
+#      fills solid and is already AA; disabled is exempt under 1.4.3). Widening the
+#      partial silently would change the button's identity colour, so it must be a
+#      deliberate, reviewable edit here.
+#
+# Run via `yarn build:css:compat`. Prove it by breaking it (.claude/rules/frontend.md,
+# "prove a new build guard by breaking it"): swap primary's binding to
+# var(--bs-danger-text-emphasis) -> WRONG BINDING; set `--bs-btn-color: #2E75B6` ->
+# WRONG BINDING + RAW COLOUR; add `--bs-btn-border-color: var(--bs-primary)` -> OUT OF
+# SCOPE; drop a semantic from the @each list -> MISSING.
+
+CSS = ARGV[0] || "tmp/compat/outline_button.css"
+
+unless File.file?(CSS)
+  warn "verify-outline-button-adaptive: #{CSS} not found — compile the fixture first"
+  exit 1
+end
+
+SEMANTICS = %w[primary secondary success info warning danger].freeze
+
+# Only the resting foreground is in scope. Anything else the partial might emit is a
+# scope violation, checked explicitly rather than ignored.
+ALLOWED_PROPERTY = "--bs-btn-color"
+
+NAMED_COLOURS = %w[
+  red blue green yellow orange purple pink brown black white grey gray cyan magenta
+  navy teal olive maroon lime aqua fuchsia silver gold beige ivory khaki coral salmon
+  crimson indigo violet turquoise tan plum orchid papayawhip chartreuse
+].freeze
+
+css = File.read(CSS)
+errors = []
+
+# Parse `selector { decls }` blocks. The partial emits only flat rules, so a nested or
+# at-rule block appearing here is itself a change worth failing on.
+blocks = css.scan(/([^{}]+)\{([^{}]*)\}/m).map { |sel, body| [ sel.strip, body.strip ] }
+
+if blocks.empty?
+  warn "verify-outline-button-adaptive: FAIL — #{CSS} contains no rules at all"
+  exit 1
+end
+
+seen = {}
+
+blocks.each do |selector, body|
+  unless selector =~ /\A\.btn-outline-([a-z]+)\z/
+    errors << "UNEXPECTED SELECTOR: #{selector.inspect} — the partial should emit only .btn-outline-<semantic> rules"
+    next
+  end
+
+  semantic = Regexp.last_match(1)
+  unless SEMANTICS.include?(semantic)
+    errors << "OUT OF SCOPE: #{selector.inspect} — #{semantic.inspect} is not one of #{SEMANTICS.join(', ')}"
+    next
+  end
+
+  declarations = body.split(";").map(&:strip).reject(&:empty?)
+
+  if declarations.empty?
+    errors << "EMPTY RULE: #{selector.inspect} declares nothing — the binding would silently not apply"
+    next
+  end
+
+  declarations.each do |decl|
+    property, value = decl.split(":", 2).map { |s| s.to_s.strip }
+
+    if property != ALLOWED_PROPERTY
+      errors << "OUT OF SCOPE: #{selector.inspect} sets #{property.inspect} — only #{ALLOWED_PROPERTY} is in scope " \
+                "(border/hover/active/disabled are deliberately left on the raw hue; see _buttons.scss)"
+      next
+    end
+
+    expected = "var(--bs-#{semantic}-text-emphasis)"
+    if value != expected
+      errors << "WRONG BINDING: #{selector.inspect} sets #{property} to #{value.inspect}, expected #{expected.inspect}"
+    end
+
+    if value =~ /#\h{3,8}\b/ || value =~ /\b(?:rgba?|hsla?)\(/i
+      errors << "RAW COLOUR: #{selector.inspect} #{property} carries a literal colour in #{value.inspect}"
+    end
+
+    if value =~ /\b(?:#{NAMED_COLOURS.join('|')})\b/i
+      errors << "RAW COLOUR: #{selector.inspect} #{property} carries a named colour in #{value.inspect}"
+    end
+
+    seen[semantic] = true
+  end
+end
+
+missing = SEMANTICS - seen.keys
+errors << "MISSING: no correct #{ALLOWED_PROPERTY} binding for #{missing.join(', ')}" unless missing.empty?
+
+if errors.any?
+  warn "verify-outline-button-adaptive: FAIL (#{CSS})"
+  errors.each { |e| warn "  - #{e}" }
+  exit 1
+end
+
+puts "outline-button adaptive OK: all #{SEMANTICS.size} .btn-outline-* bind --bs-btn-color to their own " \
+     "--bs-<semantic>-text-emphasis, no raw colour, nothing out of scope"

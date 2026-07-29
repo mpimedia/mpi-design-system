@@ -311,4 +311,82 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
       expect(page).not_to have_css("span.mds-avatar--nav")
     end
   end
+
+  # ISS#183 follow-up. AvatarCircle was never guarded, and NavBar embeds it — so NavBar
+  # could not legitimately strip the avatar subtree before its own scan until this existed.
+  # That rule is not incidental: it is exactly ISS#183's round-1 P0-4, where
+  # AccountDetailPanel stripped an unguarded Badge and the strip removed the evidence.
+  #
+  # This component is the one place the shared declaration scan must be given an explicit
+  # exception, so it is worth stating precisely WHY rather than merely allowing it.
+  describe "theme-adaptivity guards" do
+    let(:avatar) { described_class.new(name: "Jane Doe") }
+
+    # `background-color: var(--mds-avatar-N, #hex)` / `color: var(--mds-avatar-N-fg, #fff)`
+    # is the pattern `.claude/rules/frontend.md` PRESCRIBES for this component (#169): a
+    # runtime custom property with the hex as CSS fallback, so importers of the optional
+    # `_avatar.scss` get the adaptive `:root` / `[data-bs-theme="dark"]` tokens while installs
+    # without it keep painting the fallback — a non-breaking upgrade.
+    #
+    # `ThemeAdaptivity#adaptive_value?` allows only `var(--bs-*)`, so it reads these as
+    # frozen. It is not wrong to: the value IS frozen wherever the partial is absent, and the
+    # module deliberately encodes only unconditional adaptivity. Widening `adaptive_value?`
+    # to accept any `var(--mds-*, …)` would weaken all fifteen guarded specs — a
+    # `var(--mds-anything, #fff)` with no partial defining it would start passing everywhere.
+    #
+    # So the exception is taken HERE, narrowly, and only because two other guards already
+    # prove the parts this scan cannot see:
+    #   * `bin/verify-avatar-adaptive` proves `_avatar.scss` materialises every palette role
+    #     into BOTH the light and `[data-bs-theme="dark"]` blocks;
+    #   * `spec/features/contrast_spec.rb` proves the painted value per colour mode.
+    # Without those this exception would be unbacked, which is the difference between
+    # recording a deliberate decision and suppressing a finding.
+    IDENTITY_PROPERTIES = %w[background-color color].freeze
+
+    it "confines its non-adaptive declarations to the sanctioned --mds-avatar-* pair" do
+      render_inline(avatar)
+
+      node = page.find("span")
+      declarations = node[:style].split(";").map(&:strip).reject(&:empty?)
+
+      # Pin that styles were emitted at all — a component that stopped emitting `style`
+      # would satisfy every "no offence" assertion below by having nothing to offend.
+      expect(declarations).not_to be_empty
+
+      offending = declarations.reject { |d| ThemeAdaptivity.frozen_colour_offences(d).empty? }
+      offending_properties = offending.map { |d| d.split(":", 2).first.strip }.uniq
+
+      # Exactly the two identity declarations may be non-adaptive — no more. A new frozen
+      # colour on any other property (a `border`, an `outline`, a `box-shadow`) appears here
+      # and reddens, which a blanket `.allowing(…)` or a skipped scan would not catch.
+      expect(offending_properties).to match_array(IDENTITY_PROPERTIES)
+
+      # And each must be the sanctioned custom-property FORM, not a bare literal. A
+      # regression to `background-color: #6C757D` still offends the scan identically, so
+      # the property check above alone cannot tell the two apart.
+      offending.each do |declaration|
+        expect(declaration).to match(/\Aa?(?:background-color|color): var\(--mds-avatar-[\w-]+, [^)]+\)\z/),
+          "#{declaration.inspect} is not the sanctioned var(--mds-avatar-*, <fallback>) form"
+      end
+    end
+
+    it "emits no fixed-hue colour utility on the class axis" do
+      render_inline(avatar)
+
+      # The colour lives entirely in the inline style, so the class axis should be clean
+      # outright — no strip, no exception.
+      expect(page).to have_css("span.rounded-circle.d-inline-flex", text: "JD")
+      expect(rendered_fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    it "keeps the geometry declarations free of any colour" do
+      render_inline(avatar)
+
+      geometry = page.find("span")[:style].split(";").map(&:strip)
+                     .reject { |d| IDENTITY_PROPERTIES.include?(d.split(":", 2).first.strip) }
+
+      expect(geometry).not_to be_empty
+      geometry.each { |declaration| expect(declaration).to be_free_of_frozen_colour }
+    end
+  end
 end

@@ -1,0 +1,70 @@
+// MPI Design System — theme-adaptive outline-button foreground (ISS#183 follow-up)
+//
+// WHAT THIS FIXES. Bootstrap 5.3 defines `.btn-outline-#{$semantic}` exactly once and
+// never under a `[data-bs-theme]` scope, so its resting text keeps the raw semantic hue
+// in BOTH colour modes while the body surface flips. Measured against the engine's own
+// compiled palette (`MpiDesignSystem::ColorContrast.ratio`), every one of the six
+// outline variants falls below the 4.5:1 AA floor for normal text in one mode or the
+// other — this is a shipped defect, not a hypothetical:
+//
+//   variant    resting text   on #fff (light)   on #212529 (dark)
+//   primary    #2E75B6            4.843 AA          3.185 FAIL
+//   info       #2E75B6            4.843 AA          3.185 FAIL
+//   danger     #dc3545            4.528 AA          3.407 FAIL
+//   secondary  #6c757d            4.689 AA          3.290 FAIL
+//   success    #22A06B            3.329 FAIL        4.634 AA
+//   warning    #D4772C            3.243 FAIL        4.756 AA
+//
+// THE FIX. Re-point only the RESTING foreground at `--bs-#{$semantic}-text-emphasis`,
+// the Bootstrap 5.3 token family designed for semantic text on the body surface and the
+// one thing here that genuinely re-resolves per colour mode. Compiled from MPI's tokens
+// it clears AA everywhere, by a wide margin in both modes:
+//
+//   variant    light emphasis          dark emphasis
+//   primary    #122F49  13.739 AA      #82ACD3   6.458 AA
+//   secondary  #2B2F32  13.502 AA      #A7ACB1   6.743 AA
+//   success    #0E402B  11.752 AA      #7AC6A6   7.681 AA
+//   info       #122F49  13.739 AA      #82ACD3   6.458 AA
+//   warning    #553012  11.553 AA      #E5AD80   7.802 AA
+//   danger     #58151C  13.645 AA      #EA868F   6.101 AA
+//
+// `#82ACD3` is the same dark-mode blue `.claude/rules/frontend.md` already records as the
+// AA-safe interactive text value for the navbar, so this agrees with the existing rule
+// rather than inventing a second answer.
+//
+// WHAT IS DELIBERATELY LEFT ALONE, and why each is already in spec:
+//
+//   * `--bs-btn-border-color` — the outline's edge is a non-text UI boundary, so WCAG 2.1
+//     SC 1.4.11 applies at 3:1, not 4.5:1. Every semantic clears it in both modes (the
+//     worst is primary/info at 3.185 dark and warning at 3.243 light). Keeping the raw hue
+//     preserves the button's identity colour, which is the whole point of the variant.
+//   * `--bs-btn-hover-color` / `-hover-bg` — hover fills with the solid semantic and
+//     Bootstrap derives the foreground, giving the filled variant's ratios (4.528–6.475,
+//     identical in both modes because neither value re-resolves). Already AA.
+//   * `--bs-btn-disabled-color` — WCAG 1.4.3 exempts inactive controls. Left on the raw
+//     hue so a disabled outline button stays visually distinct from an enabled one.
+//
+// Touching only `--bs-btn-color` is therefore the whole fix and the minimum one.
+//
+// THIS IMPORT IS REQUIRED for the fix to reach an app — the engine ships SCSS as source
+// with no asset-pipeline initializer (`lib/mpi_design_system/engine.rb`), so a partial the
+// consumer does not import simply never compiles and the AA defect stands. It is listed in
+// BOTH README install snippets alongside `nav_bar` and `avatar` for that reason. Unlike
+// `_avatar.scss` this partial has a hard ORDERING requirement: it overrides custom
+// properties Bootstrap itself declares, so it must be imported AFTER Bootstrap.
+//
+// The per-selector bindings are proven at compile time by `bin/verify-outline-button-adaptive`
+// (run from `yarn build:css:compat`) and the painted values per mode by
+// `spec/features/outline_button_theme_spec.rb`.
+
+// Bootstrap's six themeable semantics. `light`/`dark` are deliberately excluded: they are
+// neutrals rather than category colours, and `--bs-light-text-emphasis` /
+// `--bs-dark-text-emphasis` both compile to `#495057` in light mode, which would erase the
+// distinction between `.btn-outline-light` and `.btn-outline-dark` entirely.
+$mds-outline-button-semantics: primary, secondary, success, info, warning, danger !default;
+
+@each $name in $mds-outline-button-semantics {
+  .btn-outline-#{$name} {
+    --bs-btn-color: var(--bs-#{$name}-text-emphasis);
+  }
+}

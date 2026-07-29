@@ -342,10 +342,12 @@ Rules:
   page (which also carries `border-primary`, the same hue drawing the same pill's edge), and
   ActiveFilterBar's active-filter pill. **`BatchActionModalButton` is NOT one** — its
   `text-bg-primary` is a modal *header*, a resting surface with no selected state anywhere near it,
-  and the component also emits two `btn-primary` controls; it has no theme-adaptivity guard at all
-  (`batch_action_modal_button/component_spec.rb` applies no matcher), so nothing recorded or tested
-  the claim that it took this exception. Converting it is a separate piece of work, not a licence
-  this rule grants.
+  and the component also emits two `btn-primary` controls. It is now guarded (ISS#183 follow-up) on
+  a *different* justification, which is the point: the header pins `data-bs-theme="dark"` on itself,
+  so it is a self-contained brand banner rather than an element that should track the page, and
+  Bootstrap derives its foreground to the same 4.843:1 under either ambient mode. Its spec asserts
+  that pinned attribute separately, so dropping it reddens rather than silently invalidating the
+  justification. Borrowing the selected-state rule for it would still be wrong.
   **Take the exception by removing the sanctioned CLASS — never with
   `.allowing("text-bg-primary")`, and never by removing the node.** The matcher is class-scoped, not
   placement-scoped, so a fragment-wide allowance also passes the same fill on a *non*-selected element
