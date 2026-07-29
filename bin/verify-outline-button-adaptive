@@ -39,7 +39,14 @@
 # WRONG BINDING + RAW COLOUR; add `--bs-btn-border-color: var(--bs-primary)` -> OUT OF
 # SCOPE; drop a semantic from the @each list -> MISSING.
 
-CSS = ARGV[0] || "tmp/compat/outline_button.css"
+# Two modes, because "the bindings are right" and "the bindings WIN" are different claims
+# and the first does not imply the second (both gaps found by external review of f7b5b8f):
+#
+#   <partial.css>              strict — the standalone partial emits exactly the six rules
+#   --cascade <entry.css>      the documented consumer order, with Bootstrap in scope:
+#                              assert OUR declaration is the one that wins for each selector
+CASCADE = ARGV.delete("--cascade") ? true : false
+CSS = ARGV[0] || (CASCADE ? "tmp/compat/outline_button_cascade.css" : "tmp/compat/outline_button.css")
 
 unless File.file?(CSS)
   warn "verify-outline-button-adaptive: #{CSS} not found — compile the fixture first"
@@ -61,12 +68,111 @@ NAMED_COLOURS = %w[
 css = File.read(CSS)
 errors = []
 
+# ---------------------------------------------------------------------------------
+# CASCADE MODE — which declaration actually wins?
+#
+# With Bootstrap in scope, `.btn-outline-primary` is declared twice: Bootstrap's raw hue
+# and ours. Later-and-equal-specificity wins, so the LAST `--bs-btn-color` for a given
+# selector is the painted one. Asserting on "a rule exists that binds the var" would pass
+# even when Bootstrap's rule comes after ours, which is precisely the import-order
+# regression this mode exists to catch.
+if CASCADE
+  # An unlayered declaration beats a layered one no matter the order, so a layered
+  # override is a silent revert. Nothing else in the build sees it.
+  if css =~ /@layer\b/
+    warn "verify-outline-button-adaptive: FAIL (#{CSS})"
+    warn "  - CASCADE LAYER: @layer present. Layered declarations LOSE to Bootstrap's " \
+         "unlayered ones regardless of source order, so the override silently reverts."
+    exit 1
+  end
+
+  SEMANTICS.each do |semantic|
+    # Every `--bs-btn-color` declared on this exact selector, in source order.
+    bindings = css.scan(/\.btn-outline-#{semantic}\s*\{([^{}]*)\}/m)
+                  .flat_map { |(body)| body.scan(/--bs-btn-color:\s*([^;]+);/).flatten }
+                  .map(&:strip)
+
+    if bindings.empty?
+      errors << "MISSING: no --bs-btn-color declared for .btn-outline-#{semantic} at all"
+      next
+    end
+
+    expected = "var(--bs-#{semantic}-text-emphasis)"
+    winner = bindings.last
+
+    next if winner == expected
+
+    errors << "LOSES THE CASCADE: .btn-outline-#{semantic} is finally painted by " \
+              "#{winner.inspect}, not #{expected.inspect} — #{bindings.length} declaration(s) " \
+              "in order: #{bindings.inspect}. Import `mpi_design_system/buttons` AFTER Bootstrap."
+  end
+
+  # The fixture above mirrors the README's consumer order. The ENGINE's own entrypoint is a
+  # separate file with its own order, shipped to anyone importing `mpi_design_system/application`
+  # — and it cannot be compiled standalone here (its bare `@import "bootstrap"` resolves only
+  # in a consumer's load path), so it gets a source-order check rather than a compiled one.
+  ENTRYPOINT = "app/assets/stylesheets/mpi_design_system/application.scss"
+  if File.file?(ENTRYPOINT)
+    imports = File.readlines(ENTRYPOINT).filter_map { |l| l[/^\s*@import\s+["']([^"']+)["']/, 1] }
+    bootstrap_at = imports.index { |i| i[/\bbootstrap\b/] }
+    buttons_at = imports.index { |i| i[/\bbuttons\b/] }
+
+    if buttons_at.nil?
+      errors << "ENTRYPOINT: #{ENTRYPOINT} does not import `buttons` at all — the fix never " \
+                "reaches anyone importing the engine stylesheet"
+    elsif bootstrap_at.nil?
+      errors << "ENTRYPOINT: #{ENTRYPOINT} imports `buttons` but not `bootstrap`; the override " \
+                "has nothing to override and the order claim cannot be checked"
+    elsif buttons_at < bootstrap_at
+      errors << "ENTRYPOINT ORDER: #{ENTRYPOINT} imports `buttons` (position #{buttons_at}) " \
+                "BEFORE `bootstrap` (position #{bootstrap_at}); Bootstrap's raw hue then wins " \
+                "and the AA fix silently reverts"
+    end
+  end
+
+  if errors.any?
+    warn "verify-outline-button-adaptive: FAIL (#{CSS})"
+    errors.each { |e| warn "  - #{e}" }
+    exit 1
+  end
+
+  puts "outline-button cascade OK: in the documented consumer order, all #{SEMANTICS.size} " \
+       ".btn-outline-* are finally painted by their own --bs-<semantic>-text-emphasis; " \
+       "the engine entrypoint imports buttons after bootstrap"
+  exit 0
+end
+
+# ---------------------------------------------------------------------------------
+# STRICT MODE — the standalone partial.
+#
+# Reject at-rules outright rather than parsing into them. The block regex below cannot
+# represent nesting, so `@layer { .btn-outline-primary { … } }` would otherwise have its
+# INNER rule extracted and pass while the enclosing context silently changed the meaning.
+if css =~ /(@[a-z-]+)/i
+  warn "verify-outline-button-adaptive: FAIL (#{CSS})"
+  warn "  - AT-RULE: #{Regexp.last_match(1).inspect} present. The partial must emit flat rules only; " \
+       "an enclosing @layer/@media/@supports changes which declaration wins and this " \
+       "parser cannot see it."
+  exit 1
+end
+
 # Parse `selector { decls }` blocks. The partial emits only flat rules, so a nested or
 # at-rule block appearing here is itself a change worth failing on.
 blocks = css.scan(/([^{}]+)\{([^{}]*)\}/m).map { |sel, body| [ sel.strip, body.strip ] }
 
 if blocks.empty?
   warn "verify-outline-button-adaptive: FAIL — #{CSS} contains no rules at all"
+  exit 1
+end
+
+# FAIL CLOSED on anything the parser did not consume. Without this, appending
+# `this is not valid CSS` to a valid file passed silently — the scan simply skipped it.
+# "Could not parse" must route to reject, not to pass (.claude/rules/testing.md).
+residue = css.gsub(%r{/\*.*?\*/}m, "").gsub(/([^{}]+)\{([^{}]*)\}/m, "").strip
+unless residue.empty?
+  warn "verify-outline-button-adaptive: FAIL (#{CSS})"
+  warn "  - UNPARSED: #{residue[0, 120].inspect} lies outside any rule. A guard that cannot " \
+       "parse its input must reject it, not ignore it."
   exit 1
 end
 

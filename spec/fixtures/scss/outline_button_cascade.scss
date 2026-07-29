@@ -1,0 +1,22 @@
+// Compat fixture — the DOCUMENTED CONSUMER ORDER from the README, compiled with real
+// Bootstrap in scope so the guard can assert which `--bs-btn-color` declaration actually
+// WINS the cascade for each `.btn-outline-*`.
+//
+// The sibling `outline_button_adaptive.scss` compiles the partial ALONE, which proves the
+// bindings are correct but says nothing about whether they survive contact with Bootstrap.
+// Those are different claims, and only this one catches the two ways the fix silently
+// reverts while every other check stays green (both found by external review of f7b5b8f):
+//
+//   1. IMPORT ORDER — `_buttons.scss` overrides a custom property Bootstrap itself declares
+//      on `.btn-outline-*`, so importing it BEFORE Bootstrap emits the adaptive rule first
+//      and lets Bootstrap's raw `#2E75B6` rule win. The standalone fixture cannot see this:
+//      it never loads Bootstrap. Verified by execution — with the import moved earlier the
+//      whole compat build still exited 0 and the six component specs stayed green.
+//   2. CASCADE LAYERS — wrapping the partial in `@layer` keeps every binding textually
+//      identical (so a per-selector text guard passes) while making the declarations LOSE
+//      to Bootstrap's unlayered ones regardless of source order.
+//
+// Order here must mirror README's install snippets exactly. If those change, change this.
+@import "mpi_design_system/tokens";
+@import "bootstrap/scss/bootstrap";
+@import "mpi_design_system/buttons";

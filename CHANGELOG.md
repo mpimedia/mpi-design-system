@@ -27,11 +27,23 @@ include breaking changes).
     defect stands. `@import "mpi_design_system/buttons"` is added to **both** README install
     snippets alongside `nav_bar` and `avatar`, and unlike those it must come **after** Bootstrap,
     since it overrides a custom property Bootstrap declares.
-  - Border, hover, active and disabled are deliberately left on the raw hue and pinned as such:
-    the border is a non-text boundary held to SC 1.4.11's 3:1 (worst case 3.185, clears), hover
-    fills solid and is already AA, and disabled is exempt under 1.4.3. Proven at compile level by
-    `bin/verify-outline-button-adaptive` (per-selector binding, run from `yarn build:css:compat`)
-    and per painted mode by `spec/features/outline_button_theme_spec.rb`.
+  - Border, hover, active and disabled are deliberately left on the raw hue. Being precise about
+    what is *tested* versus *measured*, since external review caught this claim overstated: the
+    **border** is pinned by a browser example in both modes (a non-text boundary held to SC
+    1.4.11's 3:1, worst case 3.185); **hover/active** were measured from the engine-compiled CSS
+    at 4.528–6.475 in both modes but have **no** browser example — the compile guard pins only
+    that `_buttons.scss` does not touch those properties, not Bootstrap's values for them;
+    **disabled** is exempt under 1.4.3 and drops below 3:1 once opacity applies. The translucent
+    focus *ring* alone measures 1.714–2.179, which is not a defect: focus-visible also fills the
+    button and keeps a ≥3:1 boundary.
+  - Proven at compile level by `bin/verify-outline-button-adaptive`, which runs in **two modes**
+    from `yarn build:css:compat` — strict (the standalone partial emits exactly the six bindings)
+    and `--cascade` (with Bootstrap in scope, OUR declaration is the one that finally wins). The
+    second mode exists because "the binding is right" and "the binding wins" are different claims:
+    review demonstrated that importing the partial **before** Bootstrap, or wrapping it in
+    `@layer`, silently reverts the fix while every other check stays green. It also asserts the
+    engine's own entrypoint imports `buttons` after `bootstrap`. Painted values per mode are
+    proven by `spec/features/outline_button_theme_spec.rb`.
 - **The five `btn-*`-emitting components ISS#183 left unguarded are now guarded, plus
   `AvatarCircle` (#183 follow-up).** `SearchBar`, `NavBar`, `ActionButton`, `BatchActionButton` and
   `BatchActionModalButton` all emit colour-bearing button classes and carried no theme-adaptivity
