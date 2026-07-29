@@ -258,13 +258,70 @@ reused elsewhere, caught by external review.)
 **Related — a theme-adaptivity guard must forbid the colour-bearing *properties by name*, not only
 literal-colour *values*.** A guard that rejects `color`/`background` declarations plus hex/rgb/hsl
 literals still lets `border: 1px solid red` (a *named* colour) and `border: none` through — the exact
-inline-border regression a hex→utility conversion removes. Parse each surviving inline declaration and
-reject any whose property is `color` / `background(-color)` /
-`border(-top|right|bottom|left|color|style|width)` / `outline` / `box-shadow` / `opacity` (allow the
-geometry custom property `--bs-border-width` and `border-radius`), and add named colours to the value
-scan. Prove it by injecting `border: 1px solid red` into a style helper and watching red. (Reference:
-#151 — the FilterChipBar/DataTable conversion's first guard rejected only hex/rgb/hsl values and
+inline-border regression a hex→utility conversion removes. The property axis has to be the
+authoritative whitelist, and the value axis a best-effort backstop. (Reference: #151 — the
+FilterChipBar/DataTable conversion's first guard rejected only hex/rgb/hsl values and
 `color`/`background` properties, so a named-colour or `none` border passed; caught by external review.)
+
+**Do not hand-roll that guard — `spec/support/theme_adaptivity.rb` is THE canonical one.** Three specs
+each carried a divergent private copy of the declaration parse until #183 consolidated them, and the
+copies had already drifted apart (Dashboard's dropped `opacity`, which is #130's whole finding;
+DataTable's dropped `background-image`, `fill`, `stroke` and every modern colour function). A private
+copy is a guard nobody re-reviews when the rule moves. `spec/support/**/*.rb` is auto-required, so the
+module is available to every spec including `spec/lib/`, and all three matchers accept a Nokogiri
+fragment, a Capybara node, or a raw HTML string.
+
+The module has **three axes, one matcher each**, and they are not interchangeable:
+
+| Matcher | Subject | Catches | Blind to |
+|---|---|---|---|
+| `be_free_of_frozen_colour` | one element's surviving inline `style` string | `border: none`, a named colour, `opacity`, a `var(--bs-*)` with a frozen fallback | classes; attributes |
+| `be_free_of_fixed_hue_utilities` | a rendered fragment | `btn-primary`, `bg-white`, `text-bg-primary`, bare `text-primary` | inline style entirely |
+| `be_free_of_colour_literals` | a rendered fragment's serialised HTML | a hex in an **attribute** — an inline SVG `fill="#fff"` | named colours; modern colour functions |
+
+A component whose colour moved onto classes needs the class matcher; a declaration scan cannot
+distinguish `bg-danger` from `bg-white` because it never reads `class` at all.
+
+The class matcher is an **allowlist**, in three tiers. Tier 1 is neutral (`bg-transparent`,
+`border-0`, `text-decoration-none` — classified by prefix, paints nothing); tier 2 is genuinely
+adaptive (`bg-body*`/`text-body*`, and `bg-*-subtle`/`text-*-emphasis`/`border-*-subtle` for every
+Bootstrap semantic *including* `info`, `light` and `dark` — "does it re-resolve" is a different
+question from "is it on MPI's palette"); tier 3 is a **deliberate fixed hue** and is the only thing a
+call site may except. Do not widen tiers 1–2 casually: their contents are asserted directly in
+`spec/lib/theme_adaptivity_spec.rb` precisely so that widening them is a visible, reviewable act
+rather than a quiet weakening of all fourteen guarded specs at once.
+
+**Take a tier-3 exception by removing the NODES, not by `allowing:` — `allowing:` is class-scoped,
+not placement-scoped.** `.allowing("bg-danger")` also passes a `bg-danger` on a text-bearing element
+elsewhere in the same fragment, which is the regression the guard exists for. Remove the decorative
+nodes instead, and prove the removal is honest before trusting the scan:
+
+```ruby
+def without_decorative_dots(fragment)
+  dots = fragment.css(decorative_dot)                     # a `let`, never a constant-in-a-block
+  expect(dots.length).to eq(3)                            # EXACT count, not `not_to be_empty`
+  dots.each { |dot| expect(dot.text.strip).to be_empty }  # each must be genuinely decorative
+  dots.remove
+  fragment
+end
+```
+
+**`expect(dots).not_to be_empty` is the wrong pin here, and this was found by running it.** The
+failure mode a strip introduces is not "removes nothing" — the class matcher catches that anyway,
+because the un-stripped dot's `bg-danger` is still there. It is an **over**-strip: widen the selector
+to `span` and the scan afterwards inspects almost nothing while staying green. `not_to be_empty`
+passes right through that; an exact count reddens in both directions. Proven by mutation: widening
+`decorative_dot` to `"span"` leaves the example green under `not_to be_empty` and reddens it under
+`eq(3)`.
+
+The `text.strip` check is defence in depth rather than an independently isolated rule — with the
+exact count in place, every wrong-strip mutation that could be constructed is caught by the count or
+by the matcher. It stays because it is what makes "decorative" a *tested* property rather than a
+claim in a comment, and WCAG 2.1 SC 1.4.11 is the entire basis for the exception. Pin the stripped
+nodes' own classes in a separate example too, or removing them from the *scan* removes them from the
+*suite*. Reserve `allowing:` for a class that is fixed-hue **everywhere** it appears in that
+component (a selected-state `text-bg-primary`, StatCard's large-text `text-danger`), and cite the
+rule that sanctions it at the call site.
 
 ## A Guard Is Not Real Until You Have Watched It Fail
 

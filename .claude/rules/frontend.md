@@ -328,6 +328,23 @@ Rules:
   decorative. (Reference: #151 — DataTable's tag/status dots; Codex's PR review caught a CHANGELOG
   claim that "each dot" was proven ≥3:1 which a never-hovering, two-variant browser guard did not
   actually establish.)
+- **The one *text-bearing* fixed-hue exception: a SELECTED-state surface may carry
+  `text-bg-#{semantic}` where the fill *is* the selection affordance.** The bullet above reserves a
+  fixed hue for *decorative* marks, and the decorative exemption cannot cover a surface with text on
+  it. A selected state is the narrow case that survives anyway: the whole point of the filled pill is
+  that it does **not** track the surrounding surface, exactly like the nav env-bar's status strips.
+  Conditions, all three: (1) the fill marks a *selected* state — a resting-state surface must use
+  `-subtle`/`-emphasis`; (2) the pair is `text-bg-*`, so Bootstrap derives the foreground rather than
+  a hand-pinned `color: #fff`; (3) ≥4.5:1 is proven in **both** modes. For `text-bg-primary` that is
+  `#fff` on `#2E75B6` = **4.843:1** (`MpiDesignSystem::ColorContrast.ratio`, and `#fff` is what
+  `accessible_foreground("#2E75B6")` derives), identical in both modes because neither value
+  re-resolves. The four current holders are FilterChipBar's active filter pill, Pagination's current
+  page (which also carries `border-primary`, the same hue drawing the same pill's edge),
+  ActiveFilterBar's active-filter pill, and BatchActionModalButton. Each takes the exception
+  explicitly at its spec's call site — `be_free_of_fixed_hue_utilities.allowing("text-bg-primary")` —
+  citing this rule, so it is recorded rather than silently inherited. (Reference: ISS#183; the
+  ActiveFilterBar case was already reasoned in-spec under #130 — background *and* foreground derive
+  from the consuming app's real `$primary` rather than a literal.)
 - Visible focus indicators on every focusable element
 
 ## Anti-Patterns

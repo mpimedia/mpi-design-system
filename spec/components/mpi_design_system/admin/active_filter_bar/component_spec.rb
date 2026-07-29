@@ -10,21 +10,6 @@ RSpec.describe MpiDesignSystem::Admin::ActiveFilterBar::Component, type: :compon
     ]
   end
 
-  # Utilities that pin one colour scheme. Any of these on a bar meant to follow
-  # `data-bs-theme` reintroduces exactly the defect #150 removed.
-  let(:fixed_scheme_utilities) do
-    %w[
-      bg-white bg-black bg-light bg-dark
-      text-white text-black text-light text-dark
-      text-bg-light text-bg-dark
-      border-white border-black border-light border-dark
-    ]
-  end
-
-  # Matches 3-, 4-, 6- and 8-digit CSS hex. The trailing (?!\h) stops #abcdef1234
-  # from matching as a 6-digit literal, and the 4/8 branches close the alpha forms.
-  let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
-
   # The pill carries Bootstrap's `.text-bg-primary`, so its background AND foreground
   # derive from the consuming app's actual $primary rather than a literal. (#130)
   it "renders active filter pills" do
@@ -109,18 +94,60 @@ RSpec.describe MpiDesignSystem::Admin::ActiveFilterBar::Component, type: :compon
       expect(page).to have_css("div.bg-body-secondary[role='toolbar']")
       expect(page).to have_css("span.text-bg-primary", text: "Keyword: investors")
 
-      expect(rendered_content).not_to match(hex_literal)
+      # Attributes and text included, so a hex in an `svg fill=` or a `data-*` is caught
+      # too — neither is visible to a declaration scan.
+      expect(rendered_fragment).to be_free_of_colour_literals
     end
 
-    it "pins no fixed-scheme utility that would break under data-bs-theme" do
+    # ISS#183 triage. The shared declaration guard reaches this component for the first
+    # time here, and it reports the remove control's UA reset — `background: none` and
+    # `border: none` (component.rb:60-71), once per filter.
+    #
+    # That is a deliberately conservative TRUE POSITIVE of the guard's shape rather than
+    # a frozen colour: `none` freezes no hue in either colour mode, and the rule rejects
+    # it because #151 caught `border: none` silently overriding a UTILITY border — which
+    # is not what is happening on a bare `<a>` with no border utility. The clean fix is
+    # the one TagChip, TagInput and FilterChipBar already took, replacing the reset with
+    # `text-reset bg-transparent border-0` classes; that is an `app/` change and out of
+    # scope for a spec consolidation.
+    #
+    # So it is PINNED rather than skipped: the complete offence multiset is asserted, so
+    # a genuinely frozen colour reintroduced anywhere in this template — including on the
+    # remove control itself — pushes the set off and reddens this.
+    it "emits no frozen-colour declaration beyond the remove control's reset" do
       render_inline(described_class.new(filters: filters, clear_all_url: "/contacts?clear"))
 
-      elements = page.all("div[role='toolbar'], div[role='toolbar'] *")
-      expect(elements.size).to be > 1
+      # Geometry inline styles DO still exist — without this the scan below could pass
+      # on markup that emitted no style at all.
+      expect(page).to have_css("[style*='text-transform: uppercase']")
 
-      applied = elements.flat_map { |el| el[:class].to_s.split }.uniq
+      offences = rendered_fragment.css("[style]").flat_map do |node|
+        ThemeAdaptivity.frozen_colour_offences(node["style"]).map { |offence| offence.split(" — ").first }
+      end
+
+      # One reset per RENDERED remove control — a filter without a `remove_url` renders no
+      # control, so count those rather than the filters.
+      remove_controls = filters.count { |filter| filter[:remove_url] }
+      expect(remove_controls).to eq(2)
+      expect(offences).to contain_exactly(
+        *Array.new(remove_controls) { [ '"background: none"', '"border: none"' ] }.flatten
+      )
+    end
+
+    it "applies only theme-adaptive colour utilities, bar the active-filter pill" do
+      render_inline(described_class.new(filters: filters, clear_all_url: "/contacts?clear"))
+      fragment = rendered_fragment.css("div[role='toolbar']")
+
+      applied = ThemeAdaptivity.applied_utility_classes(fragment)
       expect(applied).to include("bg-body-secondary", "text-bg-primary", "text-body-secondary")
-      expect(applied & fixed_scheme_utilities).to be_empty
+
+      # `text-bg-primary` on the active-filter pill is a deliberate fixed hue and was
+      # already documented as such at the top of this file (#130: background AND
+      # foreground derive from the consuming app's real `$primary` rather than a
+      # literal). `.claude/rules/frontend.md` now records it as the accepted
+      # selected-state exception — #fff on #2E75B6 = 4.843:1, identical in both colour
+      # modes because neither value re-resolves.
+      expect(fragment).to be_free_of_fixed_hue_utilities.allowing("text-bg-primary")
     end
   end
 

@@ -3,21 +3,6 @@
 require "spec_helper"
 
 RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
-  # Utilities that pin one colour scheme. Any of these on a card meant to follow
-  # `data-bs-theme` reintroduces exactly the defect this conversion (#150) removed.
-  let(:fixed_scheme_utilities) do
-    %w[
-      bg-white bg-black bg-light bg-dark
-      text-white text-black text-light text-dark
-      text-bg-light text-bg-dark
-      border-white border-black border-light border-dark
-    ]
-  end
-
-  # Matches 3-, 4-, 6- and 8-digit CSS hex. The trailing (?!\h) stops #abcdef1234
-  # from matching as a 6-digit literal, and the 4/8 branches close the alpha forms.
-  let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
-
   it "renders label and value" do
     render_inline(described_class.new(label: "Total Contacts", value: "2,307"))
 
@@ -191,8 +176,10 @@ RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
 
         # Prove the branch actually rendered — a regex over an empty string passes forever.
         expect(page).to have_css(branch[:css], text: branch[:text])
-        expect(rendered_content).not_to match(hex_literal),
-          "hex literal leaked in branch #{branch[:args]}"
+        # Attributes and text included, so a hex in an `svg fill=` or a `data-*` is
+        # caught too — neither is visible to a declaration scan.
+        expect(rendered_fragment).to be_free_of_colour_literals,
+          "colour literal leaked in branch #{branch[:args]}"
       end
     end
 
@@ -211,20 +198,44 @@ RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
       # Colon-anchored so it does not match a future `border-radius` inline (radius is
       # a class now, but the guard stays precise regardless).
       expect(page).to have_no_css("[style*='border: ']")
+
+      # The substring assertions above cannot see a named colour, `opacity`, or
+      # `box-shadow`; the shared declaration scan can. Kept alongside them rather than
+      # replacing them, because they additionally forbid an inline `background-image`
+      # this component has no business emitting.
+      rendered_fragment.css("[style]").each do |node|
+        expect(node["style"]).to be_free_of_frozen_colour
+      end
     end
 
-    it "pins no fixed-scheme utility that would break under data-bs-theme" do
+    # No `allowing:` — the non-alert branches take no fixed-hue exception at all.
+    it "applies only theme-adaptive colour utilities outside the alert branch" do
       render_inline(described_class.new(
         label: "Total", value: "100",
         trend_text: "34 this month", trend_direction: :up, trend_sentiment: :positive
       ))
+      fragment = rendered_fragment
 
-      elements = page.all("div, div *")
-      expect(elements.size).to be > 1
-
-      applied = elements.flat_map { |el| el[:class].to_s.split }.uniq
+      applied = ThemeAdaptivity.applied_utility_classes(fragment)
       expect(applied).to include("bg-body", "border", "rounded-3", "text-body-secondary", "text-body", "text-success-emphasis")
-      expect(applied & fixed_scheme_utilities).to be_empty
+
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The alert branch is the one place this card paints a base semantic foreground, and
+    # it is deliberate — reasoned in component.rb:48-50,88. The alert VALUE is large text
+    # (32px/600), so it is held to AA's 3:1 large-text floor rather than 4.5:1, which base
+    # `.text-danger` clears in both modes (4.53:1 light) where `text-danger-emphasis` would
+    # over-darken a number meant to read as an alarm. Asserted in its own example so the
+    # exception is scoped to the branch that takes it, not to every StatCard render.
+    it "applies a base text-danger on the alert value, and nothing else fixed-hue" do
+      render_inline(described_class.new(label: "Overdue", value: "12", alert: true))
+      fragment = rendered_fragment
+
+      expect(fragment.at_css("div.text-danger")).not_to be_nil
+      expect(ThemeAdaptivity.applied_utility_classes(fragment)).to include("bg-body", "text-body-secondary")
+
+      expect(fragment).to be_free_of_fixed_hue_utilities.allowing("text-danger")
     end
   end
 

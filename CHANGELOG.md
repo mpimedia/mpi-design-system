@@ -8,6 +8,38 @@ include breaking changes).
 ## [Unreleased]
 
 ### Fixed
+- **The repo's three divergent theme-adaptivity guards are consolidated onto one shared module,
+  and all fourteen guarded specs now check colour-bearing CLASSES as well as declarations
+  (#183).** `spec/support/theme_adaptivity.rb` is now the canonical guard, with three matchers:
+  `be_free_of_frozen_colour` (a declaration scan, as before), the new
+  `be_free_of_fixed_hue_utilities` (a class-level allowlist) and the new
+  `be_free_of_colour_literals` (a whole-fragment scan that reads attributes, so an inline SVG
+  `fill="#fff"` is caught). `dashboard`, `data_table` and `filter_chip_bar` each carried a private
+  copy of the declaration parse and the copies had already drifted — Dashboard's dropped
+  `opacity` (#130's whole finding), DataTable's dropped `background-image`, `fill`, `stroke` and
+  every modern colour function. Those copies are gone, together with the fixed-scheme class
+  denylist `pagination`, `stat_card` and `active_filter_bar` carried (12 entries in one, 14 in the
+  other two — a fourth divergence). **No component markup changed**; this is spec and
+  documentation only, and nothing in the gem's `files` glob is touched.
+  - The class axis closes a **latent** hole rather than fixing a shipped violation: none of the
+    fourteen guarded components emits a `btn-*`, `alert-*`, `badge-*`, `list-group-item-*` or
+    `link-#{semantic}` class today, so what was missing was the guard — a future `btn-primary` or
+    bare `text-primary` would have shipped green in thirteen of the fourteen specs. The
+    classifier's `btn-*` branch is therefore exercised by mutation injection rather than by real
+    markup. It is not dead code, though: `SearchBar`, `NavBar`, `ActionButton`,
+    `BatchActionButton` and `BatchActionModalButton` do emit `btn-*` classes, and none of them is
+    guarded yet.
+  - `COLOUR_PROPERTIES` gains `filter`, `backdrop-filter`, `background-blend-mode`,
+    `text-emphasis-color` and `-webkit-text-fill-color` (ISS#174 §1). No component emits any of
+    them, so this is purely preventive; each is proven by a fixture only the property rule can
+    reject, so deleting one entry reddens exactly one example.
+  - Deliberate fixed hues are now recorded rather than silently inherited. The decorative
+    category/status dots in `data_table`, `account_list_row`, `contact_list_row` and
+    `engagement_card` are excluded by removing the NODES after a positive proof that they are
+    text-free (stronger than a fragment-wide allowance, which would also pass `bg-danger` on a
+    text-bearing element). The selected-state `text-bg-primary` in `filter_chip_bar`,
+    `pagination` and `active_filter_bar`, and `stat_card`'s large-text `text-danger`, are allowed
+    at their call sites citing a new accepted-exception rule in `.claude/rules/frontend.md`.
 - **Every CRM tag-group renderer is now theme-adaptive and WCAG AA clean (#168).** #167 moved
   `FilterChipBar` and `DataTable` onto the shared
   `TagChip::Component::GROUP_VARIANTS` mapping and deliberately left the other consumers on

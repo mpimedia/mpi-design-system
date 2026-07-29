@@ -185,6 +185,29 @@ RSpec.describe MpiDesignSystem::Admin::ContactDetailPanel::Component, type: :com
       inline_styles(pill).each { |style| expect(style).to be_free_of_frozen_colour }
     end
 
+    # #183. The pill's colour is carried by CLASSES, so the declaration scan above is
+    # blind to `bg-danger-subtle` degrading into a fixed-hue `bg-danger`.
+    #
+    # Nothing is stripped here: the two embedded components carry no fixed-hue class of
+    # their own (TagChip is subtle/emphasis + neutral resets, AvatarCircle's root is
+    # geometry classes with an inline fill), so keeping them in scope costs nothing and
+    # makes a future regression in either a loud failure rather than a silent gap. The
+    # declaration guard above stays narrowly scoped to the pill, because this panel emits
+    # frozen hex elsewhere on purpose.
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "applies only theme-adaptive colour utilities with a #{group} auto-group" do
+        render_inline(described_class.new(
+          **default_params.merge(auto_groups: [ { label: group.to_s, group: group } ])
+        ))
+        fragment = rendered_fragment
+
+        applied = ThemeAdaptivity.applied_utility_classes(fragment)
+        expect(applied).to include("bg-#{variant}-subtle", "text-#{variant}-emphasis")
+
+        expect(fragment).to be_free_of_fixed_hue_utilities
+      end
+    end
+
     # The delegated TagChip path carries its own conversion; this proves the panel
     # actually renders it, so the two paths above are genuinely distinct.
     it "renders @tags through the delegated TagChip, not the auto-group pill" do

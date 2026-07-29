@@ -211,6 +211,45 @@ RSpec.describe MpiDesignSystem::Admin::AccountDetailPanel::Component, type: :com
       expect(page).to have_css("span.bg-danger-subtle", text: /Distribution/)
       inline_styles("span.rounded-pill").each { |style| expect(style).to be_free_of_frozen_colour }
     end
+
+    # #183. The chip's colour is carried by CLASSES, so the declaration scan above is
+    # blind to `bg-danger-subtle` degrading into a fixed-hue `bg-danger`.
+    #
+    # The embedded Badge is removed first: it emits `text-bg-#{color}` — a deliberate
+    # fixed hue that Badge OWNS, not this panel — and it has no theme-adaptivity guard of
+    # its own (tracked as a follow-up). Removing the subtree scopes this assertion to the
+    # panel's own markup; the `not_to be_empty` pin makes the removal honest, so a
+    # selector that stopped matching reddens here rather than silently widening scope.
+    #
+    # Note the DECLARATION guard above is deliberately NOT widened to match: this panel
+    # emits frozen hex outside the chips on purpose (`color: #2E75B6` on the account
+    # links, `border-top: 1px solid #DEE2E6` on the dividers), which is a separate
+    # conversion, not this issue's.
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "applies only theme-adaptive colour utilities around a #{group} chip" do
+        render_inline(described_class.new(
+          **default_params.merge(tag_groups: [ { label: group.to_s, count: 1, group: group } ])
+        ))
+        fragment = rendered_fragment
+
+        badges = fragment.css("span.badge")
+        expect(badges).not_to be_empty
+        badges.remove
+
+        applied = ThemeAdaptivity.applied_utility_classes(fragment)
+        expect(applied).to include("bg-#{variant}-subtle", "text-#{variant}-emphasis")
+
+        expect(fragment).to be_free_of_fixed_hue_utilities
+      end
+    end
+
+    # The Badge's own fixed hue, pinned here rather than lost with the stripped subtree:
+    # removing it from the scan above must not remove it from the SUITE.
+    it "still renders the embedded account-type Badge in its filled variant" do
+      render_inline(described_class.new(**default_params))
+
+      expect(page).to have_css("span.badge.text-bg-primary", text: "Distributor")
+    end
   end
 
   it "renders linked titles section" do

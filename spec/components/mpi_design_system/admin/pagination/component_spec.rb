@@ -153,27 +153,13 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
   # talking about POSITIVELY before asserting an absence, and each was proven by watching
   # it fail against a mutation that trips it and neither of the other two
   # (`.claude/rules/testing.md`, "A Guard Is Not Real Until You Have Watched It Fail").
+  #
+  # #183 replaced this block's local hex regex and 12-entry fixed-scheme denylist with the
+  # shared guard in `spec/support/theme_adaptivity.rb`. The denylist becomes an ALLOWLIST,
+  # which is a strengthening: it named neither the base semantic utilities
+  # (`text-primary`, `bg-success`) nor `btn-*` / `link-*` / `alert-*`, so all of those
+  # shipped green.
   describe "theme-adaptivity guards" do
-    # `let`, not a constant: a constant assigned inside a block resolves to top-level
-    # Object, so the eight follow-on Track 2 phases copying this block would each
-    # reassign the same name — and if their lists ever diverged, load order would
-    # silently decide which guard ran.
-    #
-    # Utilities that pin one colour scheme. Any of these on a bar meant to follow
-    # `data-bs-theme` reintroduces exactly the defect this conversion removed.
-    let(:fixed_scheme_utilities) do
-      %w[
-        bg-white bg-black bg-light bg-dark
-        text-white text-black text-light text-dark
-        border-white border-black border-light border-dark
-      ]
-    end
-
-    # Matches 3-, 4-, 6- and 8-digit CSS hex. The trailing (?!\h) stops #abcdef1234
-    # from matching as a 6-digit literal, and the 4/8 branches close the alpha forms
-    # a {3,6}-only pattern silently lets through.
-    let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
-
     let(:windowed) do
       described_class.new(current_page: 20, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 7)
     end
@@ -186,7 +172,9 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
       expect(page).to have_css("nav[aria-label='Pagination']")
       expect(page).to have_css("span[aria-current='page']", text: "20")
 
-      expect(rendered_content).not_to match(hex_literal)
+      # Attributes and text included, so a hex in an `svg fill=` or a `data-*` is caught
+      # too — neither is visible to the declaration scan below.
+      expect(rendered_fragment).to be_free_of_colour_literals
     end
 
     it "emits no colour declaration in the inline styles that remain" do
@@ -199,19 +187,34 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
       expect(page).to have_no_css("[style*='color']")
       expect(page).to have_no_css("[style*='background']")
       expect(page).to have_no_css("[style*='border']")
+
+      # The substring assertions above cannot see `border: none` or a named colour on a
+      # property they do not spell out; the shared declaration scan can. Kept alongside
+      # them rather than replacing them, because they additionally forbid an inline
+      # `border-radius` this component has no business emitting.
+      rendered_fragment.css("[style]").each do |node|
+        expect(node["style"]).to be_free_of_frozen_colour
+      end
     end
 
-    it "pins no fixed-scheme utility that would break under data-bs-theme" do
+    it "applies only theme-adaptive colour utilities, bar the selected-page affordance" do
       render_inline(windowed)
+      fragment = rendered_fragment.css("nav[aria-label='Pagination']")
 
       # Scope is the nav and every descendant, enumerated — not a [class*=…]
       # substring hunt, which would match `border-primary` for `border-dark`.
-      elements = page.all("nav[aria-label='Pagination'], nav[aria-label='Pagination'] *")
-      expect(elements.size).to be > 1
-
-      applied = elements.flat_map { |el| el[:class].to_s.split }.uniq
+      applied = ThemeAdaptivity.applied_utility_classes(fragment)
       expect(applied).to include("text-bg-primary", "bg-body", "text-primary-emphasis")
-      expect(applied & fixed_scheme_utilities).to be_empty
+
+      # `text-bg-primary` + `border-primary` on the CURRENT page (component.rb:67) is a
+      # deliberate fixed hue: the filled pill IS the selected-state affordance, and
+      # `.claude/rules/frontend.md` records that as an accepted exception (#fff on
+      # #2E75B6 = 4.843:1, identical in both colour modes because neither value
+      # re-resolves). `border-primary` is the same hue on the same element, drawing the
+      # pill's edge; allowing one without the other would pass a pill whose fill went
+      # adaptive while its border stayed frozen. Every other colour-bearing class in the
+      # nav must still be adaptive, which the same call asserts.
+      expect(fragment).to be_free_of_fixed_hue_utilities.allowing("text-bg-primary", "border-primary")
     end
   end
 

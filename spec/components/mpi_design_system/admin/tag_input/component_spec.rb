@@ -150,6 +150,28 @@ RSpec.describe MpiDesignSystem::Admin::TagInput::Component, type: :component do
         expect(style).to be_free_of_frozen_colour
       end
     end
+
+    # #183. The chip's colour lives entirely in CLASSES, which the declaration scan
+    # above cannot see: `bg-danger-subtle` degrading to a fixed-hue `bg-danger`, or the
+    # remove control's neutral reset becoming `btn-danger`, are invisible to it.
+    #
+    # Scanned over the whole component rather than a chip selector, so the derived-group
+    # pills, the dropdown and the input wrapper are covered by the same assertion.
+    # Looped over every GROUP_VARIANTS key, not the five distinct hues — three groups
+    # share `primary`, so a per-hue loop leaves two keys unproven.
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "applies only theme-adaptive colour utilities with a #{group} tag selected" do
+        render_inline(described_class.new(
+          available_tags: available_tags, selected_tags: [ { label: "VIP", group: group } ]
+        ))
+        fragment = rendered_fragment
+
+        applied = ThemeAdaptivity.applied_utility_classes(fragment)
+        expect(applied).to include("bg-#{variant}-subtle", "text-#{variant}-emphasis", "text-reset", "bg-transparent")
+
+        expect(fragment).to be_free_of_fixed_hue_utilities
+      end
+    end
   end
 
   describe "derived group pills (#168)" do
