@@ -153,27 +153,13 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
   # talking about POSITIVELY before asserting an absence, and each was proven by watching
   # it fail against a mutation that trips it and neither of the other two
   # (`.claude/rules/testing.md`, "A Guard Is Not Real Until You Have Watched It Fail").
+  #
+  # #183 replaced this block's local hex regex and 12-entry fixed-scheme denylist with the
+  # shared guard in `spec/support/theme_adaptivity.rb`. The denylist becomes an ALLOWLIST,
+  # which is a strengthening: it named neither the base semantic utilities
+  # (`text-primary`, `bg-success`) nor `btn-*` / `link-*` / `alert-*`, so all of those
+  # shipped green.
   describe "theme-adaptivity guards" do
-    # `let`, not a constant: a constant assigned inside a block resolves to top-level
-    # Object, so the eight follow-on Track 2 phases copying this block would each
-    # reassign the same name — and if their lists ever diverged, load order would
-    # silently decide which guard ran.
-    #
-    # Utilities that pin one colour scheme. Any of these on a bar meant to follow
-    # `data-bs-theme` reintroduces exactly the defect this conversion removed.
-    let(:fixed_scheme_utilities) do
-      %w[
-        bg-white bg-black bg-light bg-dark
-        text-white text-black text-light text-dark
-        border-white border-black border-light border-dark
-      ]
-    end
-
-    # Matches 3-, 4-, 6- and 8-digit CSS hex. The trailing (?!\h) stops #abcdef1234
-    # from matching as a 6-digit literal, and the 4/8 branches close the alpha forms
-    # a {3,6}-only pattern silently lets through.
-    let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
-
     let(:windowed) do
       described_class.new(current_page: 20, total_pages: 47, total_count: 1175, url_builder: url_builder, max_links: 7)
     end
@@ -186,7 +172,9 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
       expect(page).to have_css("nav[aria-label='Pagination']")
       expect(page).to have_css("span[aria-current='page']", text: "20")
 
-      expect(rendered_content).not_to match(hex_literal)
+      # Attributes and text included, so a hex in an `svg fill=` or a `data-*` is caught
+      # too — neither is visible to the declaration scan below.
+      expect(rendered_fragment).to be_free_of_colour_literals
     end
 
     it "emits no colour declaration in the inline styles that remain" do
@@ -199,19 +187,76 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
       expect(page).to have_no_css("[style*='color']")
       expect(page).to have_no_css("[style*='background']")
       expect(page).to have_no_css("[style*='border']")
+
+      # The substring assertions above cannot see `border: none` or a named colour on a
+      # property they do not spell out; the shared declaration scan can. Kept alongside
+      # them rather than replacing them, because they additionally forbid an inline
+      # `border-radius` this component has no business emitting.
+      rendered_fragment.css("[style]").each do |node|
+        expect(node["style"]).to be_free_of_frozen_colour
+      end
     end
 
-    it "pins no fixed-scheme utility that would break under data-bs-theme" do
+    # `text-bg-primary` + `border-primary` on the CURRENT page (component.rb:67) is a
+    # deliberate fixed hue: the filled pill IS the selected-state affordance, and
+    # `.claude/rules/frontend.md` records that as an accepted exception (#fff on #2E75B6 =
+    # 4.843:1, identical in both colour modes because neither value re-resolves).
+    # `border-primary` is the same hue on the same element, drawing the pill's edge.
+    #
+    # BOTH sanctioned classes are removed, and nothing else — not the node, and not by
+    # `.allowing(…)`. The allowance is class-scoped and not placement-scoped: Codex's #183
+    # review proved on the sibling ActiveFilterBar that it would equally pass a
+    # `text-bg-primary` on a NON-current page link or on the results caption, which is
+    # exactly the rule's condition and exactly what the guard exists to catch. Keying the
+    # strip on `aria-current="page"` — the selected state itself — means any other element
+    # carrying the fill survives into the scan and reddens it.
+    #
+    # Removing the whole SPAN (the first correction) went too far the other way: it also
+    # deleted the pill's surviving `border rounded text-decoration-none` from the scan, and
+    # Codex's review of that fix commit shipped `bg-white` on the node past it. Stripping
+    # only the two sanctioned classes keeps the rest of the pill in scope.
+    #
+    # `strip_sanctioned_hue` pins the count at exactly one current page per render (an
+    # OVER-strip is the silent failure mode; `not_to be_empty` passes straight through one)
+    # and that both classes were really there; the assertions below pin the selected-state
+    # semantics and the label the stripped node must carry.
+    let(:current_page_pill) { "span[aria-current='page']" }
+
+    def without_current_page_hue(fragment)
+      current = fragment.css(current_page_pill)
+      strip_sanctioned_hue(current, [ %w[text-bg-primary border-primary] ])
+      expect(current.first["aria-label"]).to eq("Page 20")
+      expect(current.first.text.squish).to eq("20")
+      fragment
+    end
+
+    it "applies only theme-adaptive colour utilities once the current-page hue is stripped" do
       render_inline(windowed)
+      fragment = without_current_page_hue(rendered_fragment.css("nav[aria-label='Pagination']"))
 
       # Scope is the nav and every descendant, enumerated — not a [class*=…]
       # substring hunt, which would match `border-primary` for `border-dark`.
-      elements = page.all("nav[aria-label='Pagination'], nav[aria-label='Pagination'] *")
-      expect(elements.size).to be > 1
+      applied = ThemeAdaptivity.applied_utility_classes(fragment)
+      expect(applied).to include("bg-body", "text-body", "text-primary-emphasis")
 
-      applied = elements.flat_map { |el| el[:class].to_s.split }.uniq
-      expect(applied).to include("text-bg-primary", "bg-body", "text-primary-emphasis")
-      expect(applied & fixed_scheme_utilities).to be_empty
+      # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The pill's own fixed hue and its selected-state semantics, pinned here rather than
+    # left to the scan above: stripping the classes from the SCAN must not remove them from
+    # the SUITE. The negative halves are the placement condition the matcher could not
+    # express — a page LINK is not a selected state and may carry neither class.
+    it "still paints exactly the current page in the fixed selected-state hue" do
+      render_inline(windowed)
+
+      expect(page).to have_css(
+        "span[aria-current='page'][aria-label='Page 20'].text-bg-primary.border-primary", text: "20"
+      )
+      expect(page).to have_css("span[aria-current='page']", count: 1)
+      expect(page).to have_css("a[aria-label='Page 19'].bg-body.text-body", text: "19")
+      expect(page).to have_no_css("a.text-bg-primary")
+      expect(page).to have_no_css("a.border-primary")
     end
   end
 

@@ -103,6 +103,7 @@ Then import the MPI tokens in `application.scss` using **one** of the two entry 
   @import "bootstrap/scss/bootstrap";
   @import "mpi_design_system/nav_bar";
   @import "mpi_design_system/avatar";
+  @import "mpi_design_system/buttons";
   ```
 
 - **Modern Sass-module pipeline** — `@use` the dependency-free values module and feed the
@@ -119,6 +120,7 @@ Then import the MPI tokens in `application.scss` using **one** of the two entry 
   @import "bootstrap/scss/bootstrap";
   @import "mpi_design_system/nav_bar";
   @import "mpi_design_system/avatar";
+  @import "mpi_design_system/buttons";
   ```
 
   Map every token you rely on — Bootstrap keeps its own default for any you skip. In

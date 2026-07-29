@@ -328,6 +328,44 @@ Rules:
   decorative. (Reference: #151 — DataTable's tag/status dots; Codex's PR review caught a CHANGELOG
   claim that "each dot" was proven ≥3:1 which a never-hovering, two-variant browser guard did not
   actually establish.)
+- **The one *text-bearing* fixed-hue exception: a SELECTED-state surface may carry
+  `text-bg-#{semantic}` where the fill *is* the selection affordance.** The bullet above reserves a
+  fixed hue for *decorative* marks, and the decorative exemption cannot cover a surface with text on
+  it. A selected state is the narrow case that survives anyway: the whole point of the filled pill is
+  that it does **not** track the surrounding surface, exactly like the nav env-bar's status strips.
+  Conditions, all three: (1) the fill marks a *selected* state — a resting-state surface must use
+  `-subtle`/`-emphasis`; (2) the pair is `text-bg-*`, so Bootstrap derives the foreground rather than
+  a hand-pinned `color: #fff`; (3) ≥4.5:1 is proven in **both** modes. For `text-bg-primary` that is
+  `#fff` on `#2E75B6` = **4.843:1** (`MpiDesignSystem::ColorContrast.ratio`, and `#fff` is what
+  `accessible_foreground("#2E75B6")` derives), identical in both modes because neither value
+  re-resolves. The three current holders are FilterChipBar's active filter pill, Pagination's current
+  page (which also carries `border-primary`, the same hue drawing the same pill's edge), and
+  ActiveFilterBar's active-filter pill. **`BatchActionModalButton` is NOT one** — its
+  `text-bg-primary` is a modal *header*, a resting surface with no selected state anywhere near it,
+  and the component also emits two `btn-primary` controls. It is now guarded (ISS#183 follow-up) on
+  a *different* justification, which is the point: the header pins `data-bs-theme="dark"` on itself,
+  so it is a self-contained brand banner rather than an element that should track the page, and
+  Bootstrap derives its foreground to the same 4.843:1 under either ambient mode. Its spec asserts
+  that pinned attribute separately, so dropping it reddens rather than silently invalidating the
+  justification. Borrowing the selected-state rule for it would still be wrong.
+  **Take the exception by removing the sanctioned CLASS — never with
+  `.allowing("text-bg-primary")`, and never by removing the node.** The matcher is class-scoped, not
+  placement-scoped, so a fragment-wide allowance also passes the same fill on a *non*-selected element
+  and therefore cannot enforce condition (1), which is the whole rule; Codex's ISS#183 review proved
+  it by injection — `text-bg-primary` added to ActiveFilterBar's non-selected "Active:" label shipped
+  green under the allowance. Removing the node is the opposite error, and the review of that fix
+  commit proved it the same way: deleting the pill also deletes every other regression on it and on
+  its descendants, so `bg-white` on the pill itself and `bg-white` on the remove link *inside* it both
+  shipped green (99 and 43 examples respectively). Each of the three holders now strips only its
+  sanctioned class(es) via `strip_sanctioned_hue` — keyed on the selected state itself where one
+  exists (`aria-current` for Pagination), which pins an exact count and asserts the class was really
+  there — pins the node's classes and state semantics in a separate example, and scans the intact node
+  and its subtree with **no** `allowing:`. The same correction applies to the decorative-dot strips and
+  to StatCard's large-text alert value, which is a *fourth* fixed-hue call site under a different
+  exception (AA's 3:1 large-text floor, not a selection affordance) — four fixed-hue call sites in
+  total, three of them selected-state surfaces. (Reference: ISS#183; the ActiveFilterBar case was
+  already reasoned in-spec under #130 — background *and* foreground derive from the consuming app's
+  real `$primary` rather than a literal.)
 - Visible focus indicators on every focusable element
 
 ## Anti-Patterns

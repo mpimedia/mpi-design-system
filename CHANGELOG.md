@@ -8,6 +8,112 @@ include breaking changes).
 ## [Unreleased]
 
 ### Fixed
+- **Every `.btn-outline-*` variant was below WCAG AA in one colour mode, and now adapts (#183
+  follow-up).** Bootstrap 5.3 defines `.btn-outline-#{semantic}` exactly once and never under a
+  `[data-bs-theme]` scope, so its resting text kept the raw semantic hue while the body surface
+  flipped. Measured on MPI's own palette, **all six failed** the 4.5:1 floor in one mode or the
+  other — primary/info **3.185**, danger **3.407**, secondary **3.290** in dark; success **3.329**,
+  warning **3.243** in light. This was a shipped defect reaching all four consuming apps, found by
+  extending ISS#183's guard to the five `btn-*`-emitting components that consolidation had left
+  unguarded.
+  - The fix is a new `app/assets/stylesheets/mpi_design_system/_buttons.scss` that re-points only
+    the resting `--bs-btn-color` at `--bs-#{semantic}-text-emphasis`, the one token family in play
+    that genuinely re-resolves per mode. Every variant now clears AA by a wide margin in both:
+    13.739/6.458 primary·info, 13.502/6.743 secondary, 11.752/7.681 success, 11.553/7.802 warning,
+    13.645/6.101 danger. The dark-mode primary lands on `#82ACD3` — the same value
+    `.claude/rules/frontend.md` already records as AA-safe interactive text for the navbar.
+  - **This is a consumer-visible change and requires an import.** The engine ships SCSS as source
+    with no asset-pipeline initializer, so a partial the app does not import never compiles and the
+    defect stands. `@import "mpi_design_system/buttons"` is added to **both** README install
+    snippets alongside `nav_bar` and `avatar`, and unlike those it must come **after** Bootstrap,
+    since it overrides a custom property Bootstrap declares.
+  - Border, hover, active and disabled are deliberately left on the raw hue. Being precise about
+    what is *tested* versus *measured*, since external review caught this claim overstated: the
+    **border** is pinned by a browser example in both modes (a non-text boundary held to SC
+    1.4.11's 3:1, worst case 3.185); **hover/active** were measured from the engine-compiled CSS
+    at 4.528–6.475 in both modes but have **no** browser example — the compile guard pins only
+    that `_buttons.scss` does not touch those properties, not Bootstrap's values for them;
+    **disabled** is exempt under 1.4.3 and drops below 3:1 once opacity applies. The translucent
+    focus *ring* alone measures 1.714–2.179, which is not a defect: focus-visible also fills the
+    button and keeps a ≥3:1 boundary.
+  - Proven at compile level by `bin/verify-outline-button-adaptive`, which runs in **two modes**
+    from `yarn build:css:compat` — strict (the standalone partial emits exactly the six bindings)
+    and `--cascade` (with Bootstrap in scope, OUR declaration is the one that finally wins). The
+    second mode exists because "the binding is right" and "the binding wins" are different claims:
+    review demonstrated that importing the partial **before** Bootstrap, or wrapping it in
+    `@layer`, silently reverts the fix while every other check stays green. It also asserts the
+    engine's own entrypoint imports `buttons` after `bootstrap`. Painted values per mode are
+    proven by `spec/features/outline_button_theme_spec.rb`.
+- **The five `btn-*`-emitting components ISS#183 left unguarded are now guarded, plus
+  `AvatarCircle` (#183 follow-up).** `SearchBar`, `NavBar`, `ActionButton`, `BatchActionButton` and
+  `BatchActionModalButton` all emit colour-bearing button classes and carried no theme-adaptivity
+  matcher; the consolidation's own CHANGELOG named them as the reason its `btn-*` classifier branch
+  was exercised only by injection. 15 guarded specs → 21.
+  - `AvatarCircle` had to be guarded first, because `NavBar` embeds it and a parent may only strip
+    a child subtree that is **independently** guarded — ISS#183's own round-1 P0-4, where
+    `AccountDetailPanel` stripped an unguarded `Badge` and the strip removed the evidence.
+  - `AvatarCircle`'s `var(--mds-avatar-N, #hex)` declarations — the pattern `frontend.md`
+    *prescribes* (#169) — read as frozen to the shared scan, which allows only `var(--bs-*)`. The
+    exception is taken locally rather than by widening `adaptive_value?`: a blanket
+    `var(--mds-*, …)` allowance would weaken all guarded specs, since a token no partial defines
+    would start passing everywhere. It is backed by the two guards that can see what the scan
+    cannot — `bin/verify-avatar-adaptive` and the browser `contrast_spec`.
+  - `ActionButton` is looped over the **Cartesian product** of `COLORS` × `VARIANTS`, not one
+    example per axis — `css_classes` composes both, so a per-axis loop never renders the
+    combination a caller actually uses (ISS#183 round-2 P0-B).
+  - `btn-outline-*` is stripped at its call sites rather than added to `ADAPTIVE_UTILITIES`,
+    because its adaptivity is conditional on the consumer importing the new partial and the shared
+    allowlist deliberately encodes only what Bootstrap itself re-resolves.
+- **The repo's three divergent theme-adaptivity guards are consolidated onto one shared module,
+  and all fourteen guarded specs now check colour-bearing CLASSES as well as declarations
+  (#183).** `spec/support/theme_adaptivity.rb` is now the canonical guard, with three matchers:
+  `be_free_of_frozen_colour` (a declaration scan, as before), the new
+  `be_free_of_fixed_hue_utilities` (a class-level allowlist) and the new
+  `be_free_of_colour_literals` (a whole-fragment scan that reads attributes, so an inline SVG
+  `fill="#fff"` is caught). `dashboard`, `data_table` and `filter_chip_bar` each carried a private
+  copy of the declaration parse and the copies had already drifted — Dashboard's dropped
+  `opacity` (#130's whole finding), DataTable's dropped `background-image`, `fill`, `stroke` and
+  every modern colour function. Those copies are gone, together with the fixed-scheme class
+  denylist `pagination`, `stat_card` and `active_filter_bar` carried (12 entries in one, 14 in the
+  other two — a fourth divergence). **No component markup changed**; this is spec and
+  documentation only, and nothing in the gem's `files` glob is touched.
+  - The class axis closes a **latent** hole rather than fixing a shipped violation: none of the
+    fourteen guarded components emits a `btn-*`, `alert-*`, `badge-*`, `list-group-item-*` or
+    `link-#{semantic}` class today, so what was missing was the guard — a future `btn-primary` or
+    bare `text-primary` would have shipped green in thirteen of the fourteen specs. The
+    classifier's `btn-*` branch is therefore exercised by mutation injection rather than by real
+    markup. It is not dead code, though: `SearchBar`, `NavBar`, `ActionButton`,
+    `BatchActionButton` and `BatchActionModalButton` do emit `btn-*` classes, and none of them is
+    guarded yet.
+  - `COLOUR_PROPERTIES` gains `filter`, `backdrop-filter`, `background-blend-mode`,
+    `text-emphasis-color` and `-webkit-text-fill-color` (ISS#174 §1). No component emits any of
+    them, so this is purely preventive; each is proven by a fixture only the property rule can
+    reject, so deleting one entry reddens exactly one example.
+  - Deliberate fixed hues are now recorded rather than silently inherited, and every one of them
+    takes its exception by removing the sanctioned CLASS — never the node, and never a
+    fragment-wide `allowing:`. There are eight call sites: the decorative category/status dots in
+    `data_table`, `account_list_row`, `contact_list_row` and `engagement_card` (kept text-free by a
+    positive assertion, the basis of the WCAG 2.1 SC 1.4.11 exemption), and four fixed-hue
+    surfaces — three selected-state (`filter_chip_bar`'s and `active_filter_bar`'s active-filter
+    pill, `pagination`'s current page) plus `stat_card`'s large-text alert value, which is a
+    different exception (AA's 3:1 large-text floor, not a selection affordance). The rule they
+    cite is new in `.claude/rules/frontend.md`.
+  - Both wrong ways to take that exception shipped first and were caught by injection.
+    `.allowing("text-bg-primary")` is class-scoped and not placement-scoped, so it also passed the
+    fill on `active_filter_bar`'s **non**-selected "Active:" label (111 examples green). Removing
+    the NODE is the opposite error — it deletes every other regression on that node and its
+    subtree, so `bg-white` on each sanctioned node (99 examples green) and on the remove links
+    *inside* `active_filter_bar`'s and `filter_chip_bar`'s pills (43 green) both survived. The
+    shared `ThemeAdaptivityHelpers#strip_sanctioned_hue` removes only the sanctioned class(es),
+    takes one entry per node so the list's length *is* the exact expected count, and asserts each
+    node really carried what it sanctions.
+  - `Badge` gains the class-axis guard it never had, over the full **Cartesian product** of
+    variant × colour × size. `AccountDetailPanel` strips the embedded `span.badge` subtree before
+    its own scan, which is only legitimate once the child is independently guarded — and the first
+    version of Badge's guard looped colours at the default size and sizes at the default colour, so
+    the combination the panel actually renders (`variant: :filled, size: :sm, color: :info`) was
+    never rendered by the guard at all. `bg-white` on exactly that path was green across 102
+    examples.
 - **Every CRM tag-group renderer is now theme-adaptive and WCAG AA clean (#168).** #167 moved
   `FilterChipBar` and `DataTable` onto the shared
   `TagChip::Component::GROUP_VARIANTS` mapping and deliberately left the other consumers on

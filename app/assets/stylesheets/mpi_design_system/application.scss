@@ -4,3 +4,5 @@
 @import "bootstrap";
 @import "nav_bar";
 @import "avatar";
+// MUST come after Bootstrap — it overrides custom properties Bootstrap declares.
+@import "buttons";

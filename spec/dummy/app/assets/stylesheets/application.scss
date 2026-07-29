@@ -11,3 +11,8 @@
 // inline light-palette literal in `var(--mds-avatar-N, #hex)`; with it, avatars pick up
 // the `:root` + `[data-bs-theme="dark"]` tokens so dark mode adapts (proven by contrast_spec).
 @import "mpi_design_system/avatar";
+// Theme-adaptive outline-button foreground (ISS#183 follow-up). MUST come after Bootstrap:
+// it overrides `--bs-btn-color`, which Bootstrap itself declares on `.btn-outline-*`.
+// Without it every outline variant keeps its raw semantic hue in both colour modes and
+// falls below AA in one of them (proven per mode by outline_button_theme_spec).
+@import "mpi_design_system/buttons";

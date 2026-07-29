@@ -264,4 +264,69 @@ RSpec.describe MpiDesignSystem::Admin::ActionButton::Component, type: :component
       expect(page).to have_css("button.btn.btn-primary")
     end
   end
+
+  # ISS#183 follow-up: one of the five `btn-*`-emitting components the consolidation left
+  # unguarded. Both axes of the class matcher matter here, and for DIFFERENT reasons per
+  # variant — see each strip's comment. The product is looped, not one example per axis:
+  # `css_classes` composes colour and variant, so a per-axis loop never renders the
+  # combination a caller actually uses (#183 round-2 P0-B).
+  describe "theme-adaptivity guards" do
+    # Locals, not constants — a constant here would be defined on the example-group class
+    # and leak across groups. Evaluated at class-body time, so the loops below still see them.
+    colours = MpiDesignSystem::Admin::ActionButton::Component::COLORS
+    variants = MpiDesignSystem::Admin::ActionButton::Component::VARIANTS
+
+    # `btn-#{colour}` (FILLED) is a deliberate fixed hue. Bootstrap 5.3 defines it exactly
+    # once and never under a `[data-bs-theme]` scope (verified in the compiled
+    # `node_modules/bootstrap/dist/css/bootstrap.css`), so it paints the same in both
+    # modes — which is the point: a semantic action button is the brand affordance and is
+    # meant not to track the surface. Every one clears AA in both modes on the foreground
+    # Bootstrap derives, because `color-contrast()` picks it: primary/info 4.843, success
+    # 6.309, danger 4.528, warning 6.475, secondary 4.689 (`ColorContrast.ratio`).
+    #
+    # `btn-outline-#{colour}` is a different case with the same treatment. As Bootstrap
+    # ships it, it is fixed AND fails AA in one mode or the other for all six semantics
+    # (primary/info 3.185, danger 3.407, secondary 3.290 dark; success 3.329, warning
+    # 3.243 light). `app/assets/stylesheets/mpi_design_system/_buttons.scss` fixes that by
+    # re-pointing `--bs-btn-color` at `--bs-#{colour}-text-emphasis`, so it now DOES
+    # re-resolve per mode — proven at compile level by `bin/verify-outline-button-adaptive`
+    # and in a browser by `spec/features/outline_button_theme_spec.rb`.
+    #
+    # It is stripped here rather than allowlisted in the shared module because that
+    # adaptivity is CONDITIONAL on the consumer importing the partial, and
+    # `ThemeAdaptivity::ADAPTIVE_UTILITIES` deliberately encodes only what Bootstrap
+    # itself re-resolves. Widening it would make the guard assert a property that depends
+    # on an import it cannot see — the same reason AvatarCircle's `var(--mds-*, …)`
+    # declarations take a local exception instead of widening `adaptive_value?`.
+    colours.each do |colour|
+      variants.each do |variant|
+        sanctioned = variant == :outline ? "btn-outline-#{colour}" : "btn-#{colour}"
+
+        it "applies only theme-adaptive colour utilities for #{variant} #{colour}" do
+          render_inline(described_class.new(label: "Save", color: colour, variant: variant))
+
+          # Pin the combination really rendered before stripping anything — otherwise a
+          # component that dropped the class entirely would strip nothing and pass.
+          expect(page).to have_css("button.btn.#{sanctioned}", text: "Save")
+
+          fragment = rendered_fragment
+          strip_sanctioned_hue(fragment.css("button.btn"), [ [ sanctioned ] ])
+
+          expect(fragment).to be_free_of_fixed_hue_utilities
+        end
+      end
+    end
+
+    it "emits no colour literal and no inline style on any variant/colour combination" do
+      colours.each do |colour|
+        variants.each do |variant|
+          render_inline(described_class.new(label: "Save", color: colour, variant: variant))
+
+          expect(page).to have_css("button.btn", text: "Save")
+          expect(rendered_fragment).to be_free_of_colour_literals
+          expect(rendered_fragment.css("[style]")).to be_empty
+        end
+      end
+    end
+  end
 end

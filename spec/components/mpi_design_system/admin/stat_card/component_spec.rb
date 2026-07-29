@@ -3,21 +3,6 @@
 require "spec_helper"
 
 RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
-  # Utilities that pin one colour scheme. Any of these on a card meant to follow
-  # `data-bs-theme` reintroduces exactly the defect this conversion (#150) removed.
-  let(:fixed_scheme_utilities) do
-    %w[
-      bg-white bg-black bg-light bg-dark
-      text-white text-black text-light text-dark
-      text-bg-light text-bg-dark
-      border-white border-black border-light border-dark
-    ]
-  end
-
-  # Matches 3-, 4-, 6- and 8-digit CSS hex. The trailing (?!\h) stops #abcdef1234
-  # from matching as a 6-digit literal, and the 4/8 branches close the alpha forms.
-  let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
-
   it "renders label and value" do
     render_inline(described_class.new(label: "Total Contacts", value: "2,307"))
 
@@ -191,8 +176,10 @@ RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
 
         # Prove the branch actually rendered — a regex over an empty string passes forever.
         expect(page).to have_css(branch[:css], text: branch[:text])
-        expect(rendered_content).not_to match(hex_literal),
-          "hex literal leaked in branch #{branch[:args]}"
+        # Attributes and text included, so a hex in an `svg fill=` or a `data-*` is
+        # caught too — neither is visible to a declaration scan.
+        expect(rendered_fragment).to be_free_of_colour_literals,
+          "colour literal leaked in branch #{branch[:args]}"
       end
     end
 
@@ -211,20 +198,98 @@ RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
       # Colon-anchored so it does not match a future `border-radius` inline (radius is
       # a class now, but the guard stays precise regardless).
       expect(page).to have_no_css("[style*='border: ']")
+
+      # The substring assertions above cannot see a named colour, `opacity`, or
+      # `box-shadow`; the shared declaration scan can. Kept alongside them rather than
+      # replacing them, because they additionally forbid an inline `background-image`
+      # this component has no business emitting.
+      rendered_fragment.css("[style]").each do |node|
+        expect(node["style"]).to be_free_of_frozen_colour
+      end
     end
 
-    it "pins no fixed-scheme utility that would break under data-bs-theme" do
+    # No `allowing:` — the non-alert branches take no fixed-hue exception at all.
+    it "applies only theme-adaptive colour utilities outside the alert branch" do
       render_inline(described_class.new(
         label: "Total", value: "100",
         trend_text: "34 this month", trend_direction: :up, trend_sentiment: :positive
       ))
+      fragment = rendered_fragment
 
-      elements = page.all("div, div *")
-      expect(elements.size).to be > 1
-
-      applied = elements.flat_map { |el| el[:class].to_s.split }.uniq
+      applied = ThemeAdaptivity.applied_utility_classes(fragment)
       expect(applied).to include("bg-body", "border", "rounded-3", "text-body-secondary", "text-body", "text-success-emphasis")
-      expect(applied & fixed_scheme_utilities).to be_empty
+
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The alert branch is the one place this card paints a base semantic foreground, and
+    # it is deliberate — reasoned in component.rb:48-50,88. The alert VALUE is large text
+    # (32px/600), so it is held to AA's 3:1 large-text floor rather than 4.5:1, which base
+    # `.text-danger` clears in both modes (4.53:1 light) where `text-danger-emphasis` would
+    # over-darken a number meant to read as an alarm.
+    #
+    # Only the sanctioned CLASS is stripped — not the node, and not by `.allowing(…)`. The
+    # allowance is class-scoped and not placement-scoped: Codex's #183 review proved on the
+    # sibling ActiveFilterBar that `.allowing("text-danger")` would equally pass a
+    # `text-danger` on the 11px LABEL or the 12px TREND, and the large-text 3:1 argument
+    # does not reach either of those — at 12px base `.text-danger` measures 3.41:1 in dark
+    # mode, below the 4.5:1 small-text floor, which is why `trend_class` uses `-emphasis`.
+    # Keying the strip on the alert VALUE means a `text-danger` anywhere else survives into
+    # the scan.
+    #
+    # Removing the whole DIV (the first correction) was wider than the exception: it also
+    # deleted anything else that node carried, and Codex's review of that fix commit shipped
+    # `bg-white` on it past 99 green examples. Stripping only `text-danger` leaves the value
+    # element itself in the scan.
+    #
+    # `strip_sanctioned_hue` pins exactly one alert value per render (an OVER-strip is the
+    # silent failure mode; `not_to be_empty` passes straight through one) and that it really
+    # carried the class; the assertions here pin the alert state (`role="alert"`) and the
+    # 32px value carrying the number.
+    let(:alert_value) { "div.text-danger" }
+
+    def without_alert_value_hue(fragment)
+      expect(fragment.at_css("div[role='alert']")).not_to be_nil
+
+      values = fragment.css(alert_value)
+      strip_sanctioned_hue(values, [ "text-danger" ])
+      expect(values.first["style"]).to include("font-size: 32px")
+      expect(values.first.text.squish).to eq("12")
+      fragment
+    end
+
+    # Rendered WITH a trend deliberately: the trend is the other place a base `text-danger`
+    # could land, and the exact count inside the strip is what turns that into a red
+    # example. On an alert-only fixture there is nothing for the count to discriminate
+    # against, and the injection Codex used would slip past this scan.
+    it "applies only theme-adaptive colour utilities once the alert hue is stripped" do
+      render_inline(described_class.new(
+        label: "Overdue", value: "12",
+        trend_text: "3 more", trend_direction: :up, trend_sentiment: :negative, alert: true
+      ))
+      fragment = without_alert_value_hue(rendered_fragment)
+
+      expect(ThemeAdaptivity.applied_utility_classes(fragment)).to include("bg-body", "text-body-secondary")
+
+      # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The alert value's own fixed hue and its alert semantics, pinned here rather than
+    # left to the scan above. The negative halves are the placement condition the
+    # matcher could not express: the small-text label and trend may never take base
+    # `.text-danger`, which fails AA at 12px in dark mode.
+    it "still paints exactly the alert value in base text-danger, and only it" do
+      render_inline(described_class.new(
+        label: "Overdue", value: "12",
+        trend_text: "3 more", trend_direction: :up, trend_sentiment: :negative, alert: true
+      ))
+
+      expect(page).to have_css("div[role='alert'].bg-body")
+      expect(page).to have_css("div.text-danger[style*='font-size: 32px']", text: "12")
+      expect(page).to have_css("div.text-danger", count: 1)
+      expect(page).to have_css("div.text-body-secondary[style*='font-size: 11px']", text: "Overdue")
+      expect(page).to have_css("div.text-danger-emphasis[style*='font-size: 12px']", text: "3 more")
     end
   end
 

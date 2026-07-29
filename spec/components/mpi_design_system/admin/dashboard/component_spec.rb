@@ -413,42 +413,21 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
 
     def dashboard_fragment
       render_inline(everything)
-      Nokogiri::HTML::DocumentFragment.parse(rendered_content)
+      rendered_fragment
     end
 
-    let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
-
-    # A paint-affecting property matched on the name left of the colon (`border-radius`, the
-    # `--bs-*` custom-prop prefix, and `text-decoration` [shorthand, `none` here] fall outside,
-    # staying allowed geometry). Broadened past the data_table original beyond
-    # colour/background(-color)/border/outline/box-shadow/opacity to every paint property a
-    # regression could smuggle a hue through — `background-image` (gradient), `text-shadow`,
-    # `filter`/`backdrop-filter`, `fill`/`stroke`, `caret-color`, `accent-color`,
-    # `text-decoration-color`, `text-emphasis-color`, `-webkit-text-fill-color` — because a
-    # narrow list false-greens on `background-image: linear-gradient(rebeccapurple, …)` and the
-    # like (Codex PR review, #173). Proven by mutation: a `background-image` gradient reddens
-    # guard 2.
-    let(:colour_or_border_prop) do
-      /\A(color|background(-(color|image|blend-mode))?|border(-(top|right|bottom|left|color|style|width))?|
-         outline|box-shadow|text-shadow|filter|backdrop-filter|fill|stroke|caret-color|accent-color|
-         text-decoration-color|text-emphasis-color|-webkit-text-fill-color)\z/x
-    end
-    # Named colours are matched as whole words so a hue in an allowed property's VALUE is caught
-    # even if its property name somehow is not; `rebeccapurple` is included alongside the CSS
-    # basics (the property scan above already catches the paint properties, this is the net).
-    let(:colour_value_literal) do
-      /#(?:\h{3,8})|\brgb|\bhsl|\b(?:red|green|blue|white|black|orange|yellow|purple|rebeccapurple|gr[ae]y)\b/i
-    end
-
-    def offending_style_declarations(fragment)
-      fragment.css("[style]")
-              .flat_map { |el| el["style"].to_s.split(";") }
-              .map(&:strip).reject(&:empty?)
-              .select do |decl|
-        prop, value = decl.split(":", 2)
-        prop.to_s.strip.downcase.match?(colour_or_border_prop) ||
-          value.to_s.strip.downcase.match?(colour_value_literal)
+    # The exact chart nodes guard 3 pins positively, addressed by the SAME complete-style
+    # selectors — not by matching the allowed hex, which would recreate the ISS#150
+    # same-hex-elsewhere false green (delete `#E8733A` from every declaration and an
+    # unrelated `outline: 1px solid #E8733A` disappears with it).
+    def chart_colour_nodes(fragment)
+      selectors = group_colors.each_with_index.flat_map do |c, i|
+        [
+          "div[style='background: #{c}; width: #{group_percentages[i]}%; height: 100%;']",
+          "div[style='width: 10px; height: 10px; border-radius: 50%; background: #{c}; flex-shrink: 0;']"
+        ]
       end
+      fragment.css(selectors.join(", "))
     end
 
     # GUARD 1 — exact-equality survivors. One complete `[style='…']` per converted element,
@@ -513,22 +492,32 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
       expect(fragment.css(AVATAR_ROOT)).to be_empty
     end
 
-    # GUARD 2 — declaration scan. Renders EVERY built-in branch, strips the embedded
-    # AvatarCircles (which still emit inline colour — since #169 a token reference with a
-    # hex fallback, `var(--mds-avatar-N, #hex)`, so the strip stays required), then
-    # asserts the ONLY colour/border/opacity declarations left are the chart's caller
-    # backgrounds: `2 * group_data.length` (each caller colour appears twice — bar segment
-    # + legend dot). A re-introduced `border: 1px solid red` / `border: none` reddens this.
+    # GUARD 2 — declaration scan, now the SHARED `be_free_of_frozen_colour` (#183). Renders
+    # EVERY built-in branch, strips the embedded AvatarCircles (which still emit inline
+    # colour — since #169 a token reference with a hex fallback, `var(--mds-avatar-N, #hex)`,
+    # so the strip stays required) AND the caller-owned chart nodes, then asserts every
+    # surviving inline style is clean. A re-introduced `border: 1px solid red` /
+    # `border: none` reddens this, and so does a `filter: invert(1)` — which the retired
+    # local copy of this parse also caught, but which its DataTable and FilterChipBar
+    # siblings did not, the drift #183 removes.
     it "emits no colour, border, or opacity declaration beyond the caller chart backgrounds" do
       fragment = dashboard_fragment
       fragment.css(AVATAR_ROOT).remove
+
+      # Remove the caller-owned chart nodes as NODES, addressed by the same complete-style
+      # selectors guard 3 pins positively. The pin below proves the removal removed
+      # something, so a selector that stopped matching cannot silently empty this scan.
+      chart_nodes = chart_colour_nodes(fragment)
+      expect(chart_nodes.length).to eq(group_colors.length * 2)
+      chart_nodes.remove
 
       # Geometry inline styles DO still exist — without this the scan below could pass on
       # markup that emitted no style at all.
       expect(fragment.css("[style*='padding: 20px']")).not_to be_empty
 
-      expected = group_colors.flat_map { |c| Array.new(2, "background: #{c}") }
-      expect(offending_style_declarations(fragment).sort).to eq(expected.sort)
+      fragment.css("[style]").each do |node|
+        expect(node["style"]).to be_free_of_frozen_colour
+      end
     end
 
     # GUARD 3 — caller-passthrough confinement. This is the standing proof of the deliberate,
@@ -544,7 +533,8 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
       expect(fragment.css(AVATAR_ROOT).length).to eq(everything_followups.length)
       fragment.css(AVATAR_ROOT).remove
 
-      expect(fragment.to_html.scan(hex_literal)).to contain_exactly(*group_colors.flat_map { |c| [ c, c ] })
+      expect(fragment.to_html.scan(ThemeAdaptivity::MARKUP_COLOUR_LITERAL))
+        .to contain_exactly(*group_colors.flat_map { |c| [ c, c ] })
 
       group_colors.each_with_index do |c, i|
         pct = group_percentages[i]
@@ -553,34 +543,26 @@ RSpec.describe MpiDesignSystem::Admin::Dashboard::Component, type: :component do
       end
     end
 
-    # GUARD 4 — utility ALLOWLIST. Every colour-bearing class applied anywhere must be one
-    # of the six adaptive utilities (bg-body, text-body, text-body-secondary, bare border,
-    # bg-#{sem}-subtle, text-#{sem}-emphasis). An allowlist, not a denylist: bare
-    # `text-primary` / `bg-success` / `text-bg-*` / `bg-white` are all fixed-hue or
-    # fixed-scheme and must reject (a denylist misses the base utilities).
-    # The CLASSIFIER also spans Bootstrap's other colour-bearing families — `btn-*`, `link-*`,
-    # `alert-*`, `badge-*`, `list-group-item-*` — so a fixed-hue `btn-primary` / `link-danger` /
-    # `alert-danger` regression is CLASSIFIED (and therefore rejected), not silently ignored by a
-    # classifier that only saw `bg`/`text`/`border` (Codex PR review, #173). Proven by mutation:
-    # a `btn-primary` on any Dashboard element reddens this.
-    let(:colour_utility) { /\A(?:bg|text|border)(?:-|\z)|\A(?:btn|link|alert|badge|list-group-item)-/ }
-    let(:colour_utility_allowlist) do
-      %w[bg-body text-body text-body-secondary border] +
-        %i[primary secondary success warning danger].flat_map { |s| [ "bg-#{s}-subtle", "text-#{s}-emphasis" ] }
-    end
-
+    # GUARD 4 — utility ALLOWLIST, now the shared `spec/support/theme_adaptivity.rb` one
+    # (#183). #173's local classifier and allowlist were the only class-level guard in the
+    # repo; they are the shape the shared matcher was built from, so the assertion is
+    # unchanged in strength and every other guarded spec now inherits it. The classifier
+    # still spans `btn-*`, `link-*`, `alert-*`, `badge-*` and `list-group-item-*`, so a
+    # fixed-hue `btn-primary` / `link-danger` regression is rejected rather than silently
+    # unclassified. Proven by mutation: a `btn-primary` on any Dashboard element reddens
+    # this.
     it "applies only allowlisted colour utilities, no fixed-hue or fixed-scheme class" do
       fragment = dashboard_fragment
-      applied = fragment.css("[class]").flat_map { |n| n["class"].to_s.split }.uniq
-      colour_bearing = applied.select { |c| c.match?(colour_utility) }
 
-      # Prove the adaptive utilities we expect are actually present, so the subset check
-      # below is not vacuously green on an empty set.
-      expect(colour_bearing).to include(
+      # Prove the adaptive utilities we expect are actually present, so the matcher below
+      # is not vacuously green on markup that emitted no colour class at all.
+      applied = ThemeAdaptivity.applied_utility_classes(fragment)
+      expect(applied).to include(
         "bg-body", "text-body", "text-body-secondary",
         "bg-primary-subtle", "text-primary-emphasis", "text-danger-emphasis"
       )
-      expect(colour_bearing - colour_utility_allowlist).to eq([])
+
+      expect(fragment).to be_free_of_fixed_hue_utilities
     end
   end
 end

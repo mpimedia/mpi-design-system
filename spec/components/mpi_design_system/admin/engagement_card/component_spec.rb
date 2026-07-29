@@ -163,6 +163,57 @@ RSpec.describe MpiDesignSystem::Admin::EngagementCard::Component, type: :compone
         expect(style).to be_free_of_frozen_colour
       end
     end
+
+    # #183. The dot's colour is carried by a CLASS, so the declaration scan above cannot
+    # see it at all — `bg-danger` and `bg-white` are indistinguishable to it.
+    #
+    # The dots are the one place this card deliberately paints a FIXED identity hue
+    # (`bg-#{variant}` reads `--bs-#{variant}-rgb`, which Bootstrap does not shift under
+    # `data-bs-theme`), sanctioned by `.claude/rules/frontend.md` for a DECORATIVE mark
+    # whose meaning is carried by the adjacent text label (WCAG 2.1 SC 1.4.11).
+    #
+    # Only the sanctioned CLASS is removed. Not `.allowing("bg-danger")`, which is
+    # class-scoped and not placement-scoped: a fragment-wide allowance would also pass a
+    # `bg-danger` on the text-bearing label beside the dot. And not the NODE — #183's first
+    # correction removed the dot outright, which also removes any SECOND class on it from
+    # the scan, the P0 Codex's review of that fix commit found by injecting `bg-white` onto
+    # the removed node.
+    #
+    # `strip_sanctioned_hue` names the class per dot, so its list length is the exact count
+    # (an OVER-strip is the silent failure mode; `not_to be_empty` passes straight through
+    # one) and a dot that lost its semantic class reddens rather than being stripped anyway.
+    # Every node must also be text-free, the whole basis of the SC 1.4.11 exemption.
+    #
+    # The card's own frozen `background: #fff` and navy label are DELIBERATE and stay
+    # (see the two examples above) — they are declarations, not classes, so this axis
+    # neither sees nor disturbs them.
+    def without_decorative_dot_hues(fragment, variant)
+      dots = fragment.css("span.d-inline-block[aria-hidden='true'][style='#{dot_style}']")
+      # One tag, one dot.
+      strip_sanctioned_hue(dots, [ "bg-#{variant}" ])
+      dots.each { |dot| expect(dot.text.strip).to be_empty }
+      fragment
+    end
+
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "applies no colour utility beyond the decorative #{group} dot" do
+        render_inline(described_class.new(**default_params.merge(tags: [ { group: group, role: group.to_s } ])))
+        fragment = rendered_fragment
+
+        # EXACT set, not `include`: unlike the list rows, this card has no adaptive colour
+        # class of its own — it paints a frozen white surface and a frozen navy label on
+        # purpose (the two examples above) — so after the strip NOTHING colour-bearing is
+        # left and `be_free_of_fixed_hue_utilities` alone would be a vacuous pass. Pinning
+        # the complete classified set BEFORE the strip is what makes this real: any new
+        # colour utility, adaptive or not, reddens here.
+        classified = ThemeAdaptivity.applied_utility_classes(fragment)
+                                    .select { |klass| klass.match?(ThemeAdaptivity::COLOUR_UTILITY_PATTERN) }
+        expect(classified).to eq([ "bg-#{variant}" ])
+
+        # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+        expect(without_decorative_dot_hues(fragment, variant)).to be_free_of_fixed_hue_utilities
+      end
+    end
   end
 
   it "renders creator name" do

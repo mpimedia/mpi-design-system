@@ -96,6 +96,46 @@ RSpec.describe MpiDesignSystem::Admin::ContactListRow::Component, type: :compone
         expect(style).to be_free_of_frozen_colour
       end
     end
+
+    # #183. The dot's colour is carried by a CLASS, so the declaration scan above cannot
+    # see it at all — `bg-danger` and `bg-white` are indistinguishable to it.
+    #
+    # The dots are the one place this row deliberately paints a FIXED identity hue
+    # (`bg-#{variant}` reads `--bs-#{variant}-rgb`, which Bootstrap does not shift under
+    # `data-bs-theme`), sanctioned by `.claude/rules/frontend.md` for a DECORATIVE mark
+    # whose meaning is carried by the adjacent text label (WCAG 2.1 SC 1.4.11).
+    #
+    # Only the sanctioned CLASS is removed. Not `.allowing("bg-danger")`, which is
+    # class-scoped and not placement-scoped: a fragment-wide allowance would also pass a
+    # `bg-danger` on the text-bearing label beside the dot. And not the NODE — #183's first
+    # correction removed the dot outright, which also removes any SECOND class on it from
+    # the scan, the P0 Codex's review of that fix commit found by injecting `bg-white` onto
+    # the removed node.
+    #
+    # `strip_sanctioned_hue` names the class per dot, so its list length is the exact count
+    # (an OVER-strip is the silent failure mode; `not_to be_empty` passes straight through
+    # one) and a dot that lost its semantic class reddens rather than being stripped anyway.
+    # Every node must also be text-free, the whole basis of the SC 1.4.11 exemption.
+    def without_decorative_dot_hues(fragment, variant)
+      dots = fragment.css("span.d-inline-block[aria-hidden='true'][style='#{dot_style}']")
+      # One tag, one dot.
+      strip_sanctioned_hue(dots, [ "bg-#{variant}" ])
+      dots.each { |dot| expect(dot.text.strip).to be_empty }
+      fragment
+    end
+
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "applies only theme-adaptive colour utilities beside the #{group} dot" do
+        render_inline(described_class.new(**default_params.merge(tags: [ { group: group, role: group.to_s } ])))
+        fragment = without_decorative_dot_hues(rendered_fragment, variant)
+
+        applied = ThemeAdaptivity.applied_utility_classes(fragment)
+        expect(applied).to include("text-body")
+
+        # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+        expect(fragment).to be_free_of_fixed_hue_utilities
+      end
+    end
   end
 
   it "renders last engagement in muted text" do

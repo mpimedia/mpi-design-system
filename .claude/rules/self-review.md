@@ -52,6 +52,25 @@ Weight it toward the classes of defect that fixes specifically introduce: a corr
 more broadly than the finding warranted, a second state or code path the fix did not reach, and a
 new assertion that passes for a reason other than the one intended.
 
+**Repeat it until a round comes back clean — one pass is not the rule, convergence is.** A fix
+commit is itself unreviewed code, so the pass that reviews it produces *more* unreviewed code, and
+stopping after one pass simply moves the blind spot down by one commit. #183 is the case that
+settles it: round 1 found 4 P0, and reviewing that fix commit (round 2) found **2 more P0s, both
+introduced while fixing P0s** — one of them an instruction repeated from the plan into the fix brief
+("remove those nodes") that was wrong in both places. A single mandated pass would have shipped
+both. Round 3 came back clean, and only then was the loop done.
+
+Two things make the loop terminate rather than run forever: each round reviews **only the new
+diff** (`<previous-head>..<new-head>`), not the whole PR, so it shrinks as the fixes get smaller;
+and a round returning no P0/P1/P2 is the exit condition, not a target to argue toward. If round *n*
+is clean, stop. If it is not, the next fix commit gets round *n+1* — and a round that finds nothing
+should be *run*, not assumed, because "the last round was small" is exactly when it is skipped.
+
+When a finding turns out to originate in the plan or the brief rather than the code, fix it **there
+too** in the same commit. Otherwise the next conversation reads the same wrong instruction and
+reproduces the defect — which is why #183's node-removal correction rewrote the guidance in
+`.claude/rules/testing.md` and `frontend.md`, not just the eight call sites.
+
 ## Never Deflect Work
 
 - Never say "needs manual testing" without proving `render_inline` + Capybara matchers

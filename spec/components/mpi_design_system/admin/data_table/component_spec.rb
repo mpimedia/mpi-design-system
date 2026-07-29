@@ -243,47 +243,14 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
   # text, account link) onto Bootstrap semantic utilities so the table tracks
   # `data-bs-theme`. Each guard pins its subject POSITIVELY before asserting an
   # absence, and each was proven by watching it fail (testing.md, "A Guard Is Not Real
-  # Until You Have Watched It Fail"). The 12-entry fixed-scheme list is the exact one
-  # from pagination/component_spec.rb.
+  # Until You Have Watched It Fail").
+  #
+  # #183 replaced this block's three hand-rolled helpers — a declaration parser, a hex
+  # regex and a 12-entry fixed-scheme denylist — with the shared guard in
+  # `spec/support/theme_adaptivity.rb`. The denylist becomes an ALLOWLIST in the process,
+  # which is a strengthening: `btn-primary`, `link-danger` and bare `text-primary` all
+  # shipped green through the old list.
   describe "theme-adaptivity guards" do
-    let(:fixed_scheme_utilities) do
-      %w[
-        bg-white bg-black bg-light bg-dark
-        text-white text-black text-light text-dark
-        border-white border-black border-light border-dark
-      ]
-    end
-
-    let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
-
-    # A colour/border/opacity-bearing property, matched on the name to the LEFT of the
-    # colon. `--bs-border-width` (custom-property prefix) and `border-radius` (radius is
-    # not one of the side/attribute suffixes) fall OUTSIDE this pattern and stay allowed
-    # geometry — so a re-introduced `border: 1px solid red` or `border: none` is caught
-    # while the surviving `--bs-border-width: 2px` is not. (#151, FIX 3)
-    let(:colour_or_border_prop) do
-      /\A(color|background(-color)?|border(-(top|right|bottom|left|color|style|width))?|outline|box-shadow|opacity)\z/
-    end
-
-    # A colour literal in a declaration VALUE: hex, rgb()/hsl(), or a common named colour
-    # as a whole word — so a hue smuggled into an allowed property's value is still caught.
-    let(:colour_value_literal) do
-      /#(?:\h{3,8})|\brgb|\bhsl|\b(?:red|green|blue|white|black|orange|yellow|purple|gr[ae]y)\b/i
-    end
-
-    # Every surviving inline "property: value" declaration that names a colour/border
-    # property OR carries a colour literal in its value.
-    def offending_style_declarations(fragment)
-      fragment.css("[style]")
-              .flat_map { |el| el["style"].to_s.split(";") }
-              .map(&:strip).reject(&:empty?)
-              .select do |decl|
-        prop, value = decl.split(":", 2)
-        prop.to_s.strip.downcase.match?(colour_or_border_prop) ||
-          value.to_s.strip.downcase.match?(colour_value_literal)
-      end
-    end
-
     let(:populated) do
       described_class.new(
         variant: :search_results,
@@ -320,10 +287,56 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
     # DataTable-owned element could reuse and thereby escape the scan (the FIX 4 defect).
     # If AvatarCircle's classes ever change so this stops matching, its inline hex leaks
     # INTO the scan and reddens the guard — a loud failure, not a silent over-strip.
+    #
+    # Removing the NODE is right here and only here: the whole subtree belongs to another
+    # component, so there is no "sanctioned class" on a DataTable element to strip instead
+    # (see `.claude/rules/testing.md`). It still needs the EXACT count a class strip gets for
+    # free from its per-node list — the `populated` fixture renders one row, so one avatar,
+    # and widening the selector would otherwise empty the scan while staying green.
     def datatable_without_avatars
       render_inline(populated)
-      fragment = Nokogiri::HTML::DocumentFragment.parse(rendered_content)
-      fragment.css(".rounded-circle.justify-content-center").remove
+      fragment = rendered_fragment
+      avatars = fragment.css(".rounded-circle.justify-content-center")
+      expect(avatars.length).to eq(1)
+      expect(avatars.first.text.squish).to eq("JS")
+      avatars.remove
+      fragment
+    end
+
+    # The tag and status dots, the one place DataTable deliberately paints a FIXED
+    # identity hue (`bg-#{variant}` reads `--bs-#{variant}-rgb`, which Bootstrap does not
+    # shift under `data-bs-theme`). `.claude/rules/frontend.md` sanctions this for a
+    # DECORATIVE mark whose meaning is carried by the adjacent text label (WCAG 2.1
+    # SC 1.4.11) — see component.rb:83-94,118.
+    #
+    # Only the sanctioned `bg-#{variant}` CLASS is removed — never the node, and never
+    # `.allowing("bg-danger", …)`, which is class-scoped and not placement-scoped: a
+    # fragment-wide allowance would also pass a `bg-danger` on a text-bearing cell, which
+    # is exactly the regression the guard is for. Removing the whole dot NODE (#183's first
+    # correction) is the opposite error — it also deletes any second class on the dot from
+    # the scan, which is the P0 Codex's review of that fix commit found. The class strip is
+    # exactly as wide as the exception and no wider.
+    #
+    # `strip_sanctioned_hue` names the sanctioned class PER DOT, in document order, so its
+    # list length is the exact count (an OVER-strip is the silent failure mode; `not_to
+    # be_empty` passes straight through one) and a dot that lost its semantic class reddens
+    # rather than being stripped anyway. Each node must also be text-free, which is the
+    # whole basis of the SC 1.4.11 exemption.
+    #
+    # A `let`, not a constant: a constant assigned inside a block resolves to top-level
+    # Object, so the sibling specs copying this shape would each reassign the same name
+    # and load order would silently decide which selector ran (the warning pagination's
+    # guard block already carries).
+    let(:decorative_dot) { "span.d-inline-block[style='width: 6px; height: 6px; border-radius: 50%;']" }
+
+    # Two tag dots (distribution -> danger, outreach -> success) then one status dot
+    # (active -> success) for the `populated` fixture, in document order.
+    let(:decorative_dot_hues) { %w[bg-danger bg-success bg-success] }
+
+    def without_decorative_dot_hues(fragment)
+      dots = fragment.css(decorative_dot)
+      strip_sanctioned_hue(dots, decorative_dot_hues)
+      dots.each { |dot| expect(dot.text.strip).to be_empty }
       fragment
     end
 
@@ -336,10 +349,9 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
       expect(fragment.at_css("th.border-bottom")).not_to be_nil
       expect(fragment.at_css("span.bg-danger")).not_to be_nil
 
-      html = fragment.to_html
-      expect(html).not_to match(hex_literal)
-      expect(html).not_to include("rgb(")
-      expect(html).not_to include("hsl(")
+      # Attributes included, so an SVG `fill="#fff"` or a `data-colour` is caught too —
+      # neither is visible to the declaration scan below.
+      expect(fragment).to be_free_of_colour_literals
     end
 
     it "emits no colour, border, or opacity declaration in the inline styles that remain" do
@@ -354,22 +366,39 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
       # that a `[style*='color']` / `[style*='background']` substring scan let through;
       # `--bs-border-width` and `border-radius` remain allowed. Proven by mutation: a
       # `border: 1px solid red` injected into a style helper reddens this. (#151, FIX 3)
-      expect(offending_style_declarations(fragment)).to eq([])
+      fragment.css("[style]").each do |node|
+        expect(node["style"]).to be_free_of_frozen_colour
+      end
     end
 
-    it "pins no fixed-scheme utility that would break under data-bs-theme" do
+    it "applies only theme-adaptive colour utilities once the decorative dot hues are stripped" do
+      # The AVATAR subtree stays in scope here, unlike the two scans above: it is stripped
+      # from those because AvatarCircle emits inline colour of its own, but its CLASSES
+      # carry nothing fixed-hue and the pre-#183 guard enumerated them (`table, table *`).
+      # Keeping them means a future AvatarCircle regression is a loud cross-component
+      # failure rather than a silent gap.
+      render_inline(populated)
+      fragment = without_decorative_dot_hues(rendered_fragment)
+
+      # Positive pins first — the adaptive classes this table is expected to apply, so the
+      # matcher is not vacuously green on markup that emitted no colour class.
+      applied = ThemeAdaptivity.applied_utility_classes(fragment)
+      expect(applied).to include(
+        "text-body", "text-body-secondary", "border-bottom", "text-decoration-none"
+      )
+
+      # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The dots' own classes, pinned here rather than left to the scan above: stripping them
+    # from the scan must not remove them from the SUITE. `bg-danger` (distribution tag) and
+    # `bg-success` (outreach tag, active status) are the two hues the fixture renders.
+    it "still paints the decorative dots in their fixed identity hue" do
       render_inline(populated)
 
-      # The table and every descendant, enumerated — including the avatar, whose
-      # classes carry no fixed-scheme utility — rather than a [class*=…] substring hunt.
-      elements = page.all("table, table *")
-      expect(elements.size).to be > 1
-
-      applied = elements.flat_map { |el| el[:class].to_s.split }.uniq
-      expect(applied).to include(
-        "text-body", "text-body-secondary", "border-bottom", "bg-danger", "bg-success"
-      )
-      expect(applied & fixed_scheme_utilities).to be_empty
+      expect(page).to have_css("span.d-inline-block.bg-danger", count: 1)
+      expect(page).to have_css("span.d-inline-block.bg-success", count: 2)
     end
   end
 end

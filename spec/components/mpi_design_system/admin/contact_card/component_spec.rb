@@ -191,6 +191,27 @@ RSpec.describe MpiDesignSystem::Admin::ContactCard::Component, type: :component 
         expect(style).to be_free_of_frozen_colour
       end
     end
+
+    # #183. The pill's colour is carried by CLASSES, so the declaration scan above is
+    # blind to `bg-danger-subtle` degrading into a fixed-hue `bg-danger` — which is
+    # exactly what the dot deliberately avoids being (it paints `currentColor`, inheriting
+    # the pill's `-emphasis` foreground, rather than a solid semantic fill that could not
+    # clear 3:1 on its own subtle surface).
+    #
+    # Nothing is stripped: this card renders its pills itself and embeds no component
+    # that emits a fixed-hue class. The declaration guard above stays scoped to the pill
+    # because the CUSTOM-colour branch emits caller hex on purpose.
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "applies only theme-adaptive colour utilities on a #{group} tag" do
+        render_inline(described_class.new(name: "Test", tags: [ { label: group.to_s, group: group } ]))
+        fragment = rendered_fragment
+
+        applied = ThemeAdaptivity.applied_utility_classes(fragment)
+        expect(applied).to include("bg-#{variant}-subtle", "text-#{variant}-emphasis")
+
+        expect(fragment).to be_free_of_fixed_hue_utilities
+      end
+    end
   end
 
   it "renders last engaged time with prefix" do

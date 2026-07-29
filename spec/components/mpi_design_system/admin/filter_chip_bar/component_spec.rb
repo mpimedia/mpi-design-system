@@ -227,47 +227,10 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
   # proven by watching it fail against a mutation that trips it (testing.md, "A Guard
   # Is Not Real Until You Have Watched It Fail"). The 12-entry fixed-scheme list is the
   # exact one from pagination/component_spec.rb.
+  #
+  # #183 replaced this block's hand-rolled declaration parser, hex regex and 12-entry
+  # fixed-scheme denylist with the shared guard in `spec/support/theme_adaptivity.rb`.
   describe "theme-adaptivity guards" do
-    let(:fixed_scheme_utilities) do
-      %w[
-        bg-white bg-black bg-light bg-dark
-        text-white text-black text-light text-dark
-        border-white border-black border-light border-dark
-      ]
-    end
-
-    # Matches 3-, 4-, 6- and 8-digit CSS hex; the trailing (?!\h) stops a 6-digit
-    # match inside a longer run and the 4/8 branches close the alpha forms.
-    let(:hex_literal) { /#(?:\h{8}|\h{6}|\h{4}|\h{3})(?!\h)/ }
-
-    # A colour/border/opacity-bearing property, matched on the name to the LEFT of the
-    # colon. `--bs-border-width` (custom-property prefix) and `border-radius` (radius is
-    # not one of the side/attribute suffixes) fall OUTSIDE this pattern and stay allowed
-    # geometry — so a re-introduced `border: 1px solid red` or `border: none` is caught
-    # while the surviving `--bs-border-width: 2px` is not. (#151, FIX 3)
-    let(:colour_or_border_prop) do
-      /\A(color|background(-color)?|border(-(top|right|bottom|left|color|style|width))?|outline|box-shadow|opacity)\z/
-    end
-
-    # A colour literal in a declaration VALUE: hex, rgb()/hsl(), or a common named colour
-    # as a whole word — so a hue smuggled into an allowed property's value is still caught.
-    let(:colour_value_literal) do
-      /#(?:\h{3,8})|\brgb|\bhsl|\b(?:red|green|blue|white|black|orange|yellow|purple|gr[ae]y)\b/i
-    end
-
-    # Every surviving inline "property: value" declaration that names a colour/border
-    # property OR carries a colour literal in its value.
-    def offending_style_declarations(fragment)
-      fragment.css("[style]")
-              .flat_map { |el| el["style"].to_s.split(";") }
-              .map(&:strip).reject(&:empty?)
-              .select do |decl|
-        prop, value = decl.split(":", 2)
-        prop.to_s.strip.downcase.match?(colour_or_border_prop) ||
-          value.to_s.strip.downcase.match?(colour_value_literal)
-      end
-    end
-
     let(:populated) do
       described_class.new(
         groups: [
@@ -289,9 +252,9 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
       expect(page).to have_css("a[aria-current='page']", text: "Distribution 342")
       expect(page).to have_css("span.text-bg-primary", text: "Keyword: investors")
 
-      expect(rendered_content).not_to match(hex_literal)
-      expect(rendered_content).not_to include("rgb(")
-      expect(rendered_content).not_to include("hsl(")
+      # Attributes and text included, so a hex in an `svg fill=` or a `data-*` is caught
+      # too — neither is visible to the declaration scan below.
+      expect(rendered_fragment).to be_free_of_colour_literals
     end
 
     it "emits no colour, border, or opacity declaration in the inline styles that remain" do
@@ -306,24 +269,77 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
       # `[style*='color']` / `[style*='background']` substring scan let through;
       # `--bs-border-width` and `border-radius` remain allowed. Proven by mutation: a
       # `border: 1px solid red` injected into a style helper reddens this. (#151, FIX 3)
-      fragment = Nokogiri::HTML::DocumentFragment.parse(rendered_content)
-      expect(offending_style_declarations(fragment)).to eq([])
+      rendered_fragment.css("[style]").each do |node|
+        expect(node["style"]).to be_free_of_frozen_colour
+      end
     end
 
-    it "pins no fixed-scheme utility that would break under data-bs-theme" do
+    # `text-bg-primary` on the ACTIVE filter pill (component.html.erb:29) is a deliberate
+    # fixed hue, not an oversight: the fill IS the selection affordance.
+    # `.claude/rules/frontend.md` records this as the accepted selected-state exception —
+    # #fff on #2E75B6 = 4.843:1, identical in both colour modes because neither value
+    # re-resolves.
+    #
+    # Only the sanctioned CLASS is removed — never the node, and never
+    # `.allowing("text-bg-primary")`. The allowance is class-scoped and not
+    # placement-scoped: Codex's #183 review proved on the sibling ActiveFilterBar that a
+    # fragment-wide allowance also passes the same class on a NON-selected label, which is
+    # precisely the condition the rule imposes and the matcher cannot check. The group
+    # chips are the case that matters here — a selected chip must render
+    # `-subtle`/`-emphasis`, and a chip that regressed to `text-bg-primary` would have been
+    # waved through by the allowance while failing this strip's count.
+    #
+    # Removing the whole PILL (the first correction) was too broad in the other direction:
+    # it deleted the pill's other classes and its remove link from the scan as well, and
+    # Codex's review of that fix commit shipped `bg-white` past it on both. Stripping only
+    # `text-bg-primary` keeps the pill, its style and its `text-reset bg-transparent
+    # border-0` remove link in scope, so either injection reddens.
+    #
+    # `strip_sanctioned_hue` pins the exact count (an OVER-strip is the silent failure mode;
+    # `not_to be_empty` passes straight through one) and that the pill really carried the
+    # class; the assertion below pins the "#{category}: #{value}" identity the component
+    # builds for an active filter.
+    let(:selected_pill) { "span.rounded-pill.text-bg-primary" }
+
+    def without_selected_hue(fragment)
+      pills = fragment.css(selected_pill)
+      strip_sanctioned_hue(pills, [ "text-bg-primary" ])
+      expect(pills.map { |pill| pill.text.squish }).to eq([ "Keyword: investors" ])
+      fragment
+    end
+
+    it "applies only theme-adaptive colour utilities once the selected hue is stripped" do
       render_inline(populated)
+      fragment = without_selected_hue(rendered_fragment)
 
       # Every element, enumerated — not a [class*=…] substring hunt, which would match
       # `border-danger-subtle` for `border-dark`.
-      elements = page.all("*")
-      expect(elements.size).to be > 1
-
-      applied = elements.flat_map { |el| el[:class].to_s.split }.uniq
+      applied = ThemeAdaptivity.applied_utility_classes(fragment)
       expect(applied).to include(
         "text-body", "bg-body", "text-body-secondary",
-        "text-bg-primary", "bg-danger-subtle", "text-danger-emphasis"
+        "bg-danger-subtle", "text-danger-emphasis"
       )
-      expect(applied & fixed_scheme_utilities).to be_empty
+
+      # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The pill's own fixed hue and its selected-state semantics, pinned here rather than
+    # left to the scan above. The negative halves are the placement condition the
+    # matcher could not express: neither the "Active:" label nor a SELECTED GROUP CHIP
+    # (which is a selected state, but one the rule sends to `-subtle`/`-emphasis`) may
+    # carry the fill.
+    it "still paints exactly the active filter in the fixed selected-state hue" do
+      render_inline(populated)
+
+      expect(page).to have_css(selected_pill, count: 1)
+      expect(page).to have_css(selected_pill, text: "Keyword: investors")
+      expect(page).to have_css("span.text-body-secondary", text: "Active:")
+      expect(page).to have_no_css("span.text-bg-primary", text: "Active:")
+      expect(page).to have_css(
+        "a[aria-current='page'].bg-danger-subtle.text-danger-emphasis", text: "Distribution 342"
+      )
+      expect(page).to have_no_css("a[aria-current='page'].text-bg-primary")
     end
   end
 end

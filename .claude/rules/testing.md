@@ -39,6 +39,34 @@ Applies to: `spec/**`
   CSS meant to hide it was dropped. To prove an element is actually hidden in a browser spec,
   read the computed style — `page.evaluate_script("getComputedStyle(el).display")` — as the
   `mpi--tag-input` feature spec does. (#111.)
+- **Seven `spec/bin/guard_protected_branch_spec.rb` failures are an environment artefact when — and
+  only when — your commit signer is *unreachable*.** That spec builds a throwaway git repo and runs
+  `git commit` inside it (`spec/bin/guard_protected_branch_spec.rb:41`), setting only `user.email`
+  and `user.name`, so the temp repo inherits your global `commit.gpgsign` / `gpg.format`. Signing
+  being *enabled* is not the trigger: with `commit.gpgsign=true`, `gpg.format=ssh` and the 1Password
+  agent **unlocked**, all 8 examples pass. The failures appear when the signer cannot be reached (agent
+  locked, key unavailable) — the commit fails to sign and the `exception: true` setup raises before
+  the example under test ever runs. Measured, all three cases:
+
+  | `commit.gpgsign` | signer | result |
+  |---|---|---|
+  | `true` | reachable | 8 examples, **0 failures** |
+  | `true` | unreachable | 8 examples, **7 failures** |
+  | `false` | unreachable | 8 examples, **0 failures** |
+
+  So the fix is to take signing out of the equation for that process only — no change to your global
+  config, nothing written to the repo:
+
+  ```bash
+  GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false bundle exec rspec
+  ```
+
+  CI never hits this (it has no signing key at all), so green CI plus exactly seven local failures of
+  this shape is the expected signature. Confirm rather than assume: with the override the count must
+  go to **zero**. Any survivor is a real failure. Reproduce the broken state on demand — without
+  locking anything — by pointing the signer at a program that always fails:
+  `GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=true
+  GIT_CONFIG_KEY_1=gpg.ssh.program GIT_CONFIG_VALUE_1=/bin/false bundle exec rspec spec/bin/`.
 
 ## Layout
 
@@ -258,13 +286,166 @@ reused elsewhere, caught by external review.)
 **Related — a theme-adaptivity guard must forbid the colour-bearing *properties by name*, not only
 literal-colour *values*.** A guard that rejects `color`/`background` declarations plus hex/rgb/hsl
 literals still lets `border: 1px solid red` (a *named* colour) and `border: none` through — the exact
-inline-border regression a hex→utility conversion removes. Parse each surviving inline declaration and
-reject any whose property is `color` / `background(-color)` /
-`border(-top|right|bottom|left|color|style|width)` / `outline` / `box-shadow` / `opacity` (allow the
-geometry custom property `--bs-border-width` and `border-radius`), and add named colours to the value
-scan. Prove it by injecting `border: 1px solid red` into a style helper and watching red. (Reference:
-#151 — the FilterChipBar/DataTable conversion's first guard rejected only hex/rgb/hsl values and
+inline-border regression a hex→utility conversion removes. The property axis has to be the
+authoritative whitelist, and the value axis a best-effort backstop. (Reference: #151 — the
+FilterChipBar/DataTable conversion's first guard rejected only hex/rgb/hsl values and
 `color`/`background` properties, so a named-colour or `none` border passed; caught by external review.)
+
+**Do not hand-roll that guard — `spec/support/theme_adaptivity.rb` is THE canonical one.** Three specs
+each carried a divergent private copy of the declaration parse until #183 consolidated them, and the
+copies had already drifted apart (Dashboard's dropped `opacity`, which is #130's whole finding;
+DataTable's dropped `background-image`, `fill`, `stroke` and every modern colour function). A private
+copy is a guard nobody re-reviews when the rule moves. `spec/support/**/*.rb` is auto-required, so the
+module is available to every spec including `spec/lib/`, and all three matchers accept a Nokogiri
+fragment, a Capybara node, or a raw HTML string.
+
+The module has **three axes, one matcher each**, and they are not interchangeable:
+
+| Matcher | Subject | Catches | Blind to |
+|---|---|---|---|
+| `be_free_of_frozen_colour` | one element's surviving inline `style` string | `border: none`, a named colour, `opacity`, a `var(--bs-*)` with a frozen fallback | classes; attributes |
+| `be_free_of_fixed_hue_utilities` | a rendered fragment | `btn-primary`, `bg-white`, `text-bg-primary`, bare `text-primary` | inline style entirely |
+| `be_free_of_colour_literals` | a rendered fragment's serialised HTML | a hex in an **attribute** — an inline SVG `fill="#fff"` | named colours; modern colour functions |
+
+A component whose colour moved onto classes needs the class matcher; a declaration scan cannot
+distinguish `bg-danger` from `bg-white` because it never reads `class` at all.
+
+The class matcher has **two layers, and only the second is an allowlist** — calling the whole thing
+"an allowlist" is the prose-only assurance this file warns about, because it hides the layer that
+decides what gets examined at all.
+
+*Layer 1, the family classifier* (`COLOUR_UTILITY_PATTERN`), is **blacklist-shaped and cannot be
+complete**: it enumerates the Bootstrap families known to paint, and a class matching none of them
+is never inspected. #183's external review found that hole live — `.table-primary`, `.table-dark`,
+`.focus-ring-primary`, `.dropdown-menu-dark` and `.navbar-dark` were all unclassified, so
+`fixed_hue_utility_offences('<div class="table-primary">')` returned `[]` while DataTable and
+TableForIndex both render a `<table>`; injecting `table-primary` into Dashboard left 144 examples
+green. Adding a family is the only fix, so **when you meet a Bootstrap class the guard shrugs at,
+classify it** rather than assuming silence means safety.
+
+*Layer 2, within a classified family, is the allowlist*, in three tiers. Tier 1 is neutral
+(`bg-transparent`, `border-0`, `text-decoration-none`, `table-sm` — classified by prefix, paints
+nothing); tier 2 is genuinely adaptive (`bg-body*`/`text-body*`/`text-body-emphasis`, `table` and its
+`-striped`/`-hover`/`-active` state classes, and `bg-*-subtle`/`text-*-emphasis`/`border-*-subtle`
+**plus `alert-*` and `list-group-item-*`** for every Bootstrap semantic *including* `info`, `light`
+and `dark` — "does it re-resolve" is a different question from "is it on MPI's palette"); tier 3 is a
+**deliberate fixed hue**. Layer 2 fails **closed**: an unnamed member of a classified family is
+rejected, so over-rejection costs one commented exception while under-rejection is a silent false
+green. Verify every tier entry against **compiled** Bootstrap
+(`node_modules/bootstrap/dist/css/bootstrap.css`, both the `:root` and `[data-bs-theme=dark]`
+blocks) — #173 classified `alert-danger` and `list-group-item-warning` as fixed hues and #183
+inherited the claim, and both are false: they resolve through the same
+`--bs-#{semantic}-text-emphasis`/`-bg-subtle`/`-border-subtle` tokens the `-subtle`/`-emphasis`
+utilities use, all of which the dark block redefines. Do not widen tiers 1–2 casually: their contents
+*and* the family classifier are asserted directly in `spec/lib/theme_adaptivity_spec.rb` precisely so
+that widening either is a visible, reviewable act rather than a quiet weakening of all twenty-one
+guarded specs at once.
+
+That count is also why **conditional** adaptivity stays out of the shared allowlist. Two families
+re-resolve per colour mode only when the consuming app imports an optional engine partial —
+`AvatarCircle`'s `var(--mds-avatar-N, #hex)` (needs `_avatar.scss`) and `.btn-outline-*` (needs
+`_buttons.scss`, the ISS#183 follow-up that fixed all six variants' sub-AA resting text). Both are
+genuinely adaptive where the partial is loaded and genuinely frozen where it is not, and the module
+cannot see which. Teaching `adaptive_value?` to accept any `var(--mds-*, …)`, or adding
+`btn-outline-*` to `ADAPTIVE_UTILITIES`, would make every guarded spec assert a property that
+depends on an import none of them controls — and would silently pass a `var(--mds-anything, #fff)`
+no partial defines. So each takes a **local, commented exception at its call site**, backed by the
+guards that *can* see what a markup scan cannot: a per-selector compile guard
+(`bin/verify-avatar-adaptive`, `bin/verify-outline-button-adaptive`) and a browser spec reading
+computed values under both modes (`contrast_spec`, `outline_button_theme_spec`). A local exception
+costs one comment; a widened allowlist costs the guarantee everywhere.
+
+**Take a tier-3 exception by removing the sanctioned CLASS — not by `allowing:`, and not by removing
+the NODE.** Both wrong answers are wrong in opposite directions, and #183 shipped each in turn.
+
+`allowing:` is too wide on the *placement* axis: it is class-scoped, so `.allowing("bg-danger")` also
+passes a `bg-danger` on a text-bearing element elsewhere in the same fragment, which is the
+regression the guard exists for.
+
+`node.remove` is too wide on the *subject* axis: deleting the subtree also deletes every **other**
+regression on that node and its descendants. The external review of #183's own fix commit
+demonstrated it by injection — `bg-white` added directly to each removed node left all four fixed-hue
+specs green (99 examples), and added to the remove-link *descendants* of ActiveFilterBar's and
+FilterChipBar's pills left 43 green. The strip was policing the class it sanctioned and blinding the
+scan to everything else the node carried.
+
+Removing the class is exactly as wide as the exception and no wider — the node, its other classes,
+its inline style and its whole subtree stay in the scan. The shared helper is
+`ThemeAdaptivityHelpers#strip_sanctioned_hue` (`spec/support/theme_adaptivity.rb`); do not hand-roll
+it, for the same reason the matchers themselves are shared:
+
+```ruby
+def without_decorative_dot_hues(fragment)
+  dots = fragment.css(decorative_dot)                     # a `let`, never a constant-in-a-block
+  # One entry PER NODE in document order, so the list length is the EXACT expected count and
+  # each node must really carry the class named for it.
+  strip_sanctioned_hue(dots, %w[bg-danger bg-success bg-success])
+  dots.each { |dot| expect(dot.text.strip).to be_empty }  # each must be genuinely decorative
+  fragment
+end
+```
+
+**`expect(dots).not_to be_empty` is the wrong pin here, and this was found by running it.** The
+failure mode a strip introduces is not "removes nothing" — the class matcher catches that anyway,
+because the un-stripped dot's `bg-danger` is still there. It is an **over**-strip: widen the selector
+to `span` and the scan afterwards inspects almost nothing while staying green. `not_to be_empty`
+passes right through that; an exact count reddens in both directions. Proven by mutation: widening
+`decorative_dot` to `"span"` leaves the example green under `not_to be_empty` and reddens it under
+an exact count. That is why `strip_sanctioned_hue` takes a per-node list rather than a class plus a
+node set: the count is not an optional extra assertion, it is the argument's own length.
+
+The `text.strip` check is defence in depth rather than an independently isolated rule — with the
+exact count in place, every wrong-strip mutation that could be constructed is caught by the count or
+by the matcher. It stays because it is what makes "decorative" a *tested* property rather than a
+claim in a comment, and WCAG 2.1 SC 1.4.11 is the entire basis for the exception. Pin the stripped
+nodes' own classes in a separate example too, or stripping them from the *scan* removes them from the
+*suite*.
+
+**This applies to the *selected-state* exception too — `allowing:` has no legitimate call site left.**
+The earlier version of this rule reserved `allowing:` "for a class that is fixed-hue everywhere it
+appears in that component (a selected-state `text-bg-primary`, StatCard's large-text `text-danger`)".
+That carve-out was wrong on its own terms, and #183's external review demonstrated it by injection:
+`text-bg-primary` added to ActiveFilterBar's **non-selected** "Active:" label left 111 examples green.
+"Fixed-hue everywhere it appears" is a claim about *placement*, and a class-scoped matcher cannot
+check placement — so the allowance passes exactly the regression the exception's own conditions
+forbid. Same for StatCard: `.allowing("text-danger")` equally passes a base `text-danger` on the 12px
+trend, where the large-text 3:1 argument does not reach (3.41:1 in dark mode).
+
+There are **four fixed-hue call sites: three selected-state surfaces** — ActiveFilterBar's and
+FilterChipBar's active-filter pill, and Pagination's current page — **plus StatCard's large-text alert
+value**, which is a *different* exception (`.claude/rules/frontend.md` — AA's 3:1 large-text floor,
+not a selection affordance; `role='alert'` is the card's state, not a selected state). All four now
+strip the sanctioned class rather than the node — keyed on the selected state itself where one exists
+(`aria-current='page'` for Pagination) — with an exact count via `strip_sanctioned_hue`, an identity
+assertion, a separate example pinning the node's classes *and* its state semantics, and a negative
+assertion that a non-selected sibling does not carry the class. No component spec passes `allowing:`;
+only `spec/lib/theme_adaptivity_spec.rb` still exercises it, to prove it is scoped to the named class
+and is not a kill switch.
+
+**Removing a NODE stays right for one case only — a CHILD COMPONENT's subtree** (AccountDetailPanel's
+embedded `span.badge`, DataTable's and Dashboard's `AvatarCircle` roots, Dashboard's caller-owned chart
+nodes). There the whole subtree is out of the parent's scope, not one sanctioned class on the parent's
+own element, so the class strip does not apply. It still needs the exact expected count.
+
+**And such a strip is only legitimate when what you strip is INDEPENDENTLY guarded.** Removing a child
+component's subtree scopes the parent's scan correctly, but it also deletes the only evidence of that
+child's classes from the parent suite — so if the child has no class-axis guard of its own, the strip
+is a cross-component hole rather than a scoping decision. #183 shipped one: AccountDetailPanel removed
+every `span.badge`, then asserted only that the Badge still carried `text-bg-primary` — an assertion
+that permits arbitrary *additional* classes — while Badge's own spec had no class-axis guard at all.
+`bg-white` added to `Badge#css_classes` was green across 242 examples (Badge, AccountDetailPanel,
+TableForIndex, the preview sweep). Guard the child first, with the **exact** colour-bearing class set
+per variant/colour/size (`contain_exactly`, not `include`), and give the parent's strip an exact
+expected count exactly like the dot strips.
+
+**"Per variant/colour/size" means the CARTESIAN PRODUCT, not one loop per axis.** #183's first fix
+looped colours at the default size and sizes at the default colour, which reads as complete coverage
+and is not: where the class list is composed from several parameters, a per-axis loop never renders
+the *combinations*. The combination the ecosystem actually calls — AccountDetailPanel renders
+`variant: :filled, size: :sm, color: :info` — was unrendered by the guard, so a `bg-white` conditional
+on exactly that path shipped green across 102 examples, and the parent had stripped the evidence. Loop
+`COLORS × SIZES` per variant and `GROUP_VARIANTS × SIZES` for the tag-group family, and prove it by
+injecting on the live combination.
 
 ## A Guard Is Not Real Until You Have Watched It Fail
 

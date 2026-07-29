@@ -1,0 +1,27 @@
+<% content_for :title, "Outline Button Theme Demo" %>
+
+<%# Every outline variant rendered once per colour mode, so the feature spec can read
+    COMPUTED styles under both `data-bs-theme` values on a single page. Each wrapper pins
+    the mode and a `bg-body` surface — the surface matters, because the defect being fixed
+    is precisely that the resting text did NOT move when the surface did. Stable ids scope
+    every selector the spec addresses. (ISS#183 follow-up) %>
+
+<% semantics = MpiDesignSystem::Admin::ActionButton::Component::COLORS %>
+
+<main class="container-fluid py-4">
+  <h1 class="h4 mb-3">Outline Button Theme Demo</h1>
+
+  <% { light: "outline-light-mode", dark: "outline-dark-mode" }.each do |mode, id| %>
+    <section id="<%= id %>" data-bs-theme="<%= mode %>" class="bg-body p-3 mb-4">
+      <h2 class="h6"><%= mode.to_s.capitalize %> mode</h2>
+      <% semantics.each do |semantic| %>
+        <%= render MpiDesignSystem::Admin::ActionButton::Component.new(
+              label: semantic.to_s.capitalize,
+              color: semantic,
+              variant: :outline,
+              classes_append: "mds-demo-outline-#{semantic}"
+            ) %>
+      <% end %>
+    </section>
+  <% end %>
+</main>

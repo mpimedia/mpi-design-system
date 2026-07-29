@@ -430,4 +430,61 @@ RSpec.describe MpiDesignSystem::Admin::NavBar::Component, type: :component do
       expect(page).to have_css("a.mds-navbar__brand[href='/home']", text: "MARKAZ")
     end
   end
+
+  # ISS#183 follow-up: the last of the five. NavBar is the interesting one, because almost
+  # all of its colour lives in `_nav_bar.scss` (converted to `var(--bs-*)` in #154 and proven
+  # by `bin/verify-nav-bar-adaptive` + `spec/features/nav_bar_theme_spec.rb`), NOT in the
+  # markup this scan can see. What is left for a component-level guard is therefore narrow
+  # and worth stating: the utility classes the ERB itself emits, and the embedded avatar.
+  describe "theme-adaptivity guards" do
+    let(:nav) do
+      described_class.new(current_section: :crm, current_subsection: :contacts,
+                          user_name: "Jane Cooper", search_url: "#",
+                          system_url: "/admin/system", environment: :development,
+                          sign_out_url: "/sign_out")
+    end
+
+    # AvatarCircle paints its identity colour through `var(--mds-avatar-N, #hex)`, which the
+    # shared declaration scan reads as frozen (see that component's own guard for why the
+    # exception is taken there and not by widening the module). Its subtree is removed here
+    # rather than excepted again — the ONE case `.claude/rules/testing.md` still sanctions
+    # node removal for, a CHILD COMPONENT's subtree, and only because AvatarCircle is now
+    # INDEPENDENTLY guarded. Before ISS#183 it was not, and this strip would have been the
+    # round-1 P0-4 defect verbatim: a parent deleting the evidence for an unguarded child.
+    def without_avatar_subtree(fragment)
+      avatars = fragment.css("span.mds-avatar--nav")
+
+      # Exact count, not `not_to be_empty` — an over-strip is the silent failure mode, and
+      # widening this selector must redden rather than quietly shrink what gets scanned.
+      expect(avatars.length).to eq(1)
+      avatars.each(&:remove)
+      fragment
+    end
+
+    it "applies only theme-adaptive colour utilities across the whole nav" do
+      render_inline(nav)
+
+      # Pin the colour-bearing utilities the ERB emits, so this is not an empty scan.
+      # `btn-link` is tier-2 adaptive (`--bs-btn-color: var(--bs-link-color)`, which
+      # Bootstrap re-resolves per mode) and `border-0` is tier-1 neutral, so BOTH survive
+      # with no strip and no `allowing:` — there is no fixed-hue exception in this component.
+      expect(page).to have_css("button.btn.btn-link.border-0[data-bs-toggle='dropdown']")
+
+      expect(without_avatar_subtree(rendered_fragment)).to be_free_of_fixed_hue_utilities
+    end
+
+    it "emits no colour literal and no inline style outside the avatar" do
+      render_inline(nav)
+
+      # The brand mark's fills were moved onto `.mds-navbar__brand-arm`/`-center` classes in
+      # #155 precisely so no hex remains in the markup; this pins that it stayed that way.
+      expect(page).to have_css("svg .mds-navbar__brand-arm")
+      expect(page).to have_css("svg .mds-navbar__brand-center")
+
+      fragment = without_avatar_subtree(rendered_fragment)
+
+      expect(fragment).to be_free_of_colour_literals
+      fragment.css("[style]").each { |node| expect(node["style"]).to be_free_of_frozen_colour }
+    end
+  end
 end

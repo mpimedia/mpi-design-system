@@ -144,7 +144,29 @@ RSpec.describe MpiDesignSystem::Admin::TagChip::Component, type: :component do
       render_inline(described_class.new(label: "Distribution", group: :distribution, removable: true))
 
       expect(page).to have_css("span.bg-danger-subtle", text: "Distribution")
-      expect(page.native.to_html).not_to match(/#[0-9A-Fa-f]{6}\b/)
+      # Widened by #183 from a 6-digit-hex regex to the shared markup scan: 3/4/8-digit
+      # hex, rgb()/rgba() and hsl()/hsla() are covered too, in attributes as well as
+      # `style` — an inline SVG `fill="#fff"` was invisible to the old pattern.
+      expect(rendered_fragment).to be_free_of_colour_literals
+    end
+
+    # #183. The chip's colour is carried entirely by CLASSES, so a declaration scan is
+    # blind to the regression that matters most here: `bg-danger-subtle` silently
+    # becoming `bg-danger` (fixed hue), or the remove control's neutral reset becoming a
+    # `btn-danger`. Looped over every GROUP_VARIANTS key rather than the five distinct
+    # hues, because `press_festival`/`production`/`vendors` share `primary` and a
+    # per-hue loop leaves two of the seven keys unproven.
+    described_class::GROUP_VARIANTS.each_key do |group|
+      it "applies only theme-adaptive colour utilities on the #{group} chip" do
+        render_inline(described_class.new(label: group.to_s, group: group, removable: true))
+        fragment = rendered_fragment
+
+        variant = described_class::GROUP_VARIANTS.fetch(group)
+        applied = ThemeAdaptivity.applied_utility_classes(fragment)
+        expect(applied).to include("bg-#{variant}-subtle", "text-#{variant}-emphasis", "text-reset")
+
+        expect(fragment).to be_free_of_fixed_hue_utilities
+      end
     end
   end
 
