@@ -287,10 +287,19 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
     # DataTable-owned element could reuse and thereby escape the scan (the FIX 4 defect).
     # If AvatarCircle's classes ever change so this stops matching, its inline hex leaks
     # INTO the scan and reddens the guard — a loud failure, not a silent over-strip.
+    #
+    # Removing the NODE is right here and only here: the whole subtree belongs to another
+    # component, so there is no "sanctioned class" on a DataTable element to strip instead
+    # (see `.claude/rules/testing.md`). It still needs the EXACT count a class strip gets for
+    # free from its per-node list — the `populated` fixture renders one row, so one avatar,
+    # and widening the selector would otherwise empty the scan while staying green.
     def datatable_without_avatars
       render_inline(populated)
       fragment = rendered_fragment
-      fragment.css(".rounded-circle.justify-content-center").remove
+      avatars = fragment.css(".rounded-circle.justify-content-center")
+      expect(avatars.length).to eq(1)
+      expect(avatars.first.text.squish).to eq("JS")
+      avatars.remove
       fragment
     end
 
@@ -300,13 +309,19 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
     # DECORATIVE mark whose meaning is carried by the adjacent text label (WCAG 2.1
     # SC 1.4.11) — see component.rb:83-94,118.
     #
-    # They are removed as NODES rather than passed to `.allowing("bg-danger", …)`, which
-    # is class-scoped, not placement-scoped: a fragment-wide allowance would also pass a
-    # `bg-danger` on a text-bearing cell, which is exactly the regression the guard is
-    # for. The two assertions make the removal honest — the count must be exactly what
-    # the fixture renders (an OVER-strip is the silent failure mode; `not_to be_empty`
-    # passes straight through one), and each node removed must be a text-free decorative
-    # mark, which is the whole basis of the SC 1.4.11 exemption.
+    # Only the sanctioned `bg-#{variant}` CLASS is removed — never the node, and never
+    # `.allowing("bg-danger", …)`, which is class-scoped and not placement-scoped: a
+    # fragment-wide allowance would also pass a `bg-danger` on a text-bearing cell, which
+    # is exactly the regression the guard is for. Removing the whole dot NODE (#183's first
+    # correction) is the opposite error — it also deletes any second class on the dot from
+    # the scan, which is the P0 Codex's review of that fix commit found. The class strip is
+    # exactly as wide as the exception and no wider.
+    #
+    # `strip_sanctioned_hue` names the sanctioned class PER DOT, in document order, so its
+    # list length is the exact count (an OVER-strip is the silent failure mode; `not_to
+    # be_empty` passes straight through one) and a dot that lost its semantic class reddens
+    # rather than being stripped anyway. Each node must also be text-free, which is the
+    # whole basis of the SC 1.4.11 exemption.
     #
     # A `let`, not a constant: a constant assigned inside a block resolves to top-level
     # Object, so the sibling specs copying this shape would each reassign the same name
@@ -314,15 +329,14 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
     # guard block already carries).
     let(:decorative_dot) { "span.d-inline-block[style='width: 6px; height: 6px; border-radius: 50%;']" }
 
-    def without_decorative_dots(fragment)
+    # Two tag dots (distribution -> danger, outreach -> success) then one status dot
+    # (active -> success) for the `populated` fixture, in document order.
+    let(:decorative_dot_hues) { %w[bg-danger bg-success bg-success] }
+
+    def without_decorative_dot_hues(fragment)
       dots = fragment.css(decorative_dot)
-      # EXACT count, not `not_to be_empty`: an over-strip is the silent failure mode here
-      # (widen the selector and the scan below inspects almost nothing while staying
-      # green), and only an exact count reddens in both directions. Two tag dots plus one
-      # status dot for the `populated` fixture.
-      expect(dots.length).to eq(3)
+      strip_sanctioned_hue(dots, decorative_dot_hues)
       dots.each { |dot| expect(dot.text.strip).to be_empty }
-      dots.remove
       fragment
     end
 
@@ -357,14 +371,14 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
       end
     end
 
-    it "applies only theme-adaptive colour utilities once the decorative dots are removed" do
+    it "applies only theme-adaptive colour utilities once the decorative dot hues are stripped" do
       # The AVATAR subtree stays in scope here, unlike the two scans above: it is stripped
       # from those because AvatarCircle emits inline colour of its own, but its CLASSES
       # carry nothing fixed-hue and the pre-#183 guard enumerated them (`table, table *`).
       # Keeping them means a future AvatarCircle regression is a loud cross-component
       # failure rather than a silent gap.
       render_inline(populated)
-      fragment = without_decorative_dots(rendered_fragment)
+      fragment = without_decorative_dot_hues(rendered_fragment)
 
       # Positive pins first — the adaptive classes this table is expected to apply, so the
       # matcher is not vacuously green on markup that emitted no colour class.
@@ -377,14 +391,14 @@ RSpec.describe MpiDesignSystem::Admin::DataTable::Component, type: :component do
       expect(fragment).to be_free_of_fixed_hue_utilities
     end
 
-    # The dots' own classes, pinned here rather than lost with the nodes: removing them
-    # from the scan above must not remove them from the SUITE. `bg-danger` (distribution
-    # tag) and `bg-success` (active status) are the two the fixture renders.
+    # The dots' own classes, pinned here rather than left to the scan above: stripping them
+    # from the scan must not remove them from the SUITE. `bg-danger` (distribution tag) and
+    # `bg-success` (outreach tag, active status) are the two hues the fixture renders.
     it "still paints the decorative dots in their fixed identity hue" do
       render_inline(populated)
 
-      expect(page).to have_css("span.d-inline-block.bg-danger")
-      expect(page).to have_css("span.d-inline-block.bg-success")
+      expect(page).to have_css("span.d-inline-block.bg-danger", count: 1)
+      expect(page).to have_css("span.d-inline-block.bg-success", count: 2)
     end
   end
 end

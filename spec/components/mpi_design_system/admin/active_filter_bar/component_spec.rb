@@ -140,30 +140,35 @@ RSpec.describe MpiDesignSystem::Admin::ActiveFilterBar::Component, type: :compon
     # modes because neither value re-resolves (#130: background AND foreground derive from
     # the consuming app's real `$primary` rather than a literal).
     #
-    # They are removed as NODES, not passed to `.allowing("text-bg-primary")`. Codex's #183
-    # review demonstrated why: `allowing:` is class-scoped, not placement-scoped, so adding
-    # `text-bg-primary` to the NON-selected "Active:" label left 111 examples green. The
-    # matcher cannot enforce "selected-state only"; the strip can, because the label does
-    # not match this selector and would survive into the scan.
+    # Only the sanctioned CLASS is removed — never the node. `.allowing("text-bg-primary")`
+    # is class-scoped, not placement-scoped, so Codex's #183 review shipped the fill on the
+    # NON-selected "Active:" label past 111 green examples; keying the strip on this selector
+    # fixes that, because the label does not match it and survives into the scan.
     #
-    # The two assertions make the removal honest — the count must be exactly what the
-    # fixture renders (an OVER-strip is the silent failure mode; `not_to be_empty` passes
-    # straight through one), and each removed node must actually BE an active filter,
-    # identified by the "#{category}: #{value}" label the component builds for it.
+    # But the first correction removed the whole PILL, which is wider than the exception:
+    # deleting the subtree also deletes every other regression on it. Codex's review of that
+    # fix commit proved it — `bg-white` on the pill itself, and `bg-white` on the remove
+    # link INSIDE it, both shipped green. Stripping just `text-bg-primary` leaves the pill,
+    # its geometry style and its remove link in the scan, so either injection now reddens.
+    #
+    # `strip_sanctioned_hue` pins the count (its `sanctioned` list has one entry per pill —
+    # an OVER-strip is the silent failure mode, and `not_to be_empty` passes straight through
+    # one) and that each pill really carried the class. The identity assertion here is the
+    # other half: each stripped node must actually BE an active filter, identified by the
+    # "#{category}: #{value}" label the component builds for it.
     let(:selected_pill) { "span.rounded-pill.text-bg-primary" }
 
-    def without_selected_pills(fragment)
+    def without_selected_hue(fragment)
       pills = fragment.css(selected_pill)
-      expect(pills.length).to eq(filters.length)
+      strip_sanctioned_hue(pills, Array.new(filters.length) { "text-bg-primary" })
       expect(pills.map { |pill| pill.text.squish })
         .to eq(filters.map { |filter| "#{filter[:category]}: #{filter[:value]}" })
-      pills.remove
       fragment
     end
 
-    it "applies only theme-adaptive colour utilities once the selected pills are removed" do
+    it "applies only theme-adaptive colour utilities once the selected hue is stripped" do
       render_inline(described_class.new(filters: filters, clear_all_url: "/contacts?clear"))
-      fragment = without_selected_pills(rendered_fragment.css("div[role='toolbar']"))
+      fragment = without_selected_hue(rendered_fragment.css("div[role='toolbar']"))
 
       applied = ThemeAdaptivity.applied_utility_classes(fragment)
       expect(applied).to include("bg-body-secondary", "text-body-secondary")
@@ -173,9 +178,9 @@ RSpec.describe MpiDesignSystem::Admin::ActiveFilterBar::Component, type: :compon
     end
 
     # The pills' own fixed hue and their selected-state semantics, pinned here rather than
-    # lost with the stripped nodes: removing them from the SCAN must not remove them from
-    # the SUITE. The negative half is the placement condition the matcher could not
-    # express — the "Active:" label is not a selected state and may never carry the fill.
+    # left to the scan above: stripping the class from the SCAN must not remove it from the
+    # SUITE. The negative half is the placement condition the matcher could not express —
+    # the "Active:" label is not a selected state and may never carry the fill.
     it "still paints exactly the active filters in the fixed selected-state hue" do
       render_inline(described_class.new(filters: filters, clear_all_url: "/contacts?clear"))
 

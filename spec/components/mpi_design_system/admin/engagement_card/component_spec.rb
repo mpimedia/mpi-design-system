@@ -170,26 +170,28 @@ RSpec.describe MpiDesignSystem::Admin::EngagementCard::Component, type: :compone
     # The dots are the one place this card deliberately paints a FIXED identity hue
     # (`bg-#{variant}` reads `--bs-#{variant}-rgb`, which Bootstrap does not shift under
     # `data-bs-theme`), sanctioned by `.claude/rules/frontend.md` for a DECORATIVE mark
-    # whose meaning is carried by the adjacent text label (WCAG 2.1 SC 1.4.11). They are
-    # removed as NODES rather than passed to `.allowing("bg-danger")`, because `allowing`
-    # is class-scoped, not placement-scoped: a fragment-wide allowance would also pass a
-    # `bg-danger` on the text-bearing label beside them. The two assertions make the
-    # removal honest — the count must be exactly what the fixture renders (an OVER-strip
-    # is the silent failure mode; `not_to be_empty` passes straight through one), and
-    # every node removed must be text-free, which is the whole basis of the SC 1.4.11
-    # exemption.
+    # whose meaning is carried by the adjacent text label (WCAG 2.1 SC 1.4.11).
+    #
+    # Only the sanctioned CLASS is removed. Not `.allowing("bg-danger")`, which is
+    # class-scoped and not placement-scoped: a fragment-wide allowance would also pass a
+    # `bg-danger` on the text-bearing label beside the dot. And not the NODE — #183's first
+    # correction removed the dot outright, which also removes any SECOND class on it from
+    # the scan, the P0 Codex's review of that fix commit found by injecting `bg-white` onto
+    # the removed node.
+    #
+    # `strip_sanctioned_hue` names the class per dot, so its list length is the exact count
+    # (an OVER-strip is the silent failure mode; `not_to be_empty` passes straight through
+    # one) and a dot that lost its semantic class reddens rather than being stripped anyway.
+    # Every node must also be text-free, the whole basis of the SC 1.4.11 exemption.
     #
     # The card's own frozen `background: #fff` and navy label are DELIBERATE and stay
     # (see the two examples above) — they are declarations, not classes, so this axis
     # neither sees nor disturbs them.
-    def without_decorative_dots(fragment)
+    def without_decorative_dot_hues(fragment, variant)
       dots = fragment.css("span.d-inline-block[aria-hidden='true'][style='#{dot_style}']")
-      # EXACT count, not `not_to be_empty`: an over-strip is the silent failure mode here
-      # (widen the selector and the scan below inspects almost nothing while staying
-      # green), and only an exact count reddens in both directions. One tag, one dot.
-      expect(dots.length).to eq(1)
+      # One tag, one dot.
+      strip_sanctioned_hue(dots, [ "bg-#{variant}" ])
       dots.each { |dot| expect(dot.text.strip).to be_empty }
-      dots.remove
       fragment
     end
 
@@ -209,7 +211,7 @@ RSpec.describe MpiDesignSystem::Admin::EngagementCard::Component, type: :compone
         expect(classified).to eq([ "bg-#{variant}" ])
 
         # No `allowing:` at all — the fixed-hue exception was taken by placement above.
-        expect(without_decorative_dots(fragment)).to be_free_of_fixed_hue_utilities
+        expect(without_decorative_dot_hues(fragment, variant)).to be_free_of_fixed_hue_utilities
       end
     end
   end

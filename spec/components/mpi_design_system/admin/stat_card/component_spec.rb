@@ -228,41 +228,46 @@ RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
     # `.text-danger` clears in both modes (4.53:1 light) where `text-danger-emphasis` would
     # over-darken a number meant to read as an alarm.
     #
-    # The value is removed as a NODE rather than allowed by CLASS. Codex's #183 review
-    # proved on the sibling ActiveFilterBar that `.allowing(…)` is class-scoped and not
-    # placement-scoped: `.allowing("text-danger")` would equally pass a `text-danger` on
-    # the 11px LABEL or the 12px TREND, and the large-text 3:1 argument does not reach
-    # either of those — at 12px base `.text-danger` measures 3.41:1 in dark mode, below
-    # the 4.5:1 small-text floor, which is why `trend_class` uses `-emphasis`. Keying the
-    # strip on the alert VALUE means a `text-danger` anywhere else survives into the scan.
+    # Only the sanctioned CLASS is stripped — not the node, and not by `.allowing(…)`. The
+    # allowance is class-scoped and not placement-scoped: Codex's #183 review proved on the
+    # sibling ActiveFilterBar that `.allowing("text-danger")` would equally pass a
+    # `text-danger` on the 11px LABEL or the 12px TREND, and the large-text 3:1 argument
+    # does not reach either of those — at 12px base `.text-danger` measures 3.41:1 in dark
+    # mode, below the 4.5:1 small-text floor, which is why `trend_class` uses `-emphasis`.
+    # Keying the strip on the alert VALUE means a `text-danger` anywhere else survives into
+    # the scan.
     #
-    # The assertions make the removal honest: exactly one alert value per render (an
-    # OVER-strip is the silent failure mode; `not_to be_empty` passes straight through
-    # one), the card must actually be in its alert state (`role="alert"`), and the removed
-    # node must be the 32px value carrying the number.
+    # Removing the whole DIV (the first correction) was wider than the exception: it also
+    # deleted anything else that node carried, and Codex's review of that fix commit shipped
+    # `bg-white` on it past 99 green examples. Stripping only `text-danger` leaves the value
+    # element itself in the scan.
+    #
+    # `strip_sanctioned_hue` pins exactly one alert value per render (an OVER-strip is the
+    # silent failure mode; `not_to be_empty` passes straight through one) and that it really
+    # carried the class; the assertions here pin the alert state (`role="alert"`) and the
+    # 32px value carrying the number.
     let(:alert_value) { "div.text-danger" }
 
-    def without_alert_value(fragment)
+    def without_alert_value_hue(fragment)
       expect(fragment.at_css("div[role='alert']")).not_to be_nil
 
       values = fragment.css(alert_value)
-      expect(values.length).to eq(1)
+      strip_sanctioned_hue(values, [ "text-danger" ])
       expect(values.first["style"]).to include("font-size: 32px")
       expect(values.first.text.squish).to eq("12")
-      values.remove
       fragment
     end
 
     # Rendered WITH a trend deliberately: the trend is the other place a base `text-danger`
-    # could land, and `expect(values.length).to eq(1)` inside the strip is what turns that
-    # into a red example. On an alert-only fixture there is nothing for the count to
-    # discriminate against, and the injection Codex used would slip past this scan.
-    it "applies only theme-adaptive colour utilities once the alert value is removed" do
+    # could land, and the exact count inside the strip is what turns that into a red
+    # example. On an alert-only fixture there is nothing for the count to discriminate
+    # against, and the injection Codex used would slip past this scan.
+    it "applies only theme-adaptive colour utilities once the alert hue is stripped" do
       render_inline(described_class.new(
         label: "Overdue", value: "12",
         trend_text: "3 more", trend_direction: :up, trend_sentiment: :negative, alert: true
       ))
-      fragment = without_alert_value(rendered_fragment)
+      fragment = without_alert_value_hue(rendered_fragment)
 
       expect(ThemeAdaptivity.applied_utility_classes(fragment)).to include("bg-body", "text-body-secondary")
 
@@ -271,7 +276,7 @@ RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
     end
 
     # The alert value's own fixed hue and its alert semantics, pinned here rather than
-    # lost with the stripped node. The negative halves are the placement condition the
+    # left to the scan above. The negative halves are the placement condition the
     # matcher could not express: the small-text label and trend may never take base
     # `.text-danger`, which fails AA at 12px in dark mode.
     it "still paints exactly the alert value in base text-danger, and only it" do

@@ -346,16 +346,24 @@ Rules:
   (`batch_action_modal_button/component_spec.rb` applies no matcher), so nothing recorded or tested
   the claim that it took this exception. Converting it is a separate piece of work, not a licence
   this rule grants.
-  **Take the exception by removing the NODE, never with `.allowing("text-bg-primary")`** — the
-  matcher is class-scoped, not placement-scoped, so a fragment-wide allowance also passes the same
-  fill on a *non*-selected element and therefore cannot enforce condition (1), which is the whole
-  rule. Codex's ISS#183 review proved it by injection: `text-bg-primary` added to ActiveFilterBar's
-  non-selected "Active:" label shipped green under the allowance. Each of the three holders now
-  strips the selected node — keyed on the selected state itself where one exists (`aria-current`
-  for Pagination) — with an exact count and an identity assertion, pins the stripped node's classes
-  and state semantics in a separate example, and scans the remainder with **no** `allowing:`.
-  (Reference: ISS#183; the ActiveFilterBar case was already reasoned in-spec under #130 —
-  background *and* foreground derive from the consuming app's real `$primary` rather than a literal.)
+  **Take the exception by removing the sanctioned CLASS — never with
+  `.allowing("text-bg-primary")`, and never by removing the node.** The matcher is class-scoped, not
+  placement-scoped, so a fragment-wide allowance also passes the same fill on a *non*-selected element
+  and therefore cannot enforce condition (1), which is the whole rule; Codex's ISS#183 review proved
+  it by injection — `text-bg-primary` added to ActiveFilterBar's non-selected "Active:" label shipped
+  green under the allowance. Removing the node is the opposite error, and the review of that fix
+  commit proved it the same way: deleting the pill also deletes every other regression on it and on
+  its descendants, so `bg-white` on the pill itself and `bg-white` on the remove link *inside* it both
+  shipped green (99 and 43 examples respectively). Each of the three holders now strips only its
+  sanctioned class(es) via `strip_sanctioned_hue` — keyed on the selected state itself where one
+  exists (`aria-current` for Pagination), which pins an exact count and asserts the class was really
+  there — pins the node's classes and state semantics in a separate example, and scans the intact node
+  and its subtree with **no** `allowing:`. The same correction applies to the decorative-dot strips and
+  to StatCard's large-text alert value, which is a *fourth* fixed-hue call site under a different
+  exception (AA's 3:1 large-text floor, not a selection affordance) — four fixed-hue call sites in
+  total, three of them selected-state surfaces. (Reference: ISS#183; the ActiveFilterBar case was
+  already reasoned in-spec under #130 — background *and* foreground derive from the consuming app's
+  real `$primary` rather than a literal.)
 - Visible focus indicators on every focusable element
 
 ## Anti-Patterns

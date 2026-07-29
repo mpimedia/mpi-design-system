@@ -80,14 +80,29 @@
 # citation. Over-rejection costs one commented exception at a call site; under-rejection
 # is a silent false green.
 #
-# A tier-3 exception — a class that is a DELIBERATE fixed hue — is preferably taken by
-# removing the offending NODES (see the decorative-dot and selected-state patterns in the
-# component specs) rather than by `allowing:`, because `allowing:` is class-scoped, not
-# placement-scoped: `.allowing("bg-danger")` also passes a `bg-danger` on a text-bearing
-# element elsewhere in the same fragment. Codex's #183 review demonstrated that on the
-# live specs — `text-bg-primary` added to ActiveFilterBar's NON-selected "Active:" label
-# shipped green under `.allowing("text-bg-primary")` — so the four selected-state call
-# sites now remove nodes too, and no component spec passes `allowing:` at all.
+# A tier-3 exception — a class that is a DELIBERATE fixed hue — is taken by removing the
+# sanctioned CLASS from the node and leaving the node in the scan (`strip_sanctioned_hue`
+# below), never by `allowing:` and never by removing the node.
+#
+# Not `allowing:`, because it is class-scoped, not placement-scoped: `.allowing("bg-danger")`
+# also passes a `bg-danger` on a text-bearing element elsewhere in the same fragment. Codex's
+# #183 review demonstrated that on the live specs — `text-bg-primary` added to
+# ActiveFilterBar's NON-selected "Active:" label shipped green under
+# `.allowing("text-bg-primary")`. No component spec passes `allowing:` at all.
+#
+# Not the node either, which was #183's own first correction and was too broad: deleting the
+# subtree also deletes every OTHER regression on that node and its descendants. Codex's review
+# of the fix commit demonstrated that too — `bg-white` added directly to each removed node left
+# all four fixed-hue specs green (99 examples), and added to the remove-link DESCENDANTS of
+# ActiveFilterBar's and FilterChipBar's pills left 43 green. Removing only the sanctioned class
+# is exactly as wide as the exception and no wider.
+#
+# There are FOUR fixed-hue call sites: three selected-state surfaces (ActiveFilterBar's and
+# FilterChipBar's active-filter pill, Pagination's current page) plus StatCard's large-text
+# alert value, which is a different exception (`.claude/rules/frontend.md` — AA's 3:1
+# large-text floor, not a selection affordance). The decorative dots (DataTable,
+# AccountListRow, ContactListRow, EngagementCard) take the same treatment under the WCAG 2.1
+# SC 1.4.11 decorative-graphic exemption.
 #
 # ---------------------------------------------------------------------------------
 # Axis 3 — markup literal
@@ -472,6 +487,38 @@ module ThemeAdaptivityHelpers
   # stripped at the call site, so each component's guards scan only its OWN markup.
   def rendered_fragment
     Nokogiri::HTML::DocumentFragment.parse(rendered_content)
+  end
+
+  # Axis 2, tier-3. Takes a fixed-hue exception by removing the SANCTIONED CLASS from each
+  # node, leaving the node — its other classes, its attributes, its inline style and its
+  # whole subtree — in the fragment the caller then scans.
+  #
+  # `sanctioned` is one entry per node in document order: a String, or an Array of the
+  # classes that node is permitted to pin. Its LENGTH is the exact expected node count, so
+  # an over-strip (widen the selector and the scan afterwards inspects almost nothing while
+  # staying green) reddens here rather than passing silently — the same reason the earlier
+  # node-removal helpers pinned `eq(n)` and not `not_to be_empty`.
+  #
+  # Every named class must actually be on its node: a strip that removes a class the node
+  # never carried is a strip whose sanction does not match reality.
+  #
+  # Why not `node.remove` — see the module header. Deleting the subtree also deletes every
+  # other regression on it; `bg-white` injected onto the removed node, or onto one of its
+  # descendants, shipped green across all four fixed-hue specs before this.
+  def strip_sanctioned_hue(nodes, sanctioned)
+    per_node = Array(sanctioned).map { |entry| Array(entry).map(&:to_s) }
+    # Fail CLOSED on a sanction list that sanctions nothing: an empty list, or an empty entry,
+    # would otherwise "strip" vacuously and leave the caller believing an exception was scoped.
+    expect(per_node).not_to be_empty
+    expect(per_node).to all(be_present)
+    expect(nodes.length).to eq(per_node.length)
+
+    nodes.to_a.zip(per_node).each do |node, classes|
+      applied = node["class"].to_s.split
+      expect(applied).to include(*classes)
+      node["class"] = (applied - classes).join(" ")
+    end
+    nodes
   end
 
   # The `style` attribute of every node matching `selector`, in document order.

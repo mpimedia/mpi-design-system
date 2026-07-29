@@ -203,31 +203,36 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
     # 4.843:1, identical in both colour modes because neither value re-resolves).
     # `border-primary` is the same hue on the same element, drawing the pill's edge.
     #
-    # The pill is removed as a NODE rather than allowed by CLASS. Codex's #183 review
-    # proved on the sibling ActiveFilterBar that `.allowing(…)` is class-scoped and not
-    # placement-scoped: it would equally pass a `text-bg-primary` on a NON-current page
-    # link or on the results caption, which is exactly the rule's condition and exactly
-    # what the guard exists to catch. Here the strip is keyed on `aria-current="page"` —
-    # the selected state itself — so any other element carrying the fill survives into
-    # the scan and reddens it.
+    # BOTH sanctioned classes are removed, and nothing else — not the node, and not by
+    # `.allowing(…)`. The allowance is class-scoped and not placement-scoped: Codex's #183
+    # review proved on the sibling ActiveFilterBar that it would equally pass a
+    # `text-bg-primary` on a NON-current page link or on the results caption, which is
+    # exactly the rule's condition and exactly what the guard exists to catch. Keying the
+    # strip on `aria-current="page"` — the selected state itself — means any other element
+    # carrying the fill survives into the scan and reddens it.
     #
-    # The assertions make the removal honest: exactly one current page per render (an
-    # OVER-strip is the silent failure mode; `not_to be_empty` passes straight through
-    # one), and the removed node must carry the selected-state semantics and the label.
+    # Removing the whole SPAN (the first correction) went too far the other way: it also
+    # deleted the pill's surviving `border rounded text-decoration-none` from the scan, and
+    # Codex's review of that fix commit shipped `bg-white` on the node past it. Stripping
+    # only the two sanctioned classes keeps the rest of the pill in scope.
+    #
+    # `strip_sanctioned_hue` pins the count at exactly one current page per render (an
+    # OVER-strip is the silent failure mode; `not_to be_empty` passes straight through one)
+    # and that both classes were really there; the assertions below pin the selected-state
+    # semantics and the label the stripped node must carry.
     let(:current_page_pill) { "span[aria-current='page']" }
 
-    def without_current_page(fragment)
+    def without_current_page_hue(fragment)
       current = fragment.css(current_page_pill)
-      expect(current.length).to eq(1)
+      strip_sanctioned_hue(current, [ %w[text-bg-primary border-primary] ])
       expect(current.first["aria-label"]).to eq("Page 20")
       expect(current.first.text.squish).to eq("20")
-      current.remove
       fragment
     end
 
-    it "applies only theme-adaptive colour utilities once the current page is removed" do
+    it "applies only theme-adaptive colour utilities once the current-page hue is stripped" do
       render_inline(windowed)
-      fragment = without_current_page(rendered_fragment.css("nav[aria-label='Pagination']"))
+      fragment = without_current_page_hue(rendered_fragment.css("nav[aria-label='Pagination']"))
 
       # Scope is the nav and every descendant, enumerated — not a [class*=…]
       # substring hunt, which would match `border-primary` for `border-dark`.
@@ -239,8 +244,8 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
     end
 
     # The pill's own fixed hue and its selected-state semantics, pinned here rather than
-    # lost with the stripped node: removing it from the SCAN must not remove it from the
-    # SUITE. The negative halves are the placement condition the matcher could not
+    # left to the scan above: stripping the classes from the SCAN must not remove them from
+    # the SUITE. The negative halves are the placement condition the matcher could not
     # express — a page LINK is not a selected state and may carry neither class.
     it "still paints exactly the current page in the fixed selected-state hue" do
       render_inline(windowed)

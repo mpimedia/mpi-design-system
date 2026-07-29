@@ -587,4 +587,91 @@ RSpec.describe ThemeAdaptivity do
         .not_to be_free_of_colour_literals
     end
   end
+
+  # The tier-3 exception helper. It is included explicitly because
+  # `ThemeAdaptivityHelpers` is wired into `type: :component` specs only, and this file
+  # sets no type — the same reason the matchers above take raw strings.
+  describe "strip_sanctioned_hue, the tier-3 exception helper" do
+    include ThemeAdaptivityHelpers
+
+    let(:pill) do
+      Nokogiri::HTML::DocumentFragment.parse(
+        %(<span class="rounded-pill text-bg-primary" style="padding: 2px 8px">) +
+        %(Keyword<a class="text-reset bg-transparent">x</a></span>)
+      )
+    end
+
+    # The whole point of the class strip over `node.remove`, and the P0 an external review
+    # of #183's fix commit found by injection: a `bg-white` on the sanctioned node — or on
+    # any descendant of it — must still reach the scan.
+    it "removes only the sanctioned class, leaving the node, its siblings' classes and its subtree" do
+      strip_sanctioned_hue(pill.css("span.text-bg-primary"), [ "text-bg-primary" ])
+
+      expect(pill.at_css("span")["class"]).to eq("rounded-pill")
+      expect(pill.at_css("span")["style"]).to eq("padding: 2px 8px")
+      expect(pill.at_css("a")["class"]).to eq("text-reset bg-transparent")
+      expect(pill.text).to include("Keyword")
+      expect(pill).to be_free_of_fixed_hue_utilities
+    end
+
+    it "leaves a fixed hue injected on the stripped node itself visible to the scan" do
+      pill.at_css("span")["class"] = "rounded-pill text-bg-primary bg-white"
+      strip_sanctioned_hue(pill.css("span.text-bg-primary"), [ "text-bg-primary" ])
+
+      expect(ThemeAdaptivity.fixed_hue_utility_offences(pill)).to eq([ "bg-white" ])
+    end
+
+    it "leaves a fixed hue injected on a DESCENDANT of the stripped node visible to the scan" do
+      pill.at_css("a")["class"] = "text-reset bg-white"
+      strip_sanctioned_hue(pill.css("span.text-bg-primary"), [ "text-bg-primary" ])
+
+      expect(ThemeAdaptivity.fixed_hue_utility_offences(pill)).to eq([ "bg-white" ])
+    end
+
+    it "removes every class named for a node, so a two-class sanction takes both" do
+      node = Nokogiri::HTML::DocumentFragment.parse(
+        %(<span class="border rounded text-bg-primary border-primary">20</span>)
+      )
+      strip_sanctioned_hue(node.css("span"), [ %w[text-bg-primary border-primary] ])
+
+      expect(node.at_css("span")["class"]).to eq("border rounded")
+      expect(node).to be_free_of_fixed_hue_utilities
+    end
+
+    it "names the sanctioned class PER NODE, in document order" do
+      dots = Nokogiri::HTML::DocumentFragment.parse(
+        %(<i class="d-inline-block bg-danger"></i><i class="d-inline-block bg-success"></i>)
+      )
+      strip_sanctioned_hue(dots.css("i"), %w[bg-danger bg-success])
+
+      expect(dots.css("i").map { |dot| dot["class"] }).to eq([ "d-inline-block", "d-inline-block" ])
+    end
+
+    # An OVER-strip is the silent failure mode: widen the selector and the scan afterwards
+    # inspects almost nothing while staying green. The list's LENGTH is the exact count, so
+    # it reddens in both directions rather than needing a separate assertion nobody adds.
+    it "rejects a node set larger than the sanction list (the over-strip)" do
+      expect { strip_sanctioned_hue(pill.css("span, a"), [ "text-bg-primary" ]) }
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError, /expected: 1/)
+    end
+
+    it "rejects a node set smaller than the sanction list" do
+      expect { strip_sanctioned_hue(pill.css("span.text-bg-primary"), %w[text-bg-primary text-bg-primary]) }
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError, /expected: 2/)
+    end
+
+    # A sanction that does not match reality: the node never carried the class, so whatever
+    # the strip is scoping, it is not the exception the call site claims.
+    it "rejects a node that does not carry the class named for it" do
+      expect { strip_sanctioned_hue(pill.css("span"), [ "bg-danger" ]) }
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError, /bg-danger/)
+    end
+
+    it "fails closed on a sanction list that sanctions nothing" do
+      expect { strip_sanctioned_hue(pill.css("span"), []) }
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError)
+      expect { strip_sanctioned_hue(pill.css("span"), [ [] ]) }
+        .to raise_error(RSpec::Expectations::ExpectationNotMetError)
+    end
+  end
 end

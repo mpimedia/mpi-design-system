@@ -33,13 +33,31 @@ include breaking changes).
     `text-emphasis-color` and `-webkit-text-fill-color` (ISS#174 §1). No component emits any of
     them, so this is purely preventive; each is proven by a fixture only the property rule can
     reject, so deleting one entry reddens exactly one example.
-  - Deliberate fixed hues are now recorded rather than silently inherited. The decorative
-    category/status dots in `data_table`, `account_list_row`, `contact_list_row` and
-    `engagement_card` are excluded by removing the NODES after a positive proof that they are
-    text-free (stronger than a fragment-wide allowance, which would also pass `bg-danger` on a
-    text-bearing element). The selected-state `text-bg-primary` in `filter_chip_bar`,
-    `pagination` and `active_filter_bar`, and `stat_card`'s large-text `text-danger`, are allowed
-    at their call sites citing a new accepted-exception rule in `.claude/rules/frontend.md`.
+  - Deliberate fixed hues are now recorded rather than silently inherited, and every one of them
+    takes its exception by removing the sanctioned CLASS — never the node, and never a
+    fragment-wide `allowing:`. There are eight call sites: the decorative category/status dots in
+    `data_table`, `account_list_row`, `contact_list_row` and `engagement_card` (kept text-free by a
+    positive assertion, the basis of the WCAG 2.1 SC 1.4.11 exemption), and four fixed-hue
+    surfaces — three selected-state (`filter_chip_bar`'s and `active_filter_bar`'s active-filter
+    pill, `pagination`'s current page) plus `stat_card`'s large-text alert value, which is a
+    different exception (AA's 3:1 large-text floor, not a selection affordance). The rule they
+    cite is new in `.claude/rules/frontend.md`.
+  - Both wrong ways to take that exception shipped first and were caught by injection.
+    `.allowing("text-bg-primary")` is class-scoped and not placement-scoped, so it also passed the
+    fill on `active_filter_bar`'s **non**-selected "Active:" label (111 examples green). Removing
+    the NODE is the opposite error — it deletes every other regression on that node and its
+    subtree, so `bg-white` on each sanctioned node (99 examples green) and on the remove links
+    *inside* `active_filter_bar`'s and `filter_chip_bar`'s pills (43 green) both survived. The
+    shared `ThemeAdaptivityHelpers#strip_sanctioned_hue` removes only the sanctioned class(es),
+    takes one entry per node so the list's length *is* the exact expected count, and asserts each
+    node really carried what it sanctions.
+  - `Badge` gains the class-axis guard it never had, over the full **Cartesian product** of
+    variant × colour × size. `AccountDetailPanel` strips the embedded `span.badge` subtree before
+    its own scan, which is only legitimate once the child is independently guarded — and the first
+    version of Badge's guard looped colours at the default size and sizes at the default colour, so
+    the combination the panel actually renders (`variant: :filled, size: :sm, color: :info`) was
+    never rendered by the guard at all. `bg-white` on exactly that path was green across 102
+    examples.
 - **Every CRM tag-group renderer is now theme-adaptive and WCAG AA clean (#168).** #167 moved
   `FilterChipBar` and `DataTable` onto the shared
   `TagChip::Component::GROUP_VARIANTS` mapping and deliberately left the other consumers on

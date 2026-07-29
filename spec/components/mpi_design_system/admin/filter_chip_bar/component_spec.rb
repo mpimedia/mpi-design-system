@@ -280,30 +280,37 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
     # #fff on #2E75B6 = 4.843:1, identical in both colour modes because neither value
     # re-resolves.
     #
-    # It is removed as a NODE rather than passed to `.allowing("text-bg-primary")`, which
-    # is class-scoped and not placement-scoped: Codex's #183 review proved on the sibling
-    # ActiveFilterBar that a fragment-wide allowance also passes the same class on a
-    # NON-selected label, which is precisely the condition the rule imposes and the
-    # matcher cannot check. The group chips are the case that matters here — a selected
-    # chip must render `-subtle`/`-emphasis`, and a chip that regressed to `text-bg-primary`
-    # would have been waved through by the allowance while failing this strip's count.
+    # Only the sanctioned CLASS is removed — never the node, and never
+    # `.allowing("text-bg-primary")`. The allowance is class-scoped and not
+    # placement-scoped: Codex's #183 review proved on the sibling ActiveFilterBar that a
+    # fragment-wide allowance also passes the same class on a NON-selected label, which is
+    # precisely the condition the rule imposes and the matcher cannot check. The group
+    # chips are the case that matters here — a selected chip must render
+    # `-subtle`/`-emphasis`, and a chip that regressed to `text-bg-primary` would have been
+    # waved through by the allowance while failing this strip's count.
     #
-    # The two assertions make the removal honest: an exact count (an OVER-strip is the
-    # silent failure mode; `not_to be_empty` passes straight through one) and the
-    # "#{category}: #{value}" identity the component builds for an active filter.
+    # Removing the whole PILL (the first correction) was too broad in the other direction:
+    # it deleted the pill's other classes and its remove link from the scan as well, and
+    # Codex's review of that fix commit shipped `bg-white` past it on both. Stripping only
+    # `text-bg-primary` keeps the pill, its style and its `text-reset bg-transparent
+    # border-0` remove link in scope, so either injection reddens.
+    #
+    # `strip_sanctioned_hue` pins the exact count (an OVER-strip is the silent failure mode;
+    # `not_to be_empty` passes straight through one) and that the pill really carried the
+    # class; the assertion below pins the "#{category}: #{value}" identity the component
+    # builds for an active filter.
     let(:selected_pill) { "span.rounded-pill.text-bg-primary" }
 
-    def without_selected_pills(fragment)
+    def without_selected_hue(fragment)
       pills = fragment.css(selected_pill)
-      expect(pills.length).to eq(1)
+      strip_sanctioned_hue(pills, [ "text-bg-primary" ])
       expect(pills.map { |pill| pill.text.squish }).to eq([ "Keyword: investors" ])
-      pills.remove
       fragment
     end
 
-    it "applies only theme-adaptive colour utilities once the selected pill is removed" do
+    it "applies only theme-adaptive colour utilities once the selected hue is stripped" do
       render_inline(populated)
-      fragment = without_selected_pills(rendered_fragment)
+      fragment = without_selected_hue(rendered_fragment)
 
       # Every element, enumerated — not a [class*=…] substring hunt, which would match
       # `border-danger-subtle` for `border-dark`.
@@ -318,7 +325,7 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
     end
 
     # The pill's own fixed hue and its selected-state semantics, pinned here rather than
-    # lost with the stripped node. The negative halves are the placement condition the
+    # left to the scan above. The negative halves are the placement condition the
     # matcher could not express: neither the "Active:" label nor a SELECTED GROUP CHIP
     # (which is a selected state, but one the rule sends to `-subtle`/`-emphasis`) may
     # carry the fill.

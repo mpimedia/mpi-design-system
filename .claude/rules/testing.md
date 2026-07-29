@@ -313,17 +313,32 @@ utilities use, all of which the dark block redefines. Do not widen tiers 1–2 c
 that widening either is a visible, reviewable act rather than a quiet weakening of all fourteen
 guarded specs at once.
 
-**Take a tier-3 exception by removing the NODES, not by `allowing:` — `allowing:` is class-scoped,
-not placement-scoped.** `.allowing("bg-danger")` also passes a `bg-danger` on a text-bearing element
-elsewhere in the same fragment, which is the regression the guard exists for. Remove the decorative
-nodes instead, and prove the removal is honest before trusting the scan:
+**Take a tier-3 exception by removing the sanctioned CLASS — not by `allowing:`, and not by removing
+the NODE.** Both wrong answers are wrong in opposite directions, and #183 shipped each in turn.
+
+`allowing:` is too wide on the *placement* axis: it is class-scoped, so `.allowing("bg-danger")` also
+passes a `bg-danger` on a text-bearing element elsewhere in the same fragment, which is the
+regression the guard exists for.
+
+`node.remove` is too wide on the *subject* axis: deleting the subtree also deletes every **other**
+regression on that node and its descendants. The external review of #183's own fix commit
+demonstrated it by injection — `bg-white` added directly to each removed node left all four fixed-hue
+specs green (99 examples), and added to the remove-link *descendants* of ActiveFilterBar's and
+FilterChipBar's pills left 43 green. The strip was policing the class it sanctioned and blinding the
+scan to everything else the node carried.
+
+Removing the class is exactly as wide as the exception and no wider — the node, its other classes,
+its inline style and its whole subtree stay in the scan. The shared helper is
+`ThemeAdaptivityHelpers#strip_sanctioned_hue` (`spec/support/theme_adaptivity.rb`); do not hand-roll
+it, for the same reason the matchers themselves are shared:
 
 ```ruby
-def without_decorative_dots(fragment)
+def without_decorative_dot_hues(fragment)
   dots = fragment.css(decorative_dot)                     # a `let`, never a constant-in-a-block
-  expect(dots.length).to eq(3)                            # EXACT count, not `not_to be_empty`
+  # One entry PER NODE in document order, so the list length is the EXACT expected count and
+  # each node must really carry the class named for it.
+  strip_sanctioned_hue(dots, %w[bg-danger bg-success bg-success])
   dots.each { |dot| expect(dot.text.strip).to be_empty }  # each must be genuinely decorative
-  dots.remove
   fragment
 end
 ```
@@ -334,13 +349,14 @@ because the un-stripped dot's `bg-danger` is still there. It is an **over**-stri
 to `span` and the scan afterwards inspects almost nothing while staying green. `not_to be_empty`
 passes right through that; an exact count reddens in both directions. Proven by mutation: widening
 `decorative_dot` to `"span"` leaves the example green under `not_to be_empty` and reddens it under
-`eq(3)`.
+an exact count. That is why `strip_sanctioned_hue` takes a per-node list rather than a class plus a
+node set: the count is not an optional extra assertion, it is the argument's own length.
 
 The `text.strip` check is defence in depth rather than an independently isolated rule — with the
 exact count in place, every wrong-strip mutation that could be constructed is caught by the count or
 by the matcher. It stays because it is what makes "decorative" a *tested* property rather than a
 claim in a comment, and WCAG 2.1 SC 1.4.11 is the entire basis for the exception. Pin the stripped
-nodes' own classes in a separate example too, or removing them from the *scan* removes them from the
+nodes' own classes in a separate example too, or stripping them from the *scan* removes them from the
 *suite*.
 
 **This applies to the *selected-state* exception too — `allowing:` has no legitimate call site left.**
@@ -351,15 +367,25 @@ That carve-out was wrong on its own terms, and #183's external review demonstrat
 "Fixed-hue everywhere it appears" is a claim about *placement*, and a class-scoped matcher cannot
 check placement — so the allowance passes exactly the regression the exception's own conditions
 forbid. Same for StatCard: `.allowing("text-danger")` equally passes a base `text-danger` on the 12px
-trend, where the large-text 3:1 argument does not reach (3.41:1 in dark mode). All four selected-state
-call sites now strip the node instead — keyed on the selected state itself where one exists
-(`aria-current='page'` for Pagination, `role='alert'` for StatCard) — with an exact count, an identity
-assertion, a separate example pinning the stripped node's classes *and* its state semantics, and a
-negative assertion that a non-selected sibling does not carry the class. No component spec passes
-`allowing:`; only `spec/lib/theme_adaptivity_spec.rb` still exercises it, to prove it is scoped to the
-named class and is not a kill switch.
+trend, where the large-text 3:1 argument does not reach (3.41:1 in dark mode).
 
-**And a strip is only legitimate when what you strip is INDEPENDENTLY guarded.** Removing a child
+There are **four fixed-hue call sites: three selected-state surfaces** — ActiveFilterBar's and
+FilterChipBar's active-filter pill, and Pagination's current page — **plus StatCard's large-text alert
+value**, which is a *different* exception (`.claude/rules/frontend.md` — AA's 3:1 large-text floor,
+not a selection affordance; `role='alert'` is the card's state, not a selected state). All four now
+strip the sanctioned class rather than the node — keyed on the selected state itself where one exists
+(`aria-current='page'` for Pagination) — with an exact count via `strip_sanctioned_hue`, an identity
+assertion, a separate example pinning the node's classes *and* its state semantics, and a negative
+assertion that a non-selected sibling does not carry the class. No component spec passes `allowing:`;
+only `spec/lib/theme_adaptivity_spec.rb` still exercises it, to prove it is scoped to the named class
+and is not a kill switch.
+
+**Removing a NODE stays right for one case only — a CHILD COMPONENT's subtree** (AccountDetailPanel's
+embedded `span.badge`, DataTable's and Dashboard's `AvatarCircle` roots, Dashboard's caller-owned chart
+nodes). There the whole subtree is out of the parent's scope, not one sanctioned class on the parent's
+own element, so the class strip does not apply. It still needs the exact expected count.
+
+**And such a strip is only legitimate when what you strip is INDEPENDENTLY guarded.** Removing a child
 component's subtree scopes the parent's scan correctly, but it also deletes the only evidence of that
 child's classes from the parent suite — so if the child has no class-axis guard of its own, the strip
 is a cross-component hole rather than a scoping decision. #183 shipped one: AccountDetailPanel removed
@@ -369,6 +395,15 @@ that permits arbitrary *additional* classes — while Badge's own spec had no cl
 TableForIndex, the preview sweep). Guard the child first, with the **exact** colour-bearing class set
 per variant/colour/size (`contain_exactly`, not `include`), and give the parent's strip an exact
 expected count exactly like the dot strips.
+
+**"Per variant/colour/size" means the CARTESIAN PRODUCT, not one loop per axis.** #183's first fix
+looped colours at the default size and sizes at the default colour, which reads as complete coverage
+and is not: where the class list is composed from several parameters, a per-axis loop never renders
+the *combinations*. The combination the ecosystem actually calls — AccountDetailPanel renders
+`variant: :filled, size: :sm, color: :info` — was unrendered by the guard, so a `bg-white` conditional
+on exactly that path shipped green across 102 examples, and the parent had stripped the evidence. Loop
+`COLORS × SIZES` per variant and `GROUP_VARIANTS × SIZES` for the tag-group family, and prove it by
+injecting on the live combination.
 
 ## A Guard Is Not Real Until You Have Watched It Fail
 
