@@ -134,20 +134,56 @@ RSpec.describe MpiDesignSystem::Admin::ActiveFilterBar::Component, type: :compon
       )
     end
 
-    it "applies only theme-adaptive colour utilities, bar the active-filter pill" do
+    # The active-filter pills are the one place this bar deliberately paints a FIXED hue.
+    # `.claude/rules/frontend.md` records that as the accepted SELECTED-STATE exception —
+    # the fill IS the affordance, and #fff on #2E75B6 = 4.843:1, identical in both colour
+    # modes because neither value re-resolves (#130: background AND foreground derive from
+    # the consuming app's real `$primary` rather than a literal).
+    #
+    # They are removed as NODES, not passed to `.allowing("text-bg-primary")`. Codex's #183
+    # review demonstrated why: `allowing:` is class-scoped, not placement-scoped, so adding
+    # `text-bg-primary` to the NON-selected "Active:" label left 111 examples green. The
+    # matcher cannot enforce "selected-state only"; the strip can, because the label does
+    # not match this selector and would survive into the scan.
+    #
+    # The two assertions make the removal honest — the count must be exactly what the
+    # fixture renders (an OVER-strip is the silent failure mode; `not_to be_empty` passes
+    # straight through one), and each removed node must actually BE an active filter,
+    # identified by the "#{category}: #{value}" label the component builds for it.
+    let(:selected_pill) { "span.rounded-pill.text-bg-primary" }
+
+    def without_selected_pills(fragment)
+      pills = fragment.css(selected_pill)
+      expect(pills.length).to eq(filters.length)
+      expect(pills.map { |pill| pill.text.squish })
+        .to eq(filters.map { |filter| "#{filter[:category]}: #{filter[:value]}" })
+      pills.remove
+      fragment
+    end
+
+    it "applies only theme-adaptive colour utilities once the selected pills are removed" do
       render_inline(described_class.new(filters: filters, clear_all_url: "/contacts?clear"))
-      fragment = rendered_fragment.css("div[role='toolbar']")
+      fragment = without_selected_pills(rendered_fragment.css("div[role='toolbar']"))
 
       applied = ThemeAdaptivity.applied_utility_classes(fragment)
-      expect(applied).to include("bg-body-secondary", "text-bg-primary", "text-body-secondary")
+      expect(applied).to include("bg-body-secondary", "text-body-secondary")
 
-      # `text-bg-primary` on the active-filter pill is a deliberate fixed hue and was
-      # already documented as such at the top of this file (#130: background AND
-      # foreground derive from the consuming app's real `$primary` rather than a
-      # literal). `.claude/rules/frontend.md` now records it as the accepted
-      # selected-state exception — #fff on #2E75B6 = 4.843:1, identical in both colour
-      # modes because neither value re-resolves.
-      expect(fragment).to be_free_of_fixed_hue_utilities.allowing("text-bg-primary")
+      # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The pills' own fixed hue and their selected-state semantics, pinned here rather than
+    # lost with the stripped nodes: removing them from the SCAN must not remove them from
+    # the SUITE. The negative half is the placement condition the matcher could not
+    # express — the "Active:" label is not a selected state and may never carry the fill.
+    it "still paints exactly the active filters in the fixed selected-state hue" do
+      render_inline(described_class.new(filters: filters, clear_all_url: "/contacts?clear"))
+
+      expect(page).to have_css(selected_pill, count: filters.length)
+      expect(page).to have_css(selected_pill, text: "Keyword: investors")
+      expect(page).to have_css(selected_pill, text: "Group: Distribution")
+      expect(page).to have_css("span.text-body-secondary", text: "Active:")
+      expect(page).to have_no_css("span.text-bg-primary", text: "Active:")
     end
   end
 

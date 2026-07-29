@@ -226,16 +226,65 @@ RSpec.describe MpiDesignSystem::Admin::StatCard::Component, type: :component do
     # it is deliberate — reasoned in component.rb:48-50,88. The alert VALUE is large text
     # (32px/600), so it is held to AA's 3:1 large-text floor rather than 4.5:1, which base
     # `.text-danger` clears in both modes (4.53:1 light) where `text-danger-emphasis` would
-    # over-darken a number meant to read as an alarm. Asserted in its own example so the
-    # exception is scoped to the branch that takes it, not to every StatCard render.
-    it "applies a base text-danger on the alert value, and nothing else fixed-hue" do
-      render_inline(described_class.new(label: "Overdue", value: "12", alert: true))
-      fragment = rendered_fragment
+    # over-darken a number meant to read as an alarm.
+    #
+    # The value is removed as a NODE rather than allowed by CLASS. Codex's #183 review
+    # proved on the sibling ActiveFilterBar that `.allowing(…)` is class-scoped and not
+    # placement-scoped: `.allowing("text-danger")` would equally pass a `text-danger` on
+    # the 11px LABEL or the 12px TREND, and the large-text 3:1 argument does not reach
+    # either of those — at 12px base `.text-danger` measures 3.41:1 in dark mode, below
+    # the 4.5:1 small-text floor, which is why `trend_class` uses `-emphasis`. Keying the
+    # strip on the alert VALUE means a `text-danger` anywhere else survives into the scan.
+    #
+    # The assertions make the removal honest: exactly one alert value per render (an
+    # OVER-strip is the silent failure mode; `not_to be_empty` passes straight through
+    # one), the card must actually be in its alert state (`role="alert"`), and the removed
+    # node must be the 32px value carrying the number.
+    let(:alert_value) { "div.text-danger" }
 
-      expect(fragment.at_css("div.text-danger")).not_to be_nil
+    def without_alert_value(fragment)
+      expect(fragment.at_css("div[role='alert']")).not_to be_nil
+
+      values = fragment.css(alert_value)
+      expect(values.length).to eq(1)
+      expect(values.first["style"]).to include("font-size: 32px")
+      expect(values.first.text.squish).to eq("12")
+      values.remove
+      fragment
+    end
+
+    # Rendered WITH a trend deliberately: the trend is the other place a base `text-danger`
+    # could land, and `expect(values.length).to eq(1)` inside the strip is what turns that
+    # into a red example. On an alert-only fixture there is nothing for the count to
+    # discriminate against, and the injection Codex used would slip past this scan.
+    it "applies only theme-adaptive colour utilities once the alert value is removed" do
+      render_inline(described_class.new(
+        label: "Overdue", value: "12",
+        trend_text: "3 more", trend_direction: :up, trend_sentiment: :negative, alert: true
+      ))
+      fragment = without_alert_value(rendered_fragment)
+
       expect(ThemeAdaptivity.applied_utility_classes(fragment)).to include("bg-body", "text-body-secondary")
 
-      expect(fragment).to be_free_of_fixed_hue_utilities.allowing("text-danger")
+      # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The alert value's own fixed hue and its alert semantics, pinned here rather than
+    # lost with the stripped node. The negative halves are the placement condition the
+    # matcher could not express: the small-text label and trend may never take base
+    # `.text-danger`, which fails AA at 12px in dark mode.
+    it "still paints exactly the alert value in base text-danger, and only it" do
+      render_inline(described_class.new(
+        label: "Overdue", value: "12",
+        trend_text: "3 more", trend_direction: :up, trend_sentiment: :negative, alert: true
+      ))
+
+      expect(page).to have_css("div[role='alert'].bg-body")
+      expect(page).to have_css("div.text-danger[style*='font-size: 32px']", text: "12")
+      expect(page).to have_css("div.text-danger", count: 1)
+      expect(page).to have_css("div.text-body-secondary[style*='font-size: 11px']", text: "Overdue")
+      expect(page).to have_css("div.text-danger-emphasis[style*='font-size: 12px']", text: "3 more")
     end
   end
 

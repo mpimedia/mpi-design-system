@@ -282,14 +282,36 @@ The module has **three axes, one matcher each**, and they are not interchangeabl
 A component whose colour moved onto classes needs the class matcher; a declaration scan cannot
 distinguish `bg-danger` from `bg-white` because it never reads `class` at all.
 
-The class matcher is an **allowlist**, in three tiers. Tier 1 is neutral (`bg-transparent`,
-`border-0`, `text-decoration-none` — classified by prefix, paints nothing); tier 2 is genuinely
-adaptive (`bg-body*`/`text-body*`, and `bg-*-subtle`/`text-*-emphasis`/`border-*-subtle` for every
-Bootstrap semantic *including* `info`, `light` and `dark` — "does it re-resolve" is a different
-question from "is it on MPI's palette"); tier 3 is a **deliberate fixed hue** and is the only thing a
-call site may except. Do not widen tiers 1–2 casually: their contents are asserted directly in
-`spec/lib/theme_adaptivity_spec.rb` precisely so that widening them is a visible, reviewable act
-rather than a quiet weakening of all fourteen guarded specs at once.
+The class matcher has **two layers, and only the second is an allowlist** — calling the whole thing
+"an allowlist" is the prose-only assurance this file warns about, because it hides the layer that
+decides what gets examined at all.
+
+*Layer 1, the family classifier* (`COLOUR_UTILITY_PATTERN`), is **blacklist-shaped and cannot be
+complete**: it enumerates the Bootstrap families known to paint, and a class matching none of them
+is never inspected. #183's external review found that hole live — `.table-primary`, `.table-dark`,
+`.focus-ring-primary`, `.dropdown-menu-dark` and `.navbar-dark` were all unclassified, so
+`fixed_hue_utility_offences('<div class="table-primary">')` returned `[]` while DataTable and
+TableForIndex both render a `<table>`; injecting `table-primary` into Dashboard left 144 examples
+green. Adding a family is the only fix, so **when you meet a Bootstrap class the guard shrugs at,
+classify it** rather than assuming silence means safety.
+
+*Layer 2, within a classified family, is the allowlist*, in three tiers. Tier 1 is neutral
+(`bg-transparent`, `border-0`, `text-decoration-none`, `table-sm` — classified by prefix, paints
+nothing); tier 2 is genuinely adaptive (`bg-body*`/`text-body*`/`text-body-emphasis`, `table` and its
+`-striped`/`-hover`/`-active` state classes, and `bg-*-subtle`/`text-*-emphasis`/`border-*-subtle`
+**plus `alert-*` and `list-group-item-*`** for every Bootstrap semantic *including* `info`, `light`
+and `dark` — "does it re-resolve" is a different question from "is it on MPI's palette"); tier 3 is a
+**deliberate fixed hue**. Layer 2 fails **closed**: an unnamed member of a classified family is
+rejected, so over-rejection costs one commented exception while under-rejection is a silent false
+green. Verify every tier entry against **compiled** Bootstrap
+(`node_modules/bootstrap/dist/css/bootstrap.css`, both the `:root` and `[data-bs-theme=dark]`
+blocks) — #173 classified `alert-danger` and `list-group-item-warning` as fixed hues and #183
+inherited the claim, and both are false: they resolve through the same
+`--bs-#{semantic}-text-emphasis`/`-bg-subtle`/`-border-subtle` tokens the `-subtle`/`-emphasis`
+utilities use, all of which the dark block redefines. Do not widen tiers 1–2 casually: their contents
+*and* the family classifier are asserted directly in `spec/lib/theme_adaptivity_spec.rb` precisely so
+that widening either is a visible, reviewable act rather than a quiet weakening of all fourteen
+guarded specs at once.
 
 **Take a tier-3 exception by removing the NODES, not by `allowing:` — `allowing:` is class-scoped,
 not placement-scoped.** `.allowing("bg-danger")` also passes a `bg-danger` on a text-bearing element
@@ -319,9 +341,34 @@ exact count in place, every wrong-strip mutation that could be constructed is ca
 by the matcher. It stays because it is what makes "decorative" a *tested* property rather than a
 claim in a comment, and WCAG 2.1 SC 1.4.11 is the entire basis for the exception. Pin the stripped
 nodes' own classes in a separate example too, or removing them from the *scan* removes them from the
-*suite*. Reserve `allowing:` for a class that is fixed-hue **everywhere** it appears in that
-component (a selected-state `text-bg-primary`, StatCard's large-text `text-danger`), and cite the
-rule that sanctions it at the call site.
+*suite*.
+
+**This applies to the *selected-state* exception too — `allowing:` has no legitimate call site left.**
+The earlier version of this rule reserved `allowing:` "for a class that is fixed-hue everywhere it
+appears in that component (a selected-state `text-bg-primary`, StatCard's large-text `text-danger`)".
+That carve-out was wrong on its own terms, and #183's external review demonstrated it by injection:
+`text-bg-primary` added to ActiveFilterBar's **non-selected** "Active:" label left 111 examples green.
+"Fixed-hue everywhere it appears" is a claim about *placement*, and a class-scoped matcher cannot
+check placement — so the allowance passes exactly the regression the exception's own conditions
+forbid. Same for StatCard: `.allowing("text-danger")` equally passes a base `text-danger` on the 12px
+trend, where the large-text 3:1 argument does not reach (3.41:1 in dark mode). All four selected-state
+call sites now strip the node instead — keyed on the selected state itself where one exists
+(`aria-current='page'` for Pagination, `role='alert'` for StatCard) — with an exact count, an identity
+assertion, a separate example pinning the stripped node's classes *and* its state semantics, and a
+negative assertion that a non-selected sibling does not carry the class. No component spec passes
+`allowing:`; only `spec/lib/theme_adaptivity_spec.rb` still exercises it, to prove it is scoped to the
+named class and is not a kill switch.
+
+**And a strip is only legitimate when what you strip is INDEPENDENTLY guarded.** Removing a child
+component's subtree scopes the parent's scan correctly, but it also deletes the only evidence of that
+child's classes from the parent suite — so if the child has no class-axis guard of its own, the strip
+is a cross-component hole rather than a scoping decision. #183 shipped one: AccountDetailPanel removed
+every `span.badge`, then asserted only that the Badge still carried `text-bg-primary` — an assertion
+that permits arbitrary *additional* classes — while Badge's own spec had no class-axis guard at all.
+`bg-white` added to `Badge#css_classes` was green across 242 examples (Badge, AccountDetailPanel,
+TableForIndex, the preview sweep). Guard the child first, with the **exact** colour-bearing class set
+per variant/colour/size (`contain_exactly`, not `include`), and give the parent's strip an exact
+expected count exactly like the dot strips.
 
 ## A Guard Is Not Real Until You Have Watched It Fail
 

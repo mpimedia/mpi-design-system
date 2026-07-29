@@ -49,21 +49,45 @@
 # ---------------------------------------------------------------------------------
 # Axis 2 — utility class
 # ---------------------------------------------------------------------------------
-# An ALLOWLIST, not a denylist. The `bg-white`/`text-dark`/… denylist five pre-#183 specs
-# carried (12 entries in three, 14 in the other two) missed every base utility
-# (`text-primary`, `bg-success`) and
-# every non-`bg`/`text`/`border` family (`btn-primary`, `link-danger`, `alert-danger`,
-# `badge-primary`, `list-group-item-warning`) — the hole ISS#183 exists to close. Only
-# classes that genuinely re-resolve under `data-bs-theme` (tier 2) or genuinely paint
-# nothing (tier 1) are allowed; anything else is an offence unless a call site takes an
-# explicit, commented exception.
+# TWO layers, and only the SECOND one is an allowlist. Describing the whole axis as "an
+# allowlist" — as this file did before Codex's PR review of #183 — is the prose-only
+# assurance `.claude/rules/testing.md` forbids, because it hides the first layer entirely:
+#
+#   LAYER 1 — the FAMILY CLASSIFIER (`COLOUR_UTILITY_PATTERN`). Blacklist-shaped and
+#   necessarily incomplete: it enumerates the Bootstrap class families known to paint.
+#   A class matching NO family is not examined at all — it passes silently, whatever it
+#   does. That is the axis's real limit, and it is where #183's first review found a
+#   live hole: `.table-primary`, `.table-dark`, `.focus-ring-primary`,
+#   `.dropdown-menu-dark` and `.navbar-dark` are all colour-bearing and were all
+#   unclassified, so `fixed_hue_utility_offences('<div class="table-primary">')` returned
+#   `[]` — with DataTable and TableForIndex both rendering a `<table>`. Widening the
+#   pattern is how that class of hole is closed; there is no way to make layer 1 complete,
+#   so a new Bootstrap family must be ADDED here deliberately.
+#
+#   LAYER 2 — within a classified family, an ALLOWLIST. The `bg-white`/`text-dark`/…
+#   denylist five pre-#183 specs carried (12 entries in three, 14 in the other two) missed
+#   every base utility (`text-primary`, `bg-success`) and every non-`bg`/`text`/`border`
+#   family — the hole ISS#183 exists to close. Only classes that genuinely re-resolve
+#   under `data-bs-theme` (tier 2) or genuinely paint nothing (tier 1) are allowed;
+#   anything else in a classified family is an offence unless a call site takes an
+#   explicit, commented exception.
+#
+# Layer 2 fails CLOSED: an unnamed member of a classified family is rejected. The tiers
+# name only members verified against COMPILED Bootstrap 5.3
+# (`node_modules/bootstrap/dist/css/bootstrap.css`, both the `:root` and the
+# `[data-bs-theme=dark]` blocks) — so a geometry-only member nobody has needed yet
+# (`link-offset-2`, `link-underline-opacity-50`) rejects until someone adds it with that
+# citation. Over-rejection costs one commented exception at a call site; under-rejection
+# is a silent false green.
 #
 # A tier-3 exception — a class that is a DELIBERATE fixed hue — is preferably taken by
-# removing the offending NODES (see the decorative-dot pattern in the component specs)
-# rather than by `allowing:`, because `allowing:` is class-scoped, not placement-scoped:
-# `.allowing("bg-danger")` also passes a `bg-danger` on a text-bearing element elsewhere
-# in the same fragment. Reserve `allowing:` for a class that is fixed-hue *everywhere*
-# it appears in that component, and cite the rule that sanctions it.
+# removing the offending NODES (see the decorative-dot and selected-state patterns in the
+# component specs) rather than by `allowing:`, because `allowing:` is class-scoped, not
+# placement-scoped: `.allowing("bg-danger")` also passes a `bg-danger` on a text-bearing
+# element elsewhere in the same fragment. Codex's #183 review demonstrated that on the
+# live specs — `text-bg-primary` added to ActiveFilterBar's NON-selected "Active:" label
+# shipped green under `.allowing("text-bg-primary")` — so the four selected-state call
+# sites now remove nodes too, and no component spec passes `allowing:` at all.
 #
 # ---------------------------------------------------------------------------------
 # Axis 3 — markup literal
@@ -77,19 +101,36 @@ module ThemeAdaptivity
   # still fail once faded — #130's ActiveFilterBar composited white at 0.8 to 3.71:1, and
   # TagChip's remove button did the same at 0.6.
   #
-  # The last five arrived with #183 (ISS#174 §1): `filter`/`backdrop-filter` recolour a
-  # whole subtree without naming a colour at all (`filter: invert(1)`),
-  # `background-blend-mode` changes what a background paints, and
+  # `filter`/`backdrop-filter` recolour a whole subtree without naming a colour at all
+  # (`filter: invert(1)`), `background-blend-mode` changes what a background paints, and
   # `text-emphasis-color`/`-webkit-text-fill-color` paint text through a property the
-  # value scan has no reason to look at. No component emits any of them today — they are
-  # preventive, and each is proven by a fixture only the property rule can reject.
+  # value scan has no reason to look at.
+  #
+  # The DIRECTIONAL and LOGICAL border longhands are the hole Codex's #183 review found by
+  # injection: the list carried `border-color` and the four physical shorthands but not
+  # `border-top-color`, so `border-top-color: papayawhip` dropped into ActiveFilterBar's
+  # `bar_styles` left 111 examples GREEN — a standard paint property shipping a frozen hue
+  # past a guard whose whole job is that. `-webkit-text-stroke*`, `scrollbar-color`,
+  # `text-emphasis` (the shorthand, not just `-color`) and the SVG paint-server properties
+  # `stop-color`/`flood-color`/`lighting-color` were missing for the same reason.
+  #
+  # No component emits any of the preventive entries today — each is proven by a fixture
+  # only the property rule can reject (a value that is neither a colour literal nor a
+  # listed named colour), so deleting one entry reddens exactly its own example.
   COLOUR_PROPERTIES = %w[
     color background background-color background-image background-blend-mode
     border border-top border-right border-bottom border-left
     border-color border-style border-width
+    border-top-color border-right-color border-bottom-color border-left-color
+    border-block border-block-color border-block-start border-block-start-color
+    border-block-end border-block-end-color
+    border-inline border-inline-color border-inline-start border-inline-start-color
+    border-inline-end border-inline-end-color
     outline outline-color outline-style box-shadow text-shadow opacity fill stroke
     accent-color caret-color column-rule column-rule-color text-decoration-color
-    filter backdrop-filter text-emphasis-color -webkit-text-fill-color
+    filter backdrop-filter text-emphasis text-emphasis-color
+    -webkit-text-fill-color -webkit-text-stroke -webkit-text-stroke-color
+    scrollbar-color stop-color flood-color lighting-color
   ].freeze
 
   # Geometry that merely shares a `border-*` prefix. `--bs-border-width` is the documented
@@ -122,20 +163,48 @@ module ThemeAdaptivity
 
   # --- Axis 2 constants ------------------------------------------------------------
 
-  # Bootstrap's colour-bearing class families. `bg`/`text`/`border` (bare `border`
-  # included, via the `(?:-|\z)` alternation) plus the component families whose
-  # `-#{semantic}` modifier paints: `btn-primary`, `link-danger`, `alert-warning`,
-  # `badge-primary`, `list-group-item-success`. Those five were added in #173 because a
-  # classifier that saw only bg/text/border would ignore a `btn-primary` regression
-  # entirely.
+  # LAYER 1 (see the header). Bootstrap's colour-bearing class families — a blacklist-shaped
+  # enumeration, NOT an allowlist: a class matching none of these alternations is never
+  # examined and passes silently. Every widening below is therefore a deliberate act.
   #
-  # None of the FOURTEEN guarded components emits one, so within their specs the branch
-  # is proven by mutation injection rather than by real markup. The engine as a whole is
-  # a different matter: `SearchBar`, `NavBar`, `ActionButton`, `BatchActionButton` and
+  #   bg / text / border  — bare `border` included, via the `(?:-|\z)` alternation.
+  #   table               — bare `table` included: `.table` itself binds
+  #                         `--bs-table-bg`/`--bs-table-color`, and `.table-primary` …
+  #                         `.table-dark` are LITERAL colours (`--bs-table-bg: #cfe2ff`,
+  #                         verified in the compiled 5.3 CSS, with no `[data-bs-theme=dark]`
+  #                         override), so they are fixed hues on the element DataTable and
+  #                         TableForIndex both render. Unclassified until Codex's #183
+  #                         review injected `table-primary` into Dashboard and watched 144
+  #                         examples stay green.
+  #   btn / link / alert /
+  #   badge / list-group-item — the component families whose `-#{semantic}` modifier
+  #                         paints. Added in #173.
+  #   focus-ring          — bare included: `.focus-ring` binds `--bs-focus-ring-color`,
+  #                         which resolves to `rgba(var(--bs-primary-rgb), …)` — and
+  #                         `--bs-primary-rgb` does not shift per colour mode, so both the
+  #                         base and every `.focus-ring-#{semantic}` are fixed hues.
+  #   dropdown-menu-dark /
+  #   navbar-dark         — fixed COLOUR SCHEME components (`.dropdown-menu-dark` pins
+  #                         `#343a40`/`#dee2e6`; `.navbar-dark` pins white rgba()s). Matched
+  #                         by exact name rather than by family prefix, so the structural
+  #                         `dropdown-menu-end` / `navbar-expand-lg` / `navbar-brand` stay
+  #                         out. The `-light` forms do not exist in compiled 5.3 (they are
+  #                         Bootstrap 4 legacy) and are matched anyway: if a consuming app
+  #                         still emits one, it is a fixed light scheme and should say so.
+  #
+  # None of the FOURTEEN guarded components emits a `btn-*` / `link-*` / `alert-*` /
+  # `focus-ring-*` / `table-#{semantic}`, so within their specs those branches are proven by
+  # mutation injection rather than by real markup. The engine as a whole is a different
+  # matter: `SearchBar`, `NavBar`, `ActionButton`, `BatchActionButton` and
   # `BatchActionModalButton` all emit `btn-primary` / `btn-outline-#{color}` /
-  # `btn-secondary` / `btn-link`, and none of them is guarded yet — which is why the
-  # branch stays in the classifier rather than being trimmed as dead (ISS#183 triage).
-  COLOUR_UTILITY_PATTERN = /\A(?:bg|text|border)(?:-|\z)|\A(?:btn|link|alert|badge|list-group-item)-/
+  # `btn-secondary` / `btn-link`, and `TableForIndex` emits `table-dark` on its `<thead>` —
+  # none of them is guarded yet, which is why the branches stay in the classifier rather
+  # than being trimmed as dead (ISS#183 triage).
+  COLOUR_UTILITY_PATTERN = /
+    \A(?:bg|text|border|table|focus-ring)(?:-|\z)
+    | \A(?:btn|link|alert|badge|list-group-item)-
+    | \A(?:dropdown-menu|navbar)-(?:dark|light)\z
+  /x
 
   # TIER 1 — classified by prefix, but paint nothing. Without these, `bg-transparent`
   # (TagChip's remove button), `border-0`, `border-bottom` (DataTable's header rule) and
@@ -145,6 +214,11 @@ module ThemeAdaptivity
   # both are geometry. `btn-sm`/`btn-lg`/`btn-close` are the only `btn-*` classes this
   # engine emits and none of them names a colour (`.btn-close`'s icon is driven by
   # `--bs-btn-close-filter`, which Bootstrap 5.3 re-resolves per colour mode).
+  #
+  # The `table-*` entries arrived with the layer-1 widening (#183 round 2). Verified in the
+  # compiled 5.3 CSS: `.table-sm` sets padding only; `.table-bordered`/`.table-borderless`
+  # set `border-width` only; `.table-responsive*` sets `overflow`. `.alert-dismissible` sets
+  # `padding-right` only.
   NEUTRAL_UTILITIES = %w[
     bg-transparent text-reset
     border border-0 border-1 border-2 border-3 border-4 border-5
@@ -154,6 +228,10 @@ module ThemeAdaptivity
     text-decoration-none text-decoration-underline
     text-uppercase text-lowercase text-capitalize
     btn-sm btn-lg btn-close
+    table-sm table-bordered table-borderless
+    table-responsive table-responsive-sm table-responsive-md
+    table-responsive-lg table-responsive-xl table-responsive-xxl
+    alert-dismissible
   ].freeze
 
   # TIER 2 — every family Bootstrap 5.3 re-resolves under `data-bs-theme`.
@@ -166,12 +244,41 @@ module ThemeAdaptivity
   # still rejected, which is correct: those are fixed-scheme.
   ADAPTIVE_SEMANTICS = %w[primary secondary success warning danger info light dark].freeze
 
+  # `alert-#{semantic}` and `list-group-item-#{semantic}` are here because they ARE
+  # adaptive, which #173 got backwards and #183 inherited. Compiled 5.3:
+  # `.alert-danger { --bs-alert-color: var(--bs-danger-text-emphasis);
+  # --bs-alert-bg: var(--bs-danger-bg-subtle); --bs-alert-border-color:
+  # var(--bs-danger-border-subtle) }` — the same three tokens `bg-danger-subtle` /
+  # `text-danger-emphasis` resolve through, and all three are redefined in the
+  # `[data-bs-theme=dark]` block (`--bs-danger-text-emphasis: #ea868f`,
+  # `--bs-danger-bg-subtle: #2c0b0e`). `.list-group-item-warning` is built identically.
+  # A matcher whose stated question is "does it re-resolve?" cannot call those fixed hues.
+  #
+  # The rest, each verified the same way:
+  #   text-body-emphasis / link-body-emphasis — `var(--bs-emphasis-color)` /
+  #     `RGBA(var(--bs-emphasis-color-rgb), …)`; `--bs-emphasis-color-rgb` flips to
+  #     `255, 255, 255` in the dark block.
+  #   btn-link            — `--bs-btn-color: var(--bs-link-color)`, which re-resolves.
+  #   alert-heading       — `color: inherit`.
+  #   alert-link          — `var(--bs-alert-link-color)`, i.e. the alert's own emphasis token.
+  #   list-group-item-action — every declaration is a `--bs-list-group-action-*` token.
+  #   table               — `--bs-table-color: var(--bs-emphasis-color)`,
+  #     `--bs-table-bg: var(--bs-body-bg)`, `--bs-table-border-color: var(--bs-border-color)`.
+  #   table-striped / -striped-columns / -active / -hover — each re-points
+  #     `--bs-table-*-type`/`-state` at `rgba(var(--bs-emphasis-color-rgb), …)` on `.table`.
+  #   table-group-divider — `border-top: … solid currentcolor`.
+  # `table-#{semantic}` is deliberately ABSENT: those are literal hexes (see the classifier).
   ADAPTIVE_UTILITIES = (
     %w[
       bg-body bg-body-secondary bg-body-tertiary
-      text-body text-body-secondary text-body-tertiary
+      text-body text-body-secondary text-body-tertiary text-body-emphasis
+      link-body-emphasis btn-link alert-heading alert-link list-group-item-action
+      table table-striped table-striped-columns table-active table-hover table-group-divider
     ] +
-    ADAPTIVE_SEMANTICS.flat_map { |s| [ "bg-#{s}-subtle", "text-#{s}-emphasis", "border-#{s}-subtle" ] }
+    ADAPTIVE_SEMANTICS.flat_map do |s|
+      [ "bg-#{s}-subtle", "text-#{s}-emphasis", "border-#{s}-subtle",
+        "alert-#{s}", "list-group-item-#{s}" ]
+    end
   ).freeze
 
   ADAPTIVE_UTILITY_ALLOWLIST = (NEUTRAL_UTILITIES + ADAPTIVE_UTILITIES).freeze

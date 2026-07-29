@@ -216,25 +216,41 @@ RSpec.describe MpiDesignSystem::Admin::AccountDetailPanel::Component, type: :com
     # blind to `bg-danger-subtle` degrading into a fixed-hue `bg-danger`.
     #
     # The embedded Badge is removed first: it emits `text-bg-#{color}` — a deliberate
-    # fixed hue that Badge OWNS, not this panel — and it has no theme-adaptivity guard of
-    # its own (tracked as a follow-up). Removing the subtree scopes this assertion to the
-    # panel's own markup; the `not_to be_empty` pin makes the removal honest, so a
-    # selector that stopped matching reddens here rather than silently widening scope.
+    # fixed hue that Badge OWNS, not this panel. Removing the subtree scopes this
+    # assertion to the panel's own markup.
+    #
+    # Stripping a child is only legitimate once that child is INDEPENDENTLY guarded, and
+    # Codex's #183 review showed it was not: with `not_to be_empty` as the only pin here
+    # and no class-axis guard in Badge's own spec, `bg-white` added to `Badge#css_classes`
+    # shipped green across 242 examples — Badge, this panel, TableForIndex and the preview
+    # sweep. Badge's spec now asserts the EXACT colour-bearing class set for every variant,
+    # colour and size (badge/component_spec.rb, "theme-adaptivity: the exact colour-bearing
+    # class set per variant"), which is what makes the strip below honest rather than a
+    # cross-component hole.
+    #
+    # The count is EXACT for the same reason the decorative-dot strips use one: an
+    # over-strip is the silent failure mode, and `not_to be_empty` passes straight through
+    # it. This panel renders exactly one Badge — the account-type badge in the header
+    # (component.html.erb:9).
     #
     # Note the DECLARATION guard above is deliberately NOT widened to match: this panel
     # emits frozen hex outside the chips on purpose (`color: #2E75B6` on the account
     # links, `border-top: 1px solid #DEE2E6` on the dividers), which is a separate
     # conversion, not this issue's.
+    def without_account_type_badge(fragment)
+      badges = fragment.css("span.badge")
+      expect(badges.length).to eq(1)
+      expect(badges.first.text.squish).to eq("Distributor")
+      badges.remove
+      fragment
+    end
+
     MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
       it "applies only theme-adaptive colour utilities around a #{group} chip" do
         render_inline(described_class.new(
           **default_params.merge(tag_groups: [ { label: group.to_s, count: 1, group: group } ])
         ))
-        fragment = rendered_fragment
-
-        badges = fragment.css("span.badge")
-        expect(badges).not_to be_empty
-        badges.remove
+        fragment = without_account_type_badge(rendered_fragment)
 
         applied = ThemeAdaptivity.applied_utility_classes(fragment)
         expect(applied).to include("bg-#{variant}-subtle", "text-#{variant}-emphasis")

@@ -178,7 +178,39 @@ RSpec.describe ThemeAdaptivity do
       "backdrop-filter" => "backdrop-filter: blur(4px)",
       "background-blend-mode" => "background-blend-mode: multiply",
       "text-emphasis-color" => "text-emphasis-color: papayawhip",
-      "-webkit-text-fill-color" => "-webkit-text-fill-color: papayawhip"
+      "-webkit-text-fill-color" => "-webkit-text-fill-color: papayawhip",
+      # Codex PR review, P0-2. The list carried `border-color` and the four physical
+      # shorthands but NOT the directional longhands, so `border-top-color: papayawhip`
+      # dropped into ActiveFilterBar's `bar_styles` left 111 examples green — a standard
+      # paint property carrying a frozen hue straight past the guard. The logical
+      # longhands (`border-block-*`, `border-inline-*`) are the same hole in the axis CSS
+      # actually recommends today, and are preventive here.
+      "border-top-color" => "border-top-color: papayawhip",
+      "border-right-color" => "border-right-color: papayawhip",
+      "border-bottom-color" => "border-bottom-color: papayawhip",
+      "border-left-color" => "border-left-color: papayawhip",
+      "border-block" => "border-block: 1px solid papayawhip",
+      "border-block-color" => "border-block-color: papayawhip",
+      "border-block-start" => "border-block-start: 1px solid papayawhip",
+      "border-block-start-color" => "border-block-start-color: papayawhip",
+      "border-block-end" => "border-block-end: 1px solid papayawhip",
+      "border-block-end-color" => "border-block-end-color: papayawhip",
+      "border-inline" => "border-inline: 1px solid papayawhip",
+      "border-inline-color" => "border-inline-color: papayawhip",
+      "border-inline-start" => "border-inline-start: 1px solid papayawhip",
+      "border-inline-start-color" => "border-inline-start-color: papayawhip",
+      "border-inline-end" => "border-inline-end: 1px solid papayawhip",
+      "border-inline-end-color" => "border-inline-end-color: papayawhip",
+      # `text-emphasis` is the SHORTHAND; only `text-emphasis-color` was listed.
+      "text-emphasis" => "text-emphasis: filled papayawhip",
+      "-webkit-text-stroke" => "-webkit-text-stroke: 1px papayawhip",
+      "-webkit-text-stroke-color" => "-webkit-text-stroke-color: papayawhip",
+      "scrollbar-color" => "scrollbar-color: papayawhip papayawhip",
+      # SVG paint-server properties. `fill`/`stroke` were listed; these three paint the
+      # same way inside a gradient or filter and were not.
+      "stop-color" => "stop-color: papayawhip",
+      "flood-color" => "flood-color: papayawhip",
+      "lighting-color" => "lighting-color: papayawhip"
     }.each do |property, style|
       it "rejects `#{property}` by the property rule alone" do
         offending = offences(style)
@@ -195,6 +227,23 @@ RSpec.describe ThemeAdaptivity do
       expect(offences("background-blend-mode: inherit")).to be_empty
       expect(offences("text-emphasis-color: currentColor")).to be_empty
       expect(offences("-webkit-text-fill-color: var(--bs-body-color)")).to be_empty
+    end
+
+    # The property list is a rejection rule, so every entry needs the matching acceptance
+    # half or it reads as "this property may never appear inline", which is not the rule.
+    it "still allows the border longhands and paint-server properties when they re-resolve" do
+      %w[
+        border-top-color border-right-color border-bottom-color border-left-color
+        border-block border-block-color border-block-start border-block-start-color
+        border-block-end border-block-end-color
+        border-inline border-inline-color border-inline-start border-inline-start-color
+        border-inline-end border-inline-end-color
+        text-emphasis -webkit-text-stroke -webkit-text-stroke-color
+        scrollbar-color stop-color flood-color lighting-color
+      ].each do |property|
+        expect(offences("#{property}: inherit")).to be_empty
+        expect(offences("#{property}: var(--bs-border-color)")).to be_empty
+      end
     end
   end
 
@@ -217,9 +266,26 @@ RSpec.describe ThemeAdaptivity do
       {
         "a fixed-hue button" => "btn-primary",
         "a fixed-hue link" => "link-danger",
-        "a fixed-hue alert" => "alert-danger",
         "a fixed-hue badge modifier" => "badge-primary",
-        "a fixed-hue list-group item" => "list-group-item-warning",
+        # Codex PR review, P0-1. Every one of these is colour-bearing in compiled
+        # Bootstrap 5.3 and every one was UNCLASSIFIED before this — `class_offences`
+        # returned `[]` for them, so no guarded spec could ever see one. `.table-primary`
+        # is the severe case: DataTable and TableForIndex both render a `<table>`, and
+        # injecting `table-primary` into Dashboard left 144 examples green.
+        #
+        # `.table-#{'{sem}'}` pins LITERAL colours (`--bs-table-bg: #cfe2ff`) with no
+        # `[data-bs-theme=dark]` override, so it is a fixed hue, not an adaptive family
+        # like `alert-#{'{sem}'}`.
+        "a contextual table row/cell hue" => "table-primary",
+        "a fixed-scheme dark table" => "table-dark",
+        "a fixed-scheme light table" => "table-light",
+        # `--bs-focus-ring-color: rgba(var(--bs-primary-rgb), …)`; `--bs-primary-rgb`
+        # does not shift per colour mode, so base and semantic variants are both fixed.
+        "a semantic focus ring" => "focus-ring-primary",
+        "the base focus ring" => "focus-ring",
+        # Fixed COLOUR SCHEME components: literal `#343a40`/`#dee2e6` and white rgba()s.
+        "a fixed-scheme dark dropdown" => "dropdown-menu-dark",
+        "a fixed-scheme dark navbar" => "navbar-dark",
         # `text-bg-*` derives an accessible foreground but the BACKGROUND is
         # `--bs-#{'{sem}'}-rgb`, which Bootstrap does not shift per colour mode.
         "a text-bg pair" => "text-bg-primary",
@@ -246,6 +312,47 @@ RSpec.describe ThemeAdaptivity do
         expect(class_offences("text-body", "text-body-secondary", "text-body-tertiary")).to be_empty
       end
 
+      # Codex PR review, P1-5. #173 classified `alert-danger` and `list-group-item-warning`
+      # as fixed hues and #183 inherited the claim; both are false against compiled 5.3.
+      # `.alert-danger` resolves through `--bs-danger-text-emphasis` / `--bs-danger-bg-subtle`
+      # / `--bs-danger-border-subtle` — the same three tokens `text-danger-emphasis` and
+      # `bg-danger-subtle` use, all three redefined in the `[data-bs-theme=dark]` block.
+      # `.list-group-item-warning` is built identically. A matcher whose stated question is
+      # "does it re-resolve?" contradicted itself by rejecting them.
+      described_class::ADAPTIVE_SEMANTICS.each do |semantic|
+        it "allows the adaptive alert and list-group #{semantic} families" do
+          expect(class_offences("alert-#{semantic}", "list-group-item-#{semantic}")).to be_empty
+        end
+      end
+
+      it "allows the emphasis-token families, which follow --bs-emphasis-color" do
+        expect(class_offences("text-body-emphasis", "link-body-emphasis")).to be_empty
+      end
+
+      it "allows the component members that draw from adaptive tokens" do
+        # btn-link -> var(--bs-link-color); alert-heading -> color: inherit;
+        # alert-link -> var(--bs-alert-link-color); list-group-item-action -> the
+        # --bs-list-group-action-* tokens.
+        expect(class_offences("btn-link", "alert-heading", "alert-link", "list-group-item-action")).to be_empty
+      end
+
+      # The `table` family is classified as a whole (see the classifier), so its adaptive
+      # and structural members have to be allowed explicitly or DataTable's real markup
+      # (`table table-hover mb-0`) would fail.
+      it "allows the adaptive table members" do
+        expect(
+          class_offences("table", "table-striped", "table-striped-columns",
+                         "table-active", "table-hover", "table-group-divider")
+        ).to be_empty
+      end
+
+      it "allows the structural table members, which paint nothing" do
+        expect(
+          class_offences("table-sm", "table-bordered", "table-borderless",
+                         "table-responsive", "table-responsive-lg", "alert-dismissible")
+        ).to be_empty
+      end
+
       # Codex P1 on the first plan: tier 2 must mean ADAPTIVE, not "on MPI's palette".
       # `info`, `light` and `dark` all have genuinely adaptive -subtle/-emphasis forms in
       # Bootstrap 5.3, so a matcher named `fixed_hue_utility_offences` must not report
@@ -268,6 +375,18 @@ RSpec.describe ThemeAdaptivity do
 
       it "ignores classes the colour classifier does not match at all" do
         expect(class_offences("rounded-pill", "d-inline-flex", "fw-semibold", "btn", "badge")).to be_empty
+      end
+
+      # `dropdown-menu` and `navbar` are matched by EXACT name (`-dark`/`-light`) rather
+      # than by family prefix, because the rest of both families is structural. A prefix
+      # match would reject NavBar's real `dropdown-menu-end` and every `navbar-expand-*`,
+      # which is friction with no adaptivity question behind it.
+      it "leaves the structural dropdown and navbar members unclassified" do
+        expect(
+          class_offences("dropdown-menu", "dropdown-menu-end", "dropdown-item",
+                         "navbar", "navbar-expand-lg", "navbar-brand", "navbar-nav",
+                         "navbar-toggler", "navbar-collapse")
+        ).to be_empty
       end
     end
 
@@ -326,16 +445,47 @@ RSpec.describe ThemeAdaptivity do
         text-decoration-none text-decoration-underline
         text-uppercase text-lowercase text-capitalize
         btn-sm btn-lg btn-close
+        table-sm table-bordered table-borderless
+        table-responsive table-responsive-sm table-responsive-md
+        table-responsive-lg table-responsive-xl table-responsive-xxl
+        alert-dismissible
       ])
       expect(described_class::ADAPTIVE_SEMANTICS).to eq(%w[primary secondary success warning danger info light dark])
       expect(described_class::ADAPTIVE_UTILITIES).to eq(%w[
         bg-body bg-body-secondary bg-body-tertiary
-        text-body text-body-secondary text-body-tertiary
+        text-body text-body-secondary text-body-tertiary text-body-emphasis
+        link-body-emphasis btn-link alert-heading alert-link list-group-item-action
+        table table-striped table-striped-columns table-active table-hover table-group-divider
       ] + %w[primary secondary success warning danger info light dark].flat_map do |s|
-        [ "bg-#{s}-subtle", "text-#{s}-emphasis", "border-#{s}-subtle" ]
+        [ "bg-#{s}-subtle", "text-#{s}-emphasis", "border-#{s}-subtle",
+          "alert-#{s}", "list-group-item-#{s}" ]
       end)
       expect(described_class::ADAPTIVE_UTILITY_ALLOWLIST)
         .to eq(described_class::NEUTRAL_UTILITIES + described_class::ADAPTIVE_UTILITIES)
+    end
+
+    # LAYER 1 is not an allowlist and the module says so; this pins WHICH families are
+    # classified, so adding or dropping one is as visible in review as widening a tier.
+    # A class outside every family is never examined — that is the axis's real limit, and
+    # `.table-primary` sat in it until Codex's #183 review found it by injection.
+    it "pins the family classifier, which is blacklist-shaped and cannot be complete" do
+      classified = lambda do |klass|
+        klass.match?(described_class::COLOUR_UTILITY_PATTERN)
+      end
+
+      %w[
+        bg-white text-primary border border-danger-subtle
+        table table-primary focus-ring focus-ring-danger
+        btn-primary link-danger alert-danger badge-primary list-group-item-warning
+        dropdown-menu-dark dropdown-menu-light navbar-dark navbar-light
+      ].each { |klass| expect(classified.call(klass)).to be(true), "expected #{klass} to be classified" }
+
+      # Not colour-bearing in Bootstrap 5.3, so deliberately outside layer 1. Each would
+      # be pure friction if classified, and none of them makes a colour decision.
+      %w[
+        rounded-pill d-flex fw-semibold shadow-sm mb-0 col-6 btn badge
+        dropdown-menu-end navbar-expand-lg tabled
+      ].each { |klass| expect(classified.call(klass)).to be(false), "expected #{klass} to be unclassified" }
     end
   end
 

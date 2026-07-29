@@ -197,24 +197,61 @@ RSpec.describe MpiDesignSystem::Admin::Pagination::Component, type: :component d
       end
     end
 
-    it "applies only theme-adaptive colour utilities, bar the selected-page affordance" do
+    # `text-bg-primary` + `border-primary` on the CURRENT page (component.rb:67) is a
+    # deliberate fixed hue: the filled pill IS the selected-state affordance, and
+    # `.claude/rules/frontend.md` records that as an accepted exception (#fff on #2E75B6 =
+    # 4.843:1, identical in both colour modes because neither value re-resolves).
+    # `border-primary` is the same hue on the same element, drawing the pill's edge.
+    #
+    # The pill is removed as a NODE rather than allowed by CLASS. Codex's #183 review
+    # proved on the sibling ActiveFilterBar that `.allowing(…)` is class-scoped and not
+    # placement-scoped: it would equally pass a `text-bg-primary` on a NON-current page
+    # link or on the results caption, which is exactly the rule's condition and exactly
+    # what the guard exists to catch. Here the strip is keyed on `aria-current="page"` —
+    # the selected state itself — so any other element carrying the fill survives into
+    # the scan and reddens it.
+    #
+    # The assertions make the removal honest: exactly one current page per render (an
+    # OVER-strip is the silent failure mode; `not_to be_empty` passes straight through
+    # one), and the removed node must carry the selected-state semantics and the label.
+    let(:current_page_pill) { "span[aria-current='page']" }
+
+    def without_current_page(fragment)
+      current = fragment.css(current_page_pill)
+      expect(current.length).to eq(1)
+      expect(current.first["aria-label"]).to eq("Page 20")
+      expect(current.first.text.squish).to eq("20")
+      current.remove
+      fragment
+    end
+
+    it "applies only theme-adaptive colour utilities once the current page is removed" do
       render_inline(windowed)
-      fragment = rendered_fragment.css("nav[aria-label='Pagination']")
+      fragment = without_current_page(rendered_fragment.css("nav[aria-label='Pagination']"))
 
       # Scope is the nav and every descendant, enumerated — not a [class*=…]
       # substring hunt, which would match `border-primary` for `border-dark`.
       applied = ThemeAdaptivity.applied_utility_classes(fragment)
-      expect(applied).to include("text-bg-primary", "bg-body", "text-primary-emphasis")
+      expect(applied).to include("bg-body", "text-body", "text-primary-emphasis")
 
-      # `text-bg-primary` + `border-primary` on the CURRENT page (component.rb:67) is a
-      # deliberate fixed hue: the filled pill IS the selected-state affordance, and
-      # `.claude/rules/frontend.md` records that as an accepted exception (#fff on
-      # #2E75B6 = 4.843:1, identical in both colour modes because neither value
-      # re-resolves). `border-primary` is the same hue on the same element, drawing the
-      # pill's edge; allowing one without the other would pass a pill whose fill went
-      # adaptive while its border stayed frozen. Every other colour-bearing class in the
-      # nav must still be adaptive, which the same call asserts.
-      expect(fragment).to be_free_of_fixed_hue_utilities.allowing("text-bg-primary", "border-primary")
+      # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The pill's own fixed hue and its selected-state semantics, pinned here rather than
+    # lost with the stripped node: removing it from the SCAN must not remove it from the
+    # SUITE. The negative halves are the placement condition the matcher could not
+    # express — a page LINK is not a selected state and may carry neither class.
+    it "still paints exactly the current page in the fixed selected-state hue" do
+      render_inline(windowed)
+
+      expect(page).to have_css(
+        "span[aria-current='page'][aria-label='Page 20'].text-bg-primary.border-primary", text: "20"
+      )
+      expect(page).to have_css("span[aria-current='page']", count: 1)
+      expect(page).to have_css("a[aria-label='Page 19'].bg-body.text-body", text: "19")
+      expect(page).to have_no_css("a.text-bg-primary")
+      expect(page).to have_no_css("a.border-primary")
     end
   end
 

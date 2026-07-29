@@ -274,26 +274,65 @@ RSpec.describe MpiDesignSystem::Admin::FilterChipBar::Component, type: :componen
       end
     end
 
-    it "applies only theme-adaptive colour utilities, bar the selected-state pill" do
+    # `text-bg-primary` on the ACTIVE filter pill (component.html.erb:29) is a deliberate
+    # fixed hue, not an oversight: the fill IS the selection affordance.
+    # `.claude/rules/frontend.md` records this as the accepted selected-state exception —
+    # #fff on #2E75B6 = 4.843:1, identical in both colour modes because neither value
+    # re-resolves.
+    #
+    # It is removed as a NODE rather than passed to `.allowing("text-bg-primary")`, which
+    # is class-scoped and not placement-scoped: Codex's #183 review proved on the sibling
+    # ActiveFilterBar that a fragment-wide allowance also passes the same class on a
+    # NON-selected label, which is precisely the condition the rule imposes and the
+    # matcher cannot check. The group chips are the case that matters here — a selected
+    # chip must render `-subtle`/`-emphasis`, and a chip that regressed to `text-bg-primary`
+    # would have been waved through by the allowance while failing this strip's count.
+    #
+    # The two assertions make the removal honest: an exact count (an OVER-strip is the
+    # silent failure mode; `not_to be_empty` passes straight through one) and the
+    # "#{category}: #{value}" identity the component builds for an active filter.
+    let(:selected_pill) { "span.rounded-pill.text-bg-primary" }
+
+    def without_selected_pills(fragment)
+      pills = fragment.css(selected_pill)
+      expect(pills.length).to eq(1)
+      expect(pills.map { |pill| pill.text.squish }).to eq([ "Keyword: investors" ])
+      pills.remove
+      fragment
+    end
+
+    it "applies only theme-adaptive colour utilities once the selected pill is removed" do
       render_inline(populated)
-      fragment = rendered_fragment
+      fragment = without_selected_pills(rendered_fragment)
 
       # Every element, enumerated — not a [class*=…] substring hunt, which would match
       # `border-danger-subtle` for `border-dark`.
       applied = ThemeAdaptivity.applied_utility_classes(fragment)
       expect(applied).to include(
         "text-body", "bg-body", "text-body-secondary",
-        "text-bg-primary", "bg-danger-subtle", "text-danger-emphasis"
+        "bg-danger-subtle", "text-danger-emphasis"
       )
 
-      # `text-bg-primary` on the ACTIVE filter pill (component.html.erb:29) is a
-      # deliberate fixed hue, not an oversight: the fill IS the selection affordance.
-      # `.claude/rules/frontend.md` records this as an accepted selected-state exception
-      # — #fff on #2E75B6 = 4.843:1, identical in both colour modes because neither
-      # value re-resolves. It is allowed by CLASS rather than removed as a node because
-      # it is fixed-hue everywhere it appears in this component; every other
-      # colour-bearing class here must still be adaptive, which the same call asserts.
-      expect(fragment).to be_free_of_fixed_hue_utilities.allowing("text-bg-primary")
+      # No `allowing:` at all — the fixed-hue exception was taken by placement above.
+      expect(fragment).to be_free_of_fixed_hue_utilities
+    end
+
+    # The pill's own fixed hue and its selected-state semantics, pinned here rather than
+    # lost with the stripped node. The negative halves are the placement condition the
+    # matcher could not express: neither the "Active:" label nor a SELECTED GROUP CHIP
+    # (which is a selected state, but one the rule sends to `-subtle`/`-emphasis`) may
+    # carry the fill.
+    it "still paints exactly the active filter in the fixed selected-state hue" do
+      render_inline(populated)
+
+      expect(page).to have_css(selected_pill, count: 1)
+      expect(page).to have_css(selected_pill, text: "Keyword: investors")
+      expect(page).to have_css("span.text-body-secondary", text: "Active:")
+      expect(page).to have_no_css("span.text-bg-primary", text: "Active:")
+      expect(page).to have_css(
+        "a[aria-current='page'].bg-danger-subtle.text-danger-emphasis", text: "Distribution 342"
+      )
+      expect(page).to have_no_css("a[aria-current='page'].text-bg-primary")
     end
   end
 end

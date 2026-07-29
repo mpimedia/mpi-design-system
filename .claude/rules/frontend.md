@@ -338,13 +338,24 @@ Rules:
   a hand-pinned `color: #fff`; (3) ≥4.5:1 is proven in **both** modes. For `text-bg-primary` that is
   `#fff` on `#2E75B6` = **4.843:1** (`MpiDesignSystem::ColorContrast.ratio`, and `#fff` is what
   `accessible_foreground("#2E75B6")` derives), identical in both modes because neither value
-  re-resolves. The four current holders are FilterChipBar's active filter pill, Pagination's current
-  page (which also carries `border-primary`, the same hue drawing the same pill's edge),
-  ActiveFilterBar's active-filter pill, and BatchActionModalButton. Each takes the exception
-  explicitly at its spec's call site — `be_free_of_fixed_hue_utilities.allowing("text-bg-primary")` —
-  citing this rule, so it is recorded rather than silently inherited. (Reference: ISS#183; the
-  ActiveFilterBar case was already reasoned in-spec under #130 — background *and* foreground derive
-  from the consuming app's real `$primary` rather than a literal.)
+  re-resolves. The three current holders are FilterChipBar's active filter pill, Pagination's current
+  page (which also carries `border-primary`, the same hue drawing the same pill's edge), and
+  ActiveFilterBar's active-filter pill. **`BatchActionModalButton` is NOT one** — its
+  `text-bg-primary` is a modal *header*, a resting surface with no selected state anywhere near it,
+  and the component also emits two `btn-primary` controls; it has no theme-adaptivity guard at all
+  (`batch_action_modal_button/component_spec.rb` applies no matcher), so nothing recorded or tested
+  the claim that it took this exception. Converting it is a separate piece of work, not a licence
+  this rule grants.
+  **Take the exception by removing the NODE, never with `.allowing("text-bg-primary")`** — the
+  matcher is class-scoped, not placement-scoped, so a fragment-wide allowance also passes the same
+  fill on a *non*-selected element and therefore cannot enforce condition (1), which is the whole
+  rule. Codex's ISS#183 review proved it by injection: `text-bg-primary` added to ActiveFilterBar's
+  non-selected "Active:" label shipped green under the allowance. Each of the three holders now
+  strips the selected node — keyed on the selected state itself where one exists (`aria-current`
+  for Pagination) — with an exact count and an identity assertion, pins the stripped node's classes
+  and state semantics in a separate example, and scans the remainder with **no** `allowing:`.
+  (Reference: ISS#183; the ActiveFilterBar case was already reasoned in-spec under #130 —
+  background *and* foreground derive from the consuming app's real `$primary` rather than a literal.)
 - Visible focus indicators on every focusable element
 
 ## Anti-Patterns
