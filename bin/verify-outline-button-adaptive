@@ -66,6 +66,10 @@ NAMED_COLOURS = %w[
 ].freeze
 
 css = File.read(CSS)
+# Strip comments ONCE, up front, and parse the stripped text in both modes. An at-rule or a
+# brace named inside a `/* … */` note is prose, not structure: left in, it was absorbed into
+# the following selector and turned a documentation edit into a build failure.
+uncommented = css.gsub(%r{/\*.*?\*/}m, "")
 errors = []
 
 # ---------------------------------------------------------------------------------
@@ -79,32 +83,92 @@ errors = []
 if CASCADE
   # An unlayered declaration beats a layered one no matter the order, so a layered
   # override is a silent revert. Nothing else in the build sees it.
-  if css =~ /@layer\b/
+  # Only a layer that actually contains button rules can revert the fix. The first version
+  # rejected ANY `@layer`, so an unrelated `@layer review-utilities { .review-utility {…} }`
+  # failed the build (external review, round 3) — a guard that cannot pass legitimate input
+  # gets disabled, which is worse than one that is slightly narrower.
+  layered_button_rule = uncommented.scan(/@layer[^{]*\{(.*)\}/m).flatten.any? do |body|
+    body =~ /\.btn(?:-outline)?[-\s{.:,]/
+  end
+
+  if layered_button_rule
     warn "verify-outline-button-adaptive: FAIL (#{CSS})"
-    warn "  - CASCADE LAYER: @layer present. Layered declarations LOSE to Bootstrap's " \
-         "unlayered ones regardless of source order, so the override silently reverts."
+    warn "  - CASCADE LAYER: a @layer block contains button rules. Layered declarations LOSE " \
+         "to Bootstrap's unlayered ones regardless of source order, so the override silently " \
+         "reverts."
     exit 1
   end
 
-  SEMANTICS.each do |semantic|
-    # Every `--bs-btn-color` declared on this exact selector, in source order.
-    bindings = css.scan(/\.btn-outline-#{semantic}\s*\{([^{}]*)\}/m)
-                  .flat_map { |(body)| body.scan(/--bs-btn-color:\s*([^;]+);/).flatten }
-                  .map(&:strip)
+  # Parse into ordered (selector, body) rules. Substring-matching the selector is not good
+  # enough and was a false pass in the first version of this mode: `.wrapper
+  # .btn-outline-primary` CONTAINS `.btn-outline-primary`, so a scoped rule appended after a
+  # reverted base rule was read as the winner while the base rule stayed broken.
+  rules = uncommented.scan(/([^{}]+)\{([^{}]*)\}/m).map { |sel, body| [ sel.strip, body.strip ] }
 
-    if bindings.empty?
-      errors << "MISSING: no --bs-btn-color declared for .btn-outline-#{semantic} at all"
+  # A selector "is" this element only if one of its comma-separated parts is EXACTLY the
+  # class — not a descendant, not a compound.
+  targets_exactly = lambda do |selector, want|
+    selector.split(",").map(&:strip).any? { |part| part == want }
+  end
+
+  declares_btn_colour = ->(body) { body =~ /--bs-btn-color:/ }
+
+  SEMANTICS.each do |semantic|
+    want = ".btn-outline-#{semantic}"
+    expected = "var(--bs-#{semantic}-text-emphasis)"
+
+    ours_at = nil
+    winner = nil
+
+    rules.each_with_index do |(selector, body), index|
+      next unless targets_exactly.call(selector, want)
+
+      body.scan(/--bs-btn-color:\s*([^;]+);/).flatten.each do |value|
+        winner = value.strip
+        ours_at = index
+      end
+    end
+
+    if winner.nil?
+      errors << "MISSING: no --bs-btn-color declared on the bare #{want} selector at all"
       next
     end
 
-    expected = "var(--bs-#{semantic}-text-emphasis)"
-    winner = bindings.last
+    unless winner == expected
+      errors << "LOSES THE CASCADE: #{want} is finally painted by #{winner.inspect}, not " \
+                "#{expected.inspect}. Import `mpi_design_system/buttons` AFTER Bootstrap."
+      next
+    end
 
-    next if winner == expected
+    # Winning among rules with this exact selector is NOT the same as winning outright.
+    # `.btn` has identical specificity (0,1,0), so a LATER `.btn { --bs-btn-color: … }`
+    # beats our earlier `.btn-outline-*` rule — a real revert this mode passed at first.
+    # Rather than model CSS specificity, reject any later rule that could plausibly reach an
+    # outline button. Conservative on purpose: over-rejection costs one reviewed exception,
+    # under-rejection is a silent false green.
+    # "Could reach an outline button of THIS semantic" — deliberately not "mentions btn".
+    # The first version used the looser test and flagged the other five semantics' own
+    # rules, which target different elements entirely; the real fixture failed. A guard
+    # that cannot pass its own correct input is not conservative, it is broken.
+    threatens = lambda do |selector|
+      parts = selector.split(",").map(&:strip)
+      parts.any? do |part|
+        part == ".btn" ||                       # same specificity, applies to every button
+          part.include?("btn-outline-#{semantic}") || # scoped/compound form of this one
+          part.include?("[class")               # attribute match could catch anything
+      end
+    end
 
-    errors << "LOSES THE CASCADE: .btn-outline-#{semantic} is finally painted by " \
-              "#{winner.inspect}, not #{expected.inspect} — #{bindings.length} declaration(s) " \
-              "in order: #{bindings.inspect}. Import `mpi_design_system/buttons` AFTER Bootstrap."
+    later = rules.each_with_index.select do |(selector, body), index|
+      index > ours_at && threatens.call(selector) && declares_btn_colour.call(body)
+    end
+
+    next if later.empty?
+
+    offenders = later.map { |(selector, _), _| selector }.uniq
+    errors << "LATER OVERRIDE: #{want} binds correctly, but #{offenders.length} later rule(s) " \
+              "also declare --bs-btn-color and may win: #{offenders.inspect}. " \
+              "If one is legitimate, narrow this check deliberately rather than widening it."
   end
 
   # The fixture above mirrors the README's consumer order. The ENGINE's own entrypoint is a
@@ -113,9 +177,17 @@ if CASCADE
   # in a consumer's load path), so it gets a source-order check rather than a compiled one.
   ENTRYPOINT = "app/assets/stylesheets/mpi_design_system/application.scss"
   if File.file?(ENTRYPOINT)
-    imports = File.readlines(ENTRYPOINT).filter_map { |l| l[/^\s*@import\s+["']([^"']+)["']/, 1] }
-    bootstrap_at = imports.index { |i| i[/\bbootstrap\b/] }
-    buttons_at = imports.index { |i| i[/\bbuttons\b/] }
+    # Strip comments before scanning: a commented-out `@import "buttons"` is not an import,
+    # and the line-oriented first version counted it (external review, round 3).
+    entry_src = File.read(ENTRYPOINT).gsub(%r{/\*.*?\*/}m, "").gsub(%r{//[^\n]*}, "")
+    # `@use` loads a module just as `@import` does; only matching @import reported a correct
+    # `@use`-based entrypoint as missing the import entirely.
+    imports = entry_src.scan(/@(?:import|use)\s+["']([^"']+)["']/).flatten
+
+    # The LAST Bootstrap load is the one our override must follow. Taking the FIRST let a
+    # second `@import "bootstrap"` AFTER buttons re-declare the raw hue and still pass.
+    bootstrap_at = imports.rindex { |i| i[/\bbootstrap\b/] }
+    buttons_at = imports.rindex { |i| i[/\bbuttons\b/] }
 
     if buttons_at.nil?
       errors << "ENTRYPOINT: #{ENTRYPOINT} does not import `buttons` at all — the fix never " \
@@ -125,9 +197,14 @@ if CASCADE
                 "has nothing to override and the order claim cannot be checked"
     elsif buttons_at < bootstrap_at
       errors << "ENTRYPOINT ORDER: #{ENTRYPOINT} imports `buttons` (position #{buttons_at}) " \
-                "BEFORE `bootstrap` (position #{bootstrap_at}); Bootstrap's raw hue then wins " \
-                "and the AA fix silently reverts"
+                "BEFORE the LAST `bootstrap` load (position #{bootstrap_at}); Bootstrap's raw " \
+                "hue then wins and the AA fix silently reverts"
     end
+  else
+    # Fail CLOSED. The first version skipped the check when the file was missing and still
+    # printed that the entrypoint order was fine — a guard asserting something it never read.
+    errors << "ENTRYPOINT MISSING: #{ENTRYPOINT} not found. This guard cannot confirm the " \
+              "engine stylesheet imports `buttons` after Bootstrap; run it from the repo root."
   end
 
   if errors.any?
@@ -148,7 +225,7 @@ end
 # Reject at-rules outright rather than parsing into them. The block regex below cannot
 # represent nesting, so `@layer { .btn-outline-primary { … } }` would otherwise have its
 # INNER rule extracted and pass while the enclosing context silently changed the meaning.
-if css =~ /(@[a-z-]+)/i
+if uncommented =~ /(@[a-z-]+)/i
   warn "verify-outline-button-adaptive: FAIL (#{CSS})"
   warn "  - AT-RULE: #{Regexp.last_match(1).inspect} present. The partial must emit flat rules only; " \
        "an enclosing @layer/@media/@supports changes which declaration wins and this " \
@@ -158,7 +235,7 @@ end
 
 # Parse `selector { decls }` blocks. The partial emits only flat rules, so a nested or
 # at-rule block appearing here is itself a change worth failing on.
-blocks = css.scan(/([^{}]+)\{([^{}]*)\}/m).map { |sel, body| [ sel.strip, body.strip ] }
+blocks = uncommented.scan(/([^{}]+)\{([^{}]*)\}/m).map { |sel, body| [ sel.strip, body.strip ] }
 
 if blocks.empty?
   warn "verify-outline-button-adaptive: FAIL — #{CSS} contains no rules at all"
@@ -168,7 +245,7 @@ end
 # FAIL CLOSED on anything the parser did not consume. Without this, appending
 # `this is not valid CSS` to a valid file passed silently — the scan simply skipped it.
 # "Could not parse" must route to reject, not to pass (.claude/rules/testing.md).
-residue = css.gsub(%r{/\*.*?\*/}m, "").gsub(/([^{}]+)\{([^{}]*)\}/m, "").strip
+residue = uncommented.gsub(/([^{}]+)\{([^{}]*)\}/m, "").strip
 unless residue.empty?
   warn "verify-outline-button-adaptive: FAIL (#{CSS})"
   warn "  - UNPARSED: #{residue[0, 120].inspect} lies outside any rule. A guard that cannot " \
@@ -225,6 +302,18 @@ end
 
 missing = SEMANTICS - seen.keys
 errors << "MISSING: no correct #{ALLOWED_PROPERTY} binding for #{missing.join(', ')}" unless missing.empty?
+
+# EXACTLY six rules, each semantic once. Without this a seventh duplicate `.btn-outline-primary`
+# rule passed while the summary still claimed "all 6" — the residue check accepts anything
+# rule-SHAPED, so it could not see the duplication (external review, round 3). A duplicate is
+# not harmless: it is how a second, differing binding hides in plain sight.
+selectors = blocks.map(&:first)
+if selectors.length != SEMANTICS.length
+  errors << "RULE COUNT: #{selectors.length} rules emitted, expected exactly #{SEMANTICS.length} " \
+            "(one per semantic): #{selectors.inspect}"
+end
+duplicates = selectors.tally.select { |_, n| n > 1 }.keys
+errors << "DUPLICATE RULE(S): #{duplicates.inspect} declared more than once" unless duplicates.empty?
 
 if errors.any?
   warn "verify-outline-button-adaptive: FAIL (#{CSS})"
