@@ -90,11 +90,79 @@ RSpec.describe MpiDesignSystem::Admin::EngagementCard::Component, type: :compone
     expect(page).to have_css("a[href='/accounts/1'][style*='color: #2E75B6']", text: "Sony Pictures")
   end
 
-  it "renders tags with colored dots in right meta" do
-    render_inline(described_class.new(**default_params))
+  describe "tag dots (#168)" do
+    # A decorative identity dot on the row/card surface — not inside a `-subtle` chip —
+    # so it keeps the solid `bg-#{variant}` treatment whose >=3:1 on both resting
+    # backdrops DataTable's browser spec already proves. Geometry survives inline and is
+    # pinned by exact equality so a dropped declaration reddens (#152).
+    let(:dot_style) { "width: 6px; height: 6px; border-radius: 50%;" }
 
-    expect(page).to have_css("span[style*='background: #E8733A']")
-    expect(page).to have_text("Acquisitions")
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "renders the #{group} dot as a solid bg-#{variant}" do
+        render_inline(described_class.new(**default_params.merge(tags: [ { group: group, role: group.to_s } ])))
+
+        expect(page).to have_css(
+          "span.d-inline-block.bg-#{variant}[aria-hidden='true'][style='#{dot_style}']", count: 1
+        )
+      end
+    end
+
+    it "falls back to secondary for an unknown group" do
+      render_inline(described_class.new(**default_params.merge(tags: [ { group: :not_a_group, role: "Mystery" } ])))
+
+      expect(page).to have_css("span.d-inline-block.bg-secondary[aria-hidden='true']", count: 1)
+      expect(page).to have_text("Mystery")
+    end
+
+    it "renders one dot per tag" do
+      tags = [ { group: :distribution, role: "Acquisitions" }, { group: :outreach, role: "Press" } ]
+      render_inline(described_class.new(**default_params.merge(tags: tags)))
+
+      expect(page).to have_css("span.d-inline-block.bg-danger[aria-hidden='true']", count: 1)
+      expect(page).to have_css("span.d-inline-block.bg-success[aria-hidden='true']", count: 1)
+      expect(page).to have_text("Acquisitions")
+      expect(page).to have_text("Press")
+    end
+
+    # DELIBERATELY the opposite of the list rows' equivalent example. This card paints
+    # its own hardcoded `background: #fff`, so the label sits on a fixed white surface in
+    # both colour modes: the navy measures 14.22:1 there, whereas an adaptive `text-body`
+    # would resolve to #DEE2E6 in dark mode and paint 1.30:1 on that same white card.
+    # `text-body` is correct only where the surface adapts too. Pinning the navy here
+    # stops a well-meaning "make it adaptive" edit from reintroducing that regression.
+    it "keeps the frozen navy label, because the card surface is fixed white" do
+      render_inline(described_class.new(**default_params.merge(tags: [ { group: :distribution, role: "Acquisitions" } ])))
+
+      expect(page).to have_css("span[style='font-size: 12px; color: #1B2A4A;']", text: "Acquisitions")
+      expect(page).not_to have_css("span.text-body", text: "Acquisitions")
+    end
+
+    it "still paints that label against a white card, so the pair stays AA in both modes" do
+      render_inline(described_class.new(**default_params.merge(tags: [ { group: :distribution, role: "Acquisitions" } ])))
+
+      expect(page).to have_css("article[style*='background: #fff']")
+      expect(MpiDesignSystem::ColorContrast.ratio("#1B2A4A", "#FFFFFF")).to be >= 4.5
+    end
+
+    it "renders no dots when there are no tags" do
+      render_inline(described_class.new(**default_params.merge(tags: [])))
+
+      expect(page).to have_css("span, div")
+      # Reject ANY tag dot, not merely one carrying `bg-*`: a dot that lost its semantic
+      # class is exactly the regression this should catch, and a `bg-*`-scoped absence
+      # assertion would pass right through it (Codex PR review, P1-8).
+      expect(page).not_to have_css("span[aria-hidden='true'][style*='border-radius: 50%']:not([style*='width: 8px'])")
+      expect(page).not_to have_css("span[aria-hidden='true'][class*='bg-']")
+    end
+
+    it "leaves no frozen-colour declaration on the dot" do
+      render_inline(described_class.new(**default_params.merge(tags: [ { group: :distribution, role: "Acquisitions" } ])))
+
+      expect(page).to have_css("span.bg-danger[aria-hidden='true']")
+      inline_styles("span[aria-hidden='true'][class*='bg-']").each do |style|
+        expect(style).to be_free_of_frozen_colour
+      end
+    end
   end
 
   it "renders creator name" do

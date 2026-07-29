@@ -65,7 +65,10 @@
     .subgroup-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; padding: 8px 12px; background: #fff; border: 1px solid #DEE2E6; border-radius: 6px; }
     .subgroup-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #6C757D; margin-right: 4px; }
     .subgroup-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; border: 1px solid #DEE2E6; background: #fff; font-size: 11px; font-weight: 500; color: #6C757D; text-decoration: none; }
-    .subgroup-pill.selected { border-color: #E8733A; background: #FEF3EC; color: #E8733A; font-weight: 600; }
+    /* Selected subgroup pill renders the distribution category, so it resolves from the
+     same semantic mapping as every other tag surface. (#168) */
+    .subgroup-pill.selected { border-color: var(--bs-danger-border-subtle, var(--bs-danger-bg-subtle));
+      background: var(--bs-danger-bg-subtle); color: var(--bs-danger-text-emphasis); font-weight: 600; }
 
     /* Toggle */
     .toggle-group { display: inline-flex; border: 1px solid #DEE2E6; border-radius: 5px; overflow: hidden; }

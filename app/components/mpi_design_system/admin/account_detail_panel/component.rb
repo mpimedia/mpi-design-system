@@ -4,6 +4,8 @@ module MpiDesignSystem
   module Admin
     module AccountDetailPanel
       class Component < ViewComponent::Base
+        GROUP_VARIANTS = MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS
+
         # @param name [String] Account name
         # @param account_type [String] Account type label (e.g., "Distributor", "Studio")
         # @param account_type_color [Symbol] Badge color :primary, :success, :danger, :warning, :info, :secondary (default: :primary)
@@ -118,18 +120,24 @@ module MpiDesignSystem
           "border: none; border-top: 1px solid #DEE2E6; margin: 16px 0;"
         end
 
-        def tag_group_chip_styles(group_sym)
-          colors = MpiDesignSystem::Admin::TagChip::Component::GROUPS[group_sym] || { color: "#64748B", bg: "#F1F5F9" }
+        # Colour comes from the shared group -> semantic mapping and re-resolves under
+        # `data-bs-theme`; an unknown group falls back to `secondary` (matching the
+        # frozen #64748B/#F1F5F9 pair this replaced, which ISS#142 measured at 4.34:1).
+        # `border-radius: 999px` -> `rounded-pill`, `display: inline-flex` /
+        # `align-items: center` / `gap: 4px` -> their utility equivalents. (#168)
+        def tag_group_chip_classes(group_sym)
+          variant = GROUP_VARIANTS[group_sym] || :secondary
+          "rounded-pill d-inline-flex align-items-center gap-1 " \
+            "bg-#{variant}-subtle text-#{variant}-emphasis"
+        end
+
+        # Geometry only — the 3px/10px padding, 12px size and 500 weight have no
+        # Bootstrap equivalent and stay inline deliberately. (#168)
+        def tag_group_chip_styles
           [
-            "display: inline-flex",
-            "align-items: center",
-            "gap: 4px",
             "padding: 3px 10px",
-            "border-radius: 999px",
             "font-size: 12px",
-            "font-weight: 500",
-            "color: #{colors[:color]}",
-            "background: #{colors[:bg]}"
+            "font-weight: 500"
           ].join("; ")
         end
 

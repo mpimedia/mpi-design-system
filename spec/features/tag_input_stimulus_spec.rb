@@ -72,6 +72,156 @@ RSpec.describe "TagInput Stimulus controller", type: :feature, js: true do
     end
   end
 
+  # Before #168 this spec proved a chip EXISTED but never inspected its styling, and
+  # the controller carried its own frozen palette keyed on a stale vocabulary
+  # (buyers/press/festivals/…) that the server never sends. Only `internal` overlapped,
+  # so six of seven groups silently painted grey — a live defect that shipped green
+  # precisely because nothing here read a colour. These examples close that hole.
+  describe "the colour of an interactively-added chip (#168)" do
+    # Group -> the semantic Bootstrap paints for `bg-{sem}-subtle`, measured against the
+    # compiled engine bundle in light mode. Pinning the PAINTED value (not merely the
+    # class) is what proves the controller resolved the right variant: an unstyled or
+    # wrongly-keyed chip would inherit its parent's background instead.
+    # Every one of the seven GROUP_VARIANTS keys, not one per distinct hue. The
+    # controller duplicates the mapping in JavaScript, so a missing or mistyped KEY is
+    # the failure mode — and `production`/`vendors`/`press_festival` all resolve to the
+    # same `primary` hue, meaning a per-hue loop would leave two of them unproven.
+    {
+      "VIP" => { group: "distribution", variant: "danger", surface: "#F8D7DA", foreground: "#58151C" },
+      "Priority" => { group: "outreach", variant: "success", surface: "#D3ECE1", foreground: "#0E402B" },
+      "Budget" => { group: "finance", variant: "warning", surface: "#F6E4D5", foreground: "#553012" },
+      "Ops" => { group: "internal", variant: "secondary", surface: "#E2E3E5", foreground: "#2B2F32" },
+      "TIFF 2026" => { group: "press_festival", variant: "primary", surface: "#D5E3F0", foreground: "#122F49" },
+      "Studio" => { group: "production", variant: "primary", surface: "#D5E3F0", foreground: "#122F49" },
+      "Agency" => { group: "vendors", variant: "primary", surface: "#D5E3F0", foreground: "#122F49" }
+    }.each do |label, expected|
+      it "paints a #{expected[:group]} chip with the #{expected[:variant]} subtle/emphasis pair" do
+        visit "/tag_input_demo"
+
+        fill_tag_input(label)
+        find("[role='option']", text: label).click
+        expect(page).to have_css(chip, text: label)
+
+        # The classes the controller must emit — identical to the server-rendered chip.
+        expect(page).to have_css(
+          "#{chip}.rounded-pill.bg-#{expected[:variant]}-subtle.text-#{expected[:variant]}-emphasis",
+          text: label
+        )
+
+        measured, foreground, background = ratio_for("#{chip}[data-tag-label='#{label}']")
+
+        expect(foreground).to eq(expected[:foreground])
+        expect(background).to eq(expected[:surface])
+        expect(measured).to be >= 4.5,
+          "#{expected[:group]} chip #{foreground} on #{background} = #{measured.round(2)}:1"
+      end
+    end
+
+    # The retired `opacity: 0.6` faded the chip's foreground; RESOLVE_JS multiplies
+    # cumulative ancestor opacity, so this measures what a user actually sees rather
+    # than the declared pair (#130's lesson — audit opacity, not just `color:`).
+    it "keeps the remove button's effective foreground above the AA floor" do
+      visit "/tag_input_demo"
+
+      fill_tag_input("VIP")
+      find("[role='option']", text: "VIP").click
+      expect(page).to have_css(chip, text: "VIP")
+
+      measured, foreground, background = ratio_for("#{chip} button")
+
+      expect(foreground).to eq("#58151C")
+      expect(background).to eq("#F8D7DA")
+      expect(measured).to be >= 4.5,
+        "remove button #{foreground} on #{background} = #{measured.round(2)}:1"
+      # The declared pair above can be AA-clean and still fail once faded, so assert
+      # nothing in the ancestor chain reintroduces an opacity multiplier.
+      expect(resolve("#{chip} button")[:cumulativeOpacity]).to eq(1.0)
+    end
+
+    # A chip added after load must be indistinguishable from one rendered by the server.
+    # Comparing against a second hardcoded list would only restate the JS; this renders
+    # the REAL server markup and diffs against it, so future server/JS drift reddens.
+    it "matches the server-rendered chip's classes and inline style exactly" do
+      server = ActionController::Base.render(
+        MpiDesignSystem::Admin::TagInput::Component.new(
+          available_tags: [ { label: "VIP", group: :distribution } ],
+          selected_tags: [ { label: "VIP", group: :distribution } ],
+          name: "contact[tags][]"
+        )
+      )
+      server_node = Nokogiri::HTML.fragment(server).at_css("span[data-mpi--tag-input-target='tag']")
+      server_button = server_node.at_css("button")
+
+      visit "/tag_input_demo"
+      fill_tag_input("VIP")
+      find("[role='option']", text: "VIP").click
+      expect(page).to have_css(chip, text: "VIP")
+
+      added = page.evaluate_script(
+        "(() => { const c = document.querySelector(\"#{chip}[data-tag-label='VIP']\");" \
+        "const b = c.querySelector('button');" \
+        "return { cls: c.className, style: c.getAttribute('style')," \
+        "         btnCls: b.className, btnStyle: b.getAttribute('style') }; })()"
+      )
+
+      norm = ->(value) { value.to_s.split(/\s+/).reject(&:empty?).sort.join(" ") }
+      expect(norm.call(added["cls"])).to eq(norm.call(server_node["class"]))
+      expect(norm.call(added["btnCls"])).to eq(norm.call(server_button["class"]))
+      # Declaration sets, order-insensitive — the server joins with "; " and the JS
+      # writes a cssText string, so a literal string compare would be brittle noise.
+      decls = ->(style) { style.to_s.split(";").map { |d| d.strip.chomp(";") }.reject(&:empty?).sort }
+      expect(decls.call(added["style"])).to eq(decls.call(server_node["style"]))
+      expect(decls.call(added["btnStyle"])).to eq(decls.call(server_button["style"]))
+    end
+
+    it "gives the dropdown suggestion dot its group's semantic fill" do
+      visit "/tag_input_demo"
+
+      fill_tag_input("VIP")
+
+      expect(page).to have_css("[role='option'] span.d-inline-block.bg-danger")
+      # The option TEXT deliberately keeps the frozen navy: the dropdown panel paints a
+      # hardcoded white background, so an adaptive `text-body` would render #DEE2E6 on
+      # white (1.30:1) in dark mode. The dot's solid semantic fill is a fixed hue and is
+      # safe on that white. Converting the panel is ISS#142 §3.
+      expect(page).to have_css("[role='option'][style*='color: #1B2A4A']", text: "VIP")
+      expect(page).not_to have_css("[role='option'].text-body")
+    end
+
+    # The RESTING option is not the whole story. A previous revision fixed the resting
+    # state and left the hover/keyboard-active surface adaptive, so navy text sat on
+    # ~#2B3035 in dark mode at 1.07:1 — a fix that introduced an inaccessible
+    # interactive state, which a resting-only assertion could never catch.
+    it "keeps a hovered option readable, not just a resting one" do
+      visit "/tag_input_demo"
+      fill_tag_input("VIP")
+      expect(page).to have_css("[role='option']", text: "VIP")
+
+      find("[role='option']", text: "VIP").hover
+
+      measured, foreground, background = ratio_for("[role='option']")
+      expect(foreground).to eq("#1B2A4A")
+      expect(background).to eq("#F5F7FA")
+      expect(measured).to be >= 4.5,
+        "hovered option #{foreground} on #{background} = #{measured.round(2)}:1"
+    end
+
+    # Keyboard navigation paints the same surface by a different code path
+    # (`highlightItem`), so it needs its own proof.
+    it "keeps a keyboard-highlighted option readable" do
+      visit "/tag_input_demo"
+      fill_tag_input("VIP")
+      expect(page).to have_css("[role='option']", text: "VIP")
+
+      find("#{root} [data-mpi--tag-input-target='input']").send_keys(:arrow_down)
+
+      measured, foreground, background = ratio_for("[role='option']")
+      expect(foreground).to eq("#1B2A4A")
+      expect(background).to eq("#F5F7FA")
+      expect(measured).to be >= 4.5
+    end
+  end
+
   describe "removing a tag" do
     it "removes the chip and its hidden input when the remove button is clicked" do
       visit "/tag_input_demo"

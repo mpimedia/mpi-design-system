@@ -161,9 +161,56 @@ RSpec.describe MpiDesignSystem::Admin::AccountDetailPanel::Component, type: :com
     render_inline(described_class.new(**default_params))
 
     expect(page).to have_css("div[style*='text-transform: uppercase']", text: "Tag Groups Represented")
-    expect(page).to have_css("span[style*='color: #E8733A']", text: /Distribution/)
+    expect(page).to have_css("span.bg-danger-subtle.text-danger-emphasis", text: /Distribution/)
     expect(page).to have_text("Distribution (5)")
     expect(page).to have_text("Press/Festival (2)")
+  end
+
+  describe "tag group chips (#168)" do
+    let(:chip_style) { "padding: 3px 10px; font-size: 12px; font-weight: 500" }
+
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "renders the #{group} chip as the #{variant} subtle/emphasis pair" do
+        render_inline(described_class.new(
+          **default_params.merge(tag_groups: [ { label: group.to_s, count: 1, group: group } ])
+        ))
+
+        expect(page).to have_css(
+          "span.rounded-pill.bg-#{variant}-subtle.text-#{variant}-emphasis[style='#{chip_style}']",
+          text: /#{group}/
+        )
+      end
+    end
+
+    # Replaces the frozen #64748B/#F1F5F9 literal fallback, which ISS#142 measured at
+    # 4.34:1 — below the AA floor.
+    it "falls back to the adaptive secondary pair for an unknown group" do
+      render_inline(described_class.new(
+        **default_params.merge(tag_groups: [ { label: "Mystery", count: 2, group: :not_a_group } ])
+      ))
+
+      expect(page).to have_css(
+        "span.rounded-pill.bg-secondary-subtle.text-secondary-emphasis", text: /Mystery/
+      )
+      expect(page.native.to_html).not_to include("#64748B")
+      expect(page.native.to_html).not_to include("#F1F5F9")
+    end
+
+    it "renders the section not at all when there are no tag groups" do
+      render_inline(described_class.new(**default_params.merge(tag_groups: [])))
+
+      expect(page).to have_text("Sony Pictures")
+      expect(page).not_to have_text("Tag Groups Represented")
+    end
+
+    it "leaves no frozen-colour declaration on a chip" do
+      render_inline(described_class.new(
+        **default_params.merge(tag_groups: [ { label: "Distribution", count: 5, group: :distribution } ])
+      ))
+
+      expect(page).to have_css("span.bg-danger-subtle", text: /Distribution/)
+      inline_styles("span.rounded-pill").each { |style| expect(style).to be_free_of_frozen_colour }
+    end
   end
 
   it "renders linked titles section" do

@@ -49,7 +49,7 @@
           <div class="mb-1">
             <% @tags.each do |tag| %>
               <span class="d-inline-flex align-items-center gap-1">
-                <span style="<%= tag_dot_style(tag) %>" aria-hidden="true"></span>
+                <span class="<%= tag_dot_class(tag) %>" style="<%= tag_dot_style %>" aria-hidden="true"></span>
                 <span style="<%= tag_text_styles %>"><%= tag[:role] %></span>
               </span>
             <% end %>

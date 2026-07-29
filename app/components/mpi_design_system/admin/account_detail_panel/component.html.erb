@@ -112,7 +112,7 @@
     <div style="<%= section_heading_styles %>">Tag Groups Represented</div>
     <div class="d-flex flex-wrap gap-1">
       <% @tag_groups.each do |tg| %>
-        <span style="<%= tag_group_chip_styles(tg[:group]) %>">
+        <span class="<%= tag_group_chip_classes(tg[:group]) %>" style="<%= tag_group_chip_styles %>">
           <%= tg[:label] %><% if tg[:count] %> (<%= tg[:count] %>)<% end %>
         </span>
       <% end %>

@@ -4,7 +4,6 @@ module MpiDesignSystem
   module Admin
     module FilterChipBar
       class Component < ViewComponent::Base
-        GROUPS = MpiDesignSystem::Admin::TagChip::Component::GROUPS
         GROUP_VARIANTS = MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS
 
         # @param groups [Array<Hash>] Group chip data:

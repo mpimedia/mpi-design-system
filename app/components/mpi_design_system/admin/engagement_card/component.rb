@@ -4,6 +4,8 @@ module MpiDesignSystem
   module Admin
     module EngagementCard
       class Component < ViewComponent::Base
+        GROUP_VARIANTS = MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS
+
         TYPES = %i[email meeting call note].freeze
 
         TYPE_COLORS = {
@@ -122,11 +124,29 @@ module MpiDesignSystem
           "font-size: 12px; color: #6C757D;"
         end
 
-        def tag_dot_style(tag)
-          color = MpiDesignSystem::Admin::TagChip::Component::GROUPS.dig(tag[:group], :color) || "#64748B"
-          "width: 6px; height: 6px; border-radius: 50%; background: #{color}; display: inline-block;"
+        # Decorative identity dot on the card's own surface — NOT inside a `-subtle`
+        # chip — so it keeps the solid `bg-#{variant}` treatment DataTable's browser
+        # spec already proves >=3:1 on both resting backdrops. `bg-#{variant}` reads
+        # `--bs-#{variant}-rgb`, a fixed hue across colour modes; that is the
+        # documented exception, and the adjacent text label carries the meaning
+        # (WCAG 2.1 SC 1.4.11). An unknown group falls back to `secondary`. (#151, #168)
+        def tag_dot_class(tag)
+          "d-inline-block bg-#{GROUP_VARIANTS[tag[:group]] || :secondary}"
         end
 
+        # Geometry only. (#168)
+        def tag_dot_style
+          "width: 6px; height: 6px; border-radius: 50%;"
+        end
+
+        # Keeps the frozen navy DELIBERATELY, unlike the list rows' equivalent label.
+        # This card paints its own hardcoded `background: #fff` (`card_styles`), so the
+        # label sits on a fixed white surface in BOTH colour modes: navy measures
+        # 14.22:1 there, while an adaptive `text-body` would resolve to #DEE2E6 in dark
+        # mode and paint 1.30:1 on that same white card — a regression, not a fix.
+        # `text-body` is correct only where the surface adapts too (AccountListRow /
+        # ContactListRow inherit the page background and have no card of their own).
+        # Converting this card to `bg-body` is ISS#142 §3 work. (#168)
         def tag_text_styles
           "font-size: 12px; color: #1B2A4A;"
         end

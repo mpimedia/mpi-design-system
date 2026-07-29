@@ -4,6 +4,8 @@ module MpiDesignSystem
   module Admin
     module TagInput
       class Component < ViewComponent::Base
+        GROUP_VARIANTS = MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS
+
         # @param available_tags [Array<Hash>] Each: { label: String, group: Symbol }
         # @param selected_tags [Array<Hash>] Each: { label: String, group: Symbol }
         # @param name [String] Form field name for hidden inputs (default: "tags[]")
@@ -58,16 +60,36 @@ module MpiDesignSystem
           @available_tags.map { |t| { label: t[:label], group: t[:group].to_s } }.to_json
         end
 
-        def tag_color(group_sym)
-          groups = MpiDesignSystem::Admin::TagChip::Component::GROUPS
-          config = groups[group_sym] || groups[:internal]
-          config[:color]
+        # Mirrors `TagChip`'s own chip treatment, so a tag looks identical whether it
+        # is rendered here or by the component. An unknown group falls back to
+        # `secondary`, the semantic equivalent of the `:internal` pair this replaced.
+        # The Stimulus controller emits the same classes for chips added after load —
+        # keep the two in step. (#168)
+        def tag_chip_classes(group_sym)
+          variant = GROUP_VARIANTS[group_sym] || :secondary
+          "rounded-pill bg-#{variant}-subtle text-#{variant}-emphasis"
         end
 
-        def tag_bg(group_sym)
-          groups = MpiDesignSystem::Admin::TagChip::Component::GROUPS
-          config = groups[group_sym] || groups[:internal]
-          config[:bg]
+        # Geometry only, matching `TagChip#chip_styles`. (#168)
+        def tag_chip_styles
+          [
+            "font-size: 13px",
+            "padding: 0.25em 0.75em",
+            "line-height: 1.4"
+          ].join("; ")
+        end
+
+        # Geometry only. Colour/background/border come from
+        # `text-reset bg-transparent border-0`, so the button inherits the chip's
+        # `-emphasis` foreground. The retired `opacity: 0.6` faded an already-sub-AA
+        # foreground further. (#130, #168)
+        def tag_remove_button_styles
+          [
+            "padding: 0",
+            "font-size: inherit",
+            "line-height: 1",
+            "cursor: pointer"
+          ].join("; ")
         end
 
         def derived_groups
@@ -82,17 +104,17 @@ module MpiDesignSystem
           group_sym.to_s.tr("_", " ").split.map(&:capitalize).join(" ")
         end
 
-        def derived_group_styles(group_sym)
-          groups = MpiDesignSystem::Admin::TagChip::Component::GROUPS
-          config = groups[group_sym] || groups[:internal]
+        def derived_group_classes(group_sym)
+          variant = GROUP_VARIANTS[group_sym] || :secondary
+          "rounded-pill d-inline-block bg-#{variant}-subtle text-#{variant}-emphasis"
+        end
+
+        # Geometry only. (#168)
+        def derived_group_styles
           [
-            "display: inline-block",
             "padding: 2px 8px",
-            "border-radius: 999px",
             "font-size: 11px",
-            "font-weight: 500",
-            "color: #{config[:color]}",
-            "background-color: #{config[:bg]}"
+            "font-weight: 500"
           ].join("; ")
         end
 

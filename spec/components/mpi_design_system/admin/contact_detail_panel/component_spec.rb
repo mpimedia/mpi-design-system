@@ -135,11 +135,66 @@ RSpec.describe MpiDesignSystem::Admin::ContactDetailPanel::Component, type: :com
     expect(page).to have_css("div[style*='text-transform: uppercase']", text: /Groups/)
   end
 
-  it "renders auto-group pills with correct colors" do
-    render_inline(described_class.new(**default_params))
+  # This panel has TWO tag-rendering paths — delegated `TagChip` components for @tags,
+  # and its own auto-group pills. A bare `span.bg-danger-subtle` would pass if only the
+  # delegated chip were correct, so every assertion here is scoped to the auto-group
+  # pill by its own class (`d-inline-block`, which TagChip's `d-inline-flex` chip never
+  # carries).
+  describe "auto-group pills (#168)" do
+    let(:pill) { "span.rounded-pill.d-inline-block" }
+    let(:pill_style) { "padding: 2px 8px; font-size: 11px; font-weight: 500" }
 
-    expect(page).to have_css("span[style*='color: #E8733A']", text: "Distribution")
-    expect(page).to have_css("span[style*='color: #2E75B6']", text: "Press/Festival")
+    it "renders each auto-group as its semantic subtle/emphasis pair" do
+      render_inline(described_class.new(**default_params))
+
+      expect(page).to have_css("#{pill}.bg-danger-subtle.text-danger-emphasis", text: "Distribution")
+      expect(page).to have_css("#{pill}.bg-primary-subtle.text-primary-emphasis", text: "Press/Festival")
+    end
+
+    MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS.each do |group, variant|
+      it "renders the #{group} pill as the #{variant} pair with its complete geometry" do
+        render_inline(described_class.new(
+          **default_params.merge(auto_groups: [ { label: group.to_s, group: group } ])
+        ))
+
+        expect(page).to have_css(
+          "#{pill}.bg-#{variant}-subtle.text-#{variant}-emphasis[style='#{pill_style}']", text: group.to_s
+        )
+      end
+    end
+
+    it "falls back to the adaptive secondary pair for an unknown group" do
+      render_inline(described_class.new(
+        **default_params.merge(auto_groups: [ { label: "Mystery", group: :not_a_group } ])
+      ))
+
+      expect(page).to have_css("#{pill}.bg-secondary-subtle.text-secondary-emphasis", text: "Mystery")
+    end
+
+    it "renders no auto-group section when the list is empty" do
+      render_inline(described_class.new(**default_params.merge(auto_groups: [])))
+
+      expect(page).to have_text("Jane Doe")
+      expect(page).not_to have_css(pill)
+    end
+
+    it "leaves no frozen-colour declaration on a pill" do
+      render_inline(described_class.new(**default_params))
+
+      expect(page).to have_css("#{pill}.bg-danger-subtle", text: "Distribution")
+      inline_styles(pill).each { |style| expect(style).to be_free_of_frozen_colour }
+    end
+
+    # The delegated TagChip path carries its own conversion; this proves the panel
+    # actually renders it, so the two paths above are genuinely distinct.
+    it "renders @tags through the delegated TagChip, not the auto-group pill" do
+      render_inline(described_class.new(
+        **default_params.merge(tags: [ { label: "VIP", group: :outreach } ], auto_groups: [])
+      ))
+
+      expect(page).to have_css("span.d-inline-flex.bg-success-subtle", text: "VIP")
+      expect(page).not_to have_css(pill)
+    end
   end
 
   it "renders hr dividers between sections" do

@@ -23,6 +23,18 @@
       the foreground is DERIVED per background (issue #130 — 7 of the 10 light palette
       colours fail WCAG AA with white text), carried by the `-fg` token / fallback.
     */
+    /* Semantic tokens for the two converted tag badges below. This file already had a
+       :root block for the avatar palette, which is why the shared converter skipped it —
+       without these the badges would paint stock CDN Bootstrap's green/red, not MPI's.
+       Values are the compiled engine bundle's. (#168) */
+    :root, [data-bs-theme="light"] {
+      --bs-primary: #2E75B6; --bs-primary-rgb: 46, 117, 182;
+      --bs-success: #22A06B; --bs-success-rgb: 34, 160, 107;
+      --bs-danger: #DC3545;  --bs-danger-rgb: 220, 53, 69;
+      --bs-primary-bg-subtle: #D5E3F0; --bs-primary-text-emphasis: #122F49;
+      --bs-success-bg-subtle: #D3ECE1; --bs-success-text-emphasis: #0E402B;
+      --bs-danger-bg-subtle: #F8D7DA;  --bs-danger-text-emphasis: #58151C;
+    }
     :root,
     [data-bs-theme="light"] {
       --mds-avatar-0: #2E75B6; --mds-avatar-0-fg: #fff;
@@ -51,6 +63,14 @@
       --mds-avatar-9: #707E91; --mds-avatar-9-fg: #000;
       --mds-avatar-placeholder: #787F86; --mds-avatar-placeholder-fg: #000;
       --mds-avatar-overflow: #707E91; --mds-avatar-overflow-fg: #000;
+    }
+    /* Dark semantic pair for the two converted tag badges. Declaring these light-only
+       left them on the light pair under a global dark theme, since the light :root here
+       is declared after the avatar dark block. (#168) */
+    [data-bs-theme="dark"] {
+      --bs-primary-bg-subtle: #091724; --bs-primary-text-emphasis: #82ACD3;
+      --bs-success-bg-subtle: #072015; --bs-success-text-emphasis: #7AC6A6;
+      --bs-danger-bg-subtle: #2C0B0E;  --bs-danger-text-emphasis: #EA868F;
     }
     .avatar {
       display: inline-flex; align-items: center; justify-content: center;
@@ -147,12 +167,12 @@
         <tr>
           <td style="width: 48px;"><div class="avatar avatar-md avatar-c0">JS</div></td>
           <td><strong>John Smith</strong><br><span class="text-body-secondary small">Acme Studios</span></td>
-          <td class="text-end"><span class="badge" style="color: #E8733A; background: #FEF3EC; border-radius: 999px;">Buyer</span></td>
+          <td class="text-end"><span class="badge bg-danger-subtle text-danger-emphasis" style="border-radius: 999px;">Buyer</span></td>
         </tr>
         <tr>
           <td style="width: 48px;"><div class="avatar avatar-md avatar-c1">AD</div></td>
           <td><strong>Alice Dupont</strong><br><span class="text-body-secondary small">Canal+ Distribution</span></td>
-          <td class="text-end"><span class="badge" style="color: #2DA67E; background: #ECF8F4; border-radius: 999px;">Press</span></td>
+          <td class="text-end"><span class="badge bg-success-subtle text-success-emphasis" style="border-radius: 999px;">Outreach</span></td>
         </tr>
       </tbody>
     </table>

@@ -39,10 +39,27 @@
       --bs-body-color-rgb: 27, 42, 74;
       --bs-secondary-color: rgba(27, 42, 74, 0.75);
     }
+    /* Dark mode. This block previously declared only three EMPHASIS colours and no
+       `*-bg-subtle` at all, so a dark subtle chip kept its LIGHT surface — and its
+       success emphasis (#A7D9C4) disagreed with what the compiled bundle paints
+       (#7AC6A6). The defect was invisible here because the only dark example on the page
+       uses solid `text-bg-primary` pills, not a subtle group chip. Values below are
+       browser-measured against the compiled engine bundle. (#168) */
     [data-bs-theme="dark"] {
+      --bs-body-color: #DEE2E6;
+      --bs-body-color-rgb: 222, 226, 230;
       --bs-primary-text-emphasis: #82ACD3;
-      --bs-success-text-emphasis: #A7D9C4;
+      --bs-primary-bg-subtle: #091724;
+      --bs-success-text-emphasis: #7AC6A6;
+      --bs-success-bg-subtle: #072015;
       --bs-warning-text-emphasis: #E5AD80;
+      --bs-warning-bg-subtle: #2A1809;
+      --bs-danger-text-emphasis: #EA868F;
+      --bs-danger-bg-subtle: #2C0B0E;
+      --bs-secondary-text-emphasis: #A7ACB1;
+      --bs-secondary-bg-subtle: #161719;
+      --bs-link-color: #82ACD3;
+      --bs-link-color-rgb: 130, 172, 211;
     }
 
     body { padding: 32px; }

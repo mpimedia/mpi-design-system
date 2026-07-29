@@ -283,6 +283,39 @@ Rules:
   designer decision. (Reference: #151 mapped the 7-category `TagChip::Component::GROUPS`, and
   `press_festival`/`production`/`vendors` all collapsed onto blue — Codex's plan review caught the
   `info==primary` fact the plan had missed.)
+- **A decorative semantic dot's treatment depends on the surface it sits on — a solid
+  `bg-#{semantic}` fill *cannot* clear 3:1 inside a `-subtle` chip.** The rule below reserves
+  solid `bg-#{semantic}` for decorative marks and requires ≥3:1 on the resting surface. That is
+  satisfiable on a card/row backdrop (`bg-body`), but **not** on the element's own
+  `-subtle` surface: `bg-success` on `bg-success-subtle` measures **2.67:1**, `bg-warning` on
+  `bg-warning-subtle` **2.62:1** — both below the floor, because a subtle surface is by
+  construction a tint of the same hue. So pick by placement:
+  **dot inside a `-subtle` chip → `background-color: currentColor`** (inherits the chip's
+  `-emphasis` foreground: 9.34:1–10.52:1 light, 7.15:1–8.61:1 dark, adaptive by construction, no
+  second token needed); **dot on a plain card/row surface → solid `bg-#{semantic}`**, the
+  documented fixed-hue exception. Note `currentColor` is also the one value a theme-adaptivity
+  guard should *allow* in a `background-color` declaration, alongside `transparent`, `inherit`
+  and `var(--bs-*)`. Prove it in a browser by asserting the dot's computed
+  `background-color` **equals the chip's computed foreground** — a wrong fill is still "some
+  colour", so only the equality catches it. (Reference: #168 converted the remaining nine tag
+  renderers; the plan promised solid dots *and* a ≥3:1 test, which Codex's plan review showed
+  could not both hold.)
+- **The dot rule's twin — a *foreground* is only safe to make adaptive where its *surface* adapts
+  too.** "Replace the frozen colour with `text-body`" is the reflexive fix, and it is correct only
+  on a surface that re-resolves with the theme. Applied to a component that paints its own
+  hardcoded `background: #fff`, `text-body` resolves to `#DEE2E6` in dark mode and paints
+  **1.30:1** on that still-white card — strictly worse than the frozen navy it replaced (14.22:1
+  there). So classify the surface before converting the foreground: a component with **no card of
+  its own** inherits the page → `text-body` (the frozen `#1B2A4A` measures 1.09:1 on a dark page);
+  a component **painting a fixed light background** → *keep* the frozen dark foreground until the
+  shell itself converts to `bg-body`, and pin that reasoning in a spec so a later "make it
+  adaptive" edit reddens instead of silently regressing. The shell conversion is the real fix, and
+  the pair must move together. **Audit every *state* of a surface you retint, not just resting** —
+  #168 fixed a dropdown option's resting text and left the hovered/keyboard-active variant at
+  **1.07:1**, because hover and keyboard highlighting are separate code paths and a resting-only
+  assertion cannot reach either. (Reference: #168 — `AccountListRow`/`ContactListRow` moved to
+  `text-body` while `EngagementCard` and `TagInput`'s dropdown kept navy; applying the rule
+  uniformly was both of that PR's round-1 P0s, and the state gap was its round-2 P0.)
 - **A solid `bg-#{semantic}` fill is a *fixed* hue, not theme-adaptive — it reads
   `--bs-#{semantic}-rgb`, which Bootstrap does not shift under `data-bs-theme`.** Only
   `-subtle`/`-emphasis`, `bg-body`, `text-body`/`text-body-secondary` and `--bs-link-color`

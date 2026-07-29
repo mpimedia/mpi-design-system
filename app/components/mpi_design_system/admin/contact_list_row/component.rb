@@ -6,7 +6,9 @@ module MpiDesignSystem
       class Component < ViewComponent::Base
         VARIANTS = %i[default search_result].freeze
 
-        TAG_DOT_COLORS = MpiDesignSystem::Admin::TagChip::Component::GROUPS.transform_values { |v| v[:color] }.freeze
+        # Replaces the local TAG_DOT_COLORS hex map (derived from the frozen GROUPS
+        # palette) with the shared group -> semantic mapping. (#168)
+        GROUP_VARIANTS = MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS
 
         STATUSES = %i[active inactive].freeze
 
@@ -42,13 +44,26 @@ module MpiDesignSystem
           "font-size: 12px; color: #6C757D;"
         end
 
-        def tag_dot_style(group)
-          color = TAG_DOT_COLORS[group] || "#64748B"
-          "width: 6px; height: 6px; border-radius: 50%; background: #{color}; display: inline-block;"
+        # Decorative identity dot on the row surface (not inside a `-subtle` chip),
+        # so it keeps the solid `bg-#{variant}` treatment DataTable's browser spec
+        # already proves >=3:1 on both resting backdrops — a fixed hue across colour
+        # modes by design, with the adjacent label carrying the meaning (WCAG 2.1
+        # SC 1.4.11). An unknown group falls back to `secondary`. (#151, #168)
+        def tag_dot_class(group)
+          "d-inline-block bg-#{GROUP_VARIANTS[group] || :secondary}"
         end
 
+        # Geometry only. (#168)
+        def tag_dot_style
+          "width: 6px; height: 6px; border-radius: 50%;"
+        end
+
+        # The label beside the decorative dot IS the category's accessible carrier,
+        # so it must stay readable in both colour modes — the frozen #1B2A4A navy it
+        # used to paint measures 1.09:1 on Bootstrap's dark surface. `text-body` in
+        # the template. (#168)
         def tag_text_styles
-          "font-size: 13px; font-weight: 500; color: #1B2A4A;"
+          "font-size: 13px; font-weight: 500;"
         end
 
         def meta_text_styles

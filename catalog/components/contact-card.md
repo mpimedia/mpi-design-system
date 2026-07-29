@@ -56,15 +56,26 @@ end
 
 ## Tag Group Color Pairs
 
-| Group | Text Color | Background |
+| Group | Semantic | Rendered classes |
 |---|---|---|
-| Buyers | `#E8733A` | `#FEF3EC` |
-| Press | `#2DA67E` | `#ECF8F4` |
-| Festivals | `#2E75B6` | `#EBF3FB` |
-| Sellers | `#8B5CF6` | `#F3EFFE` |
-| Institutional | `#D97706` | `#FEF9EC` |
-| Organizations | `#6366F1` | `#EEEFFE` |
-| Internal | `#64748B` | `#F1F5F9` |
+| Press/Festival | `primary` | `bg-primary-subtle text-primary-emphasis` |
+| Production | `primary` | `bg-primary-subtle text-primary-emphasis` |
+| Vendors | `primary` | `bg-primary-subtle text-primary-emphasis` |
+| Outreach | `success` | `bg-success-subtle text-success-emphasis` |
+| Finance | `warning` | `bg-warning-subtle text-warning-emphasis` |
+| Distribution | `danger` | `bg-danger-subtle text-danger-emphasis` |
+| Internal | `secondary` | `bg-secondary-subtle text-secondary-emphasis` |
+
+Colour resolves from `TagChip::Component::GROUP_VARIANTS` and follows `data-bs-theme`.
+Because MPI maps `$info` → `$primary`, the seven categories collapse onto **five** distinct
+hues; the always-present text label carries the identity. See `catalog/elements/tag-chip.md`
+for the full mapping rationale and the per-surface treatment table. (#168)
+
+> **Naming note.** This table previously listed the groups as Buyers / Press / Festivals /
+> Sellers / Institutional / Organizations — a legacy vocabulary that no component has ever
+> accepted, and which contradicted `badge.md` and `tag-chip.md`. The keys above are the ones
+> `GROUP_VARIANTS` actually validates. The legacy names still appear in the unused
+> `$mpi-tag-*` SCSS tokens and `tokens/colors.md`; reconciling those is tracked in ISS#181.
 
 ## Bootstrap Classes
 
@@ -86,8 +97,15 @@ end
 ## Accessibility
 
 - Entire card is a clickable link (`<a>`) — ensure focus ring is visible
-- Avatar colors meet WCAG AA for white text
-- Tag pill text/background pairs all meet WCAG AA contrast
+- Avatar foregrounds are derived per background by `MpiDesignSystem::ColorContrast`,
+  so each meets WCAG AA. (The earlier "white text on all backgrounds" claim was false —
+  7 of 10 palette colours measured below the floor; fixed in #130.)
+- Tag pills render `bg-{semantic}-subtle` + `text-{semantic}-emphasis` from the shared
+  `GROUP_VARIANTS` map, which Bootstrap derives AA-clean in both colour modes. The
+  earlier claim that the *hex* pairs "all meet WCAG AA contrast" was false — every one
+  measured 2.77:1–4.34:1 (ISS#142 §1), including the no-group default at 4.34:1 (#168)
+- A tag carrying caller-supplied `color:`/`bg_color:` is a deliberate passthrough and is
+  the **caller's** contrast responsibility
 - Metadata text in `#ADB5BD` is supplementary (not critical info), but consider `#6C757D` if contrast is borderline
 
 ## Usage Guidelines

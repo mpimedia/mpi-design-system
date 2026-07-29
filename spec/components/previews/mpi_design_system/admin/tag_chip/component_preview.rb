@@ -33,6 +33,16 @@ class MpiDesignSystem::Admin::TagChip::ComponentPreview < ApplicationComponentPr
     )
   end
 
+  # The chip is one of the few converted components whose surrounding markup is the chip
+  # itself, so a colour-mode preview here shows the real thing rather than an adaptive tag
+  # sitting inside a still-fixed light shell. The card, list-row and detail-panel previews
+  # deliberately do NOT get a dark example for that reason — see the #168 PR notes.
+  #
+  # @label Colour Modes
+  def colour_modes
+    render_with_template
+  end
+
   # @label Small Size
   def small
     render_with_template(

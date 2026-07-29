@@ -4,6 +4,8 @@ module MpiDesignSystem
   module Admin
     module ContactDetailPanel
       class Component < ViewComponent::Base
+        GROUP_VARIANTS = MpiDesignSystem::Admin::TagChip::Component::GROUP_VARIANTS
+
         # @param name [String] Contact full name
         # @param title [String] Contact job title
         # @param company [String] Company/organization name
@@ -97,17 +99,21 @@ module MpiDesignSystem
           "border: none; border-top: 1px solid #DEE2E6; margin: 16px 0;"
         end
 
-        def group_pill_styles(group_sym)
-          groups = MpiDesignSystem::Admin::TagChip::Component::GROUPS
-          config = groups[group_sym] || groups[:internal]
+        # Covers the auto-groups pills only — this panel's `@tags` render through a
+        # nested `TagChip::Component`, which carries its own conversion. An unknown
+        # group falls back to `secondary`, the semantic equivalent of the `:internal`
+        # pair this previously fell back to. (#168)
+        def group_pill_classes(group_sym)
+          variant = GROUP_VARIANTS[group_sym] || :secondary
+          "rounded-pill d-inline-block bg-#{variant}-subtle text-#{variant}-emphasis"
+        end
+
+        # Geometry only. (#168)
+        def group_pill_styles
           [
-            "display: inline-block",
             "padding: 2px 8px",
-            "border-radius: 999px",
             "font-size: 11px",
-            "font-weight: 500",
-            "color: #{config[:color]}",
-            "background-color: #{config[:bg]}"
+            "font-weight: 500"
           ].join("; ")
         end
 

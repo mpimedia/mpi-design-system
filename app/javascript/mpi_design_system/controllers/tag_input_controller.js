@@ -1,14 +1,29 @@
 import { Controller } from "@hotwired/stimulus"
 
-const GROUP_COLORS = {
-  buyers: { color: "#E8733A", bg: "#FEF3EC" },
-  press: { color: "#2DA67E", bg: "#ECF8F4" },
-  festivals: { color: "#2E75B6", bg: "#EBF3FB" },
-  sellers: { color: "#8B5CF6", bg: "#F3EFFE" },
-  institutional: { color: "#D97706", bg: "#FEF9EC" },
-  organizations: { color: "#6366F1", bg: "#EEEFFE" },
-  internal: { color: "#64748B", bg: "#F1F5F9" }
+// Mirror of `TagChip::Component::GROUP_VARIANTS` (Ruby cannot be read from here, so
+// the two must be kept in step — the component spec pins the Ruby side, and the
+// Stimulus feature spec pins what this renders).
+//
+// This REPLACES a frozen hex map keyed on a stale vocabulary — `buyers`, `press`,
+// `festivals`, `sellers`, `institutional`, `organizations` — which never matched the
+// group names the server actually sends via `available_tags_value` (`production`,
+// `distribution`, `finance`, `press_festival`, `internal`, `vendors`, `outreach`).
+// Only `internal` overlapped, so six of the seven groups silently fell through to the
+// grey fallback: a tag added after page load painted grey while the same tag rendered
+// by the server painted its category colour. Keying on the vocabulary the server sends
+// fixes that, and emitting semantic classes keeps interactively-added chips
+// theme-adaptive and AA-clean like their server-rendered counterparts. (#168)
+const GROUP_VARIANTS = {
+  press_festival: "primary",
+  production: "primary",
+  vendors: "primary",
+  outreach: "success",
+  finance: "warning",
+  distribution: "danger",
+  internal: "secondary"
 }
+
+const variantFor = group => GROUP_VARIANTS[group] || "secondary"
 
 export default class extends Controller {
   static targets = ["input", "dropdown", "selectedTags", "wrapper", "tag"]
@@ -142,13 +157,18 @@ export default class extends Controller {
     this.activeIndex = -1
 
     this.dropdownTarget.innerHTML = matches.map(tag => {
-      const colors = GROUP_COLORS[tag.group] || GROUP_COLORS.internal
+      const variant = variantFor(tag.group)
+      // The dropdown panel paints a hardcoded white background (`dropdown_styles`), so
+      // the option keeps the frozen navy: 14.22:1 on that fixed surface in both colour
+      // modes, where an adaptive `text-body` would drop to 1.30:1 in dark mode. The
+      // category DOT below is a solid semantic fill, which is a fixed hue and therefore
+      // safe on white. Converting the panel itself is ISS#142 §3. (#168)
       return `<div role="option"
                    style="padding: 8px 12px; cursor: pointer; font-size: 13px; color: #1B2A4A;"
                    data-tag-label="${this.escapeHtml(tag.label)}"
                    data-tag-group="${this.escapeHtml(tag.group)}"
                    data-action="click->mpi--tag-input#onDropdownItemClick mouseover->mpi--tag-input#onDropdownItemHover">
-        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${colors.color}; margin-right: 8px;"></span>
+        <span class="d-inline-block bg-${variant}" style="width: 8px; height: 8px; border-radius: 50%; margin-right: 8px;"></span>
         ${this.escapeHtml(tag.label)}
       </div>`
     }).join("")
@@ -161,16 +181,25 @@ export default class extends Controller {
     this.selectTag(item.dataset.tagLabel, item.dataset.tagGroup)
   }
 
+  // A FIXED light neutral, deliberately — the dropdown panel paints a hardcoded white
+  // background and its option text is frozen navy, so the hover surface has to be frozen
+  // too or the pair desynchronises. An earlier revision made this
+  // `var(--bs-tertiary-bg)`, which resolves to ~#2B3035 in dark mode and left navy text
+  // at 1.07:1 on a hovered option — fixing the resting state while breaking the
+  // interactive one. Navy on this neutral measures 13.25:1. The whole dropdown converts
+  // together, or not at all; doing that is ISS#142 §3. (#168)
+  static ACTIVE_SURFACE = "#F5F7FA"
+
   onDropdownItemHover(event) {
     const items = this.dropdownTarget.querySelectorAll("[role='option']")
     items.forEach(el => el.style.background = "")
-    event.currentTarget.style.background = "#F5F7FA"
+    event.currentTarget.style.background = this.constructor.ACTIVE_SURFACE
     this.activeIndex = Array.from(items).indexOf(event.currentTarget)
   }
 
   highlightItem(items) {
     items.forEach((el, i) => {
-      el.style.background = i === this.activeIndex ? "#F5F7FA" : ""
+      el.style.background = i === this.activeIndex ? this.constructor.ACTIVE_SURFACE : ""
     })
     if (items[this.activeIndex]) {
       items[this.activeIndex].scrollIntoView({ block: "nearest" })
@@ -178,17 +207,20 @@ export default class extends Controller {
   }
 
   addTagChip(label, group) {
-    const colors = GROUP_COLORS[group] || GROUP_COLORS.internal
+    const variant = variantFor(group)
 
     const chip = document.createElement("span")
-    chip.className = "d-inline-flex align-items-center gap-1 fw-semibold"
-    chip.style.cssText = `color: ${colors.color}; background-color: ${colors.bg}; font-size: 13px; padding: 0.25em 0.75em; border-radius: 999px; line-height: 1.4;`
+    // Must match the server-rendered chip in `component.html.erb` exactly, so a tag
+    // added after load is indistinguishable from one present at load. (#168)
+    chip.className = `d-inline-flex align-items-center gap-1 fw-semibold rounded-pill bg-${variant}-subtle text-${variant}-emphasis`
+    chip.style.cssText = "font-size: 13px; padding: 0.25em 0.75em; line-height: 1.4;"
     chip.setAttribute("data-mpi--tag-input-target", "tag")
     chip.dataset.tagLabel = label
     chip.dataset.tagGroup = group
     chip.innerHTML = `${this.escapeHtml(label)}
       <button type="button"
-              style="color: ${colors.color}; opacity: 0.6; background: none; border: none; padding: 0; font-size: inherit; line-height: 1; cursor: pointer;"
+              class="text-reset bg-transparent border-0"
+              style="padding: 0; font-size: inherit; line-height: 1; cursor: pointer;"
               aria-label="Remove ${this.escapeHtml(label)}"
               data-action="mpi--tag-input#removeTag">
         <i class="bi bi-x-lg" aria-hidden="true"></i>

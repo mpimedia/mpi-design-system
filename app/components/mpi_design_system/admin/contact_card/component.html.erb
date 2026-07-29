@@ -11,7 +11,7 @@
   <% if @tags.any? %>
     <div class="d-flex flex-wrap gap-1 mb-2">
       <% @tags.each do |tag| %>
-        <span style="<%= tag_pill_styles(tag) %>">
+        <span class="<%= tag_pill_classes(tag) %>" style="<%= tag_pill_styles(tag) %>">
           <span style="<%= tag_dot_styles(tag) %>" aria-hidden="true"></span>
           <%= tag[:label] %>
         </span>
