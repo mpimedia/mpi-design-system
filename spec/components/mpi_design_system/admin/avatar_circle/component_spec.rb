@@ -343,30 +343,49 @@ RSpec.describe MpiDesignSystem::Admin::AvatarCircle::Component, type: :component
     # recording a deliberate decision and suppressing a finding.
     IDENTITY_PROPERTIES = %w[background-color color].freeze
 
-    it "confines its non-adaptive declarations to the sanctioned --mds-avatar-* pair" do
-      render_inline(avatar)
+    # Looped over the CARTESIAN PRODUCT of SIZES x VARIANTS, for two reasons that only
+    # showed up when this guard was reviewed as its own diff:
+    #
+    # 1. NavBar strips the `variant: :nav` avatar before its own scan, and a parent may only
+    #    strip an INDEPENDENTLY guarded child. A guard that rendered just the default variant
+    #    would not have covered the combination the parent actually removes — the same shape
+    #    as ISS#183's round-2 P0-B, where Badge's guard tested each axis at the other axis's
+    #    default and missed the `filled`/`:sm`/`:info` path AccountDetailPanel renders.
+    # 2. Without the product this example owns nothing. Three PRE-EXISTING `#169` examples
+    #    pin the full inline style verbatim, so they catch any frozen colour on the default
+    #    `md` render — a frozen border reddened five examples, three of them theirs, which by
+    #    `.claude/rules/testing.md` ("a red suite is not a red RULE") means neither this
+    #    example nor they were individually proven. Those pins cover only `md` + `:default`;
+    #    looping `sm`/`lg`/`xl` and `:nav` gives this guard fixtures nothing else reaches, so
+    #    a frozen colour introduced on any of them reddens HERE and nowhere else.
+    MpiDesignSystem::Admin::AvatarCircle::Component::SIZES.each_key do |size|
+      MpiDesignSystem::Admin::AvatarCircle::Component::VARIANTS.each do |variant|
+        it "confines #{size}/#{variant} to the sanctioned --mds-avatar-* pair" do
+          render_inline(described_class.new(name: "Jane Doe", size: size, variant: variant))
 
-      node = page.find("span")
-      declarations = node[:style].split(";").map(&:strip).reject(&:empty?)
+          node = page.find("span")
+          declarations = node[:style].split(";").map(&:strip).reject(&:empty?)
 
-      # Pin that styles were emitted at all — a component that stopped emitting `style`
-      # would satisfy every "no offence" assertion below by having nothing to offend.
-      expect(declarations).not_to be_empty
+          # Pin that styles were emitted at all — a component that stopped emitting `style`
+          # would satisfy every "no offence" assertion below by having nothing to offend.
+          expect(declarations).not_to be_empty
 
-      offending = declarations.reject { |d| ThemeAdaptivity.frozen_colour_offences(d).empty? }
-      offending_properties = offending.map { |d| d.split(":", 2).first.strip }.uniq
+          offending = declarations.reject { |d| ThemeAdaptivity.frozen_colour_offences(d).empty? }
+          offending_properties = offending.map { |d| d.split(":", 2).first.strip }.uniq
 
-      # Exactly the two identity declarations may be non-adaptive — no more. A new frozen
-      # colour on any other property (a `border`, an `outline`, a `box-shadow`) appears here
-      # and reddens, which a blanket `.allowing(…)` or a skipped scan would not catch.
-      expect(offending_properties).to match_array(IDENTITY_PROPERTIES)
+          # Exactly the two identity declarations may be non-adaptive — no more. A new frozen
+          # colour on any other property (a `border`, an `outline`, a `box-shadow`) appears
+          # here and reddens, which a blanket `.allowing(…)` or a skipped scan would not.
+          expect(offending_properties).to match_array(IDENTITY_PROPERTIES)
 
-      # And each must be the sanctioned custom-property FORM, not a bare literal. A
-      # regression to `background-color: #6C757D` still offends the scan identically, so
-      # the property check above alone cannot tell the two apart.
-      offending.each do |declaration|
-        expect(declaration).to match(/\Aa?(?:background-color|color): var\(--mds-avatar-[\w-]+, [^)]+\)\z/),
-          "#{declaration.inspect} is not the sanctioned var(--mds-avatar-*, <fallback>) form"
+          # And each must be the sanctioned custom-property FORM, not a bare literal. A
+          # regression to `background-color: #6C757D` still offends the scan identically, so
+          # the property check above alone cannot tell the two apart.
+          offending.each do |declaration|
+            expect(declaration).to match(/\A(?:background-color|color): var\(--mds-avatar-[\w-]+, [^)]+\)\z/),
+              "#{declaration.inspect} is not the sanctioned var(--mds-avatar-*, <fallback>) form"
+          end
+        end
       end
     end
 

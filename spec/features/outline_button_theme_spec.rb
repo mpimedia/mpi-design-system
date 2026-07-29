@@ -35,8 +35,13 @@ RSpec.describe "Outline button theme adaptivity", type: :feature, js: true do
         const parts = (value.match(/[\\d.]+/g) || []).map(Number);
         return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
       };
+      // Starts at the ELEMENT, not its parent — matching nav_bar_theme_spec. An outline
+      // button's own background is transparent so the walk climbs to the demo section
+      // anyway, but starting at the parent would SKIP a regression that gave the button an
+      // opaque background of its own: the text would then be painted on that, while this
+      // helper kept measuring against the section and reporting a ratio nobody sees.
       const opaqueBackdrop = (node) => {
-        for (let el = node.parentElement; el; el = el.parentElement) {
+        for (let el = node; el; el = el.parentElement) {
           const bg = parse(getComputedStyle(el).backgroundColor);
           if (bg.a === 1) return bg;
         }
