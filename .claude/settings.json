@@ -36,7 +36,7 @@
   },
   "enabledPlugins": {
     "github@claude-plugins-official": true,
-    "playwright@claude-plugins-official": true,
+    "playwright@claude-plugins-official": false,
     "code-review@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
     "figma@claude-plugins-official": true,

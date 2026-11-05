@@ -11,6 +11,19 @@
     "figma": {
       "type": "http",
       "url": "https://mcp.figma.com/mcp"
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "/usr/bin/env",
+      "args": [
+        "-u", "OP_SERVICE_ACCOUNT_TOKEN",
+        "-u", "CLAUDE_CODE_MESSAGING_TOKEN",
+        "npx", "--yes", "@playwright/mcp@0.0.84",
+        "--browser=chrome",
+        "--sandbox",
+        "--isolated",
+        "--allowed-origins=http://localhost:*;http://127.0.0.1:*"
+      ]
     }
   }
 }
