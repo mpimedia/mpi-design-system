@@ -18,10 +18,12 @@
       "args": [
         "-u", "OP_SERVICE_ACCOUNT_TOKEN",
         "-u", "CLAUDE_CODE_MESSAGING_TOKEN",
+        "-u", "SSH_AUTH_SOCK",
         "npx", "--yes", "@playwright/mcp@0.0.84",
         "--browser=chrome",
         "--sandbox",
         "--isolated",
+        "--no-webmcp",
         "--allowed-origins=http://localhost:*;http://*.localhost:*;http://127.0.0.1:*"
       ]
     }
