@@ -22,7 +22,7 @@
         "--browser=chrome",
         "--sandbox",
         "--isolated",
-        "--allowed-origins=http://localhost:*;http://127.0.0.1:*"
+        "--allowed-origins=http://localhost:*;http://*.localhost:*;http://127.0.0.1:*"
       ]
     }
   }
